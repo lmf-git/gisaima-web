@@ -37,8 +37,8 @@
   // Use $derived correctly following the Features.svelte pattern
   const spawnList = $derived((() => {
     // Get spawns from world data
-    const world = $game.worlds[$game.worldKey];
-    const spawns = world.spawns ? Object.values(world.spawns) : [];
+    const world = $game.worlds?.[$game.worldKey];
+    const spawns = world?.spawns ? Object.values(world.spawns) : [];
 
     return spawns.filter(spawn => {
       if (!$game.player?.race) return true;
@@ -101,7 +101,7 @@
     // Wait until we have enough information to make a decision
     if (!$user || !$game.worldKey) return;
     
-    // Check if joinedWorlds data is available - this means game store is ready
+    // null means not yet fetched — wait before checking membership
     if (Array.isArray($game.joinedWorlds)) {
       if (!$game.joinedWorlds.includes($game.worldKey)) {
         console.log(`SpawnMenu detected user is not a member of world ${$game.worldKey}, redirecting to worlds page`);
@@ -190,17 +190,25 @@
       }
 
       console.log('Player spawned successfully:', result);
-      
+
       // Ensure map is still focused on spawn location before closing
       if ($map.target.x !== spawnX || $map.target.y !== spawnY) {
         console.log(`Re-centering map on spawn location before closing: ${spawnX},${spawnY}`);
         moveTarget(spawnX, spawnY);
       }
-      
-      // Notify about spawn completion first
+
+      // Update game store so the parent {#if !player.alive} condition closes this dialog
+      game.update(s => ({
+        ...s,
+        player: {
+          ...s.player,
+          alive: true,
+          lastLocation: { x: spawnX, y: spawnY, timestamp: result.timestamp }
+        }
+      }));
+
+      // Notify about spawn completion
       onSpawnComplete();
-      
-      setTimeout(() => onClose(), 300); // Small delay before closing to ensure map update completes
     
     } catch (error) {
       console.error('Error selecting spawn point:', error);

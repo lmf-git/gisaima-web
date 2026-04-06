@@ -10,11 +10,6 @@
       icon: "🚤"
     },
     {
-      title: "Quests",
-      description: "Engage in challenging missions, earn rewards and special abilities by completing tasks and solving puzzles.",
-      icon: "📜"
-    },
-    {
       title: "Command Chaining",
       description: "Create complex action sequences for your units, automate routines and execute sophisticated strategies.",
       icon: "⛓️"

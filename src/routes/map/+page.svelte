@@ -110,7 +110,7 @@
 
     let showMinimap = $state(false); // Changed from true to false - default closed
     let showEntities = $state(false);
-    let showChat = $state(true);
+    let showChat = $state(false);
     let showAchievements = $state(false);
 
     let initialized = $state(false);
@@ -118,7 +118,7 @@
     const MAX_INIT_RETRIES = 3;
     
     let lastActivePanel = $state('none'); // 'none', 'details', 'overview', 'chat', 'achievements'
-    let shouldShowAchievementsAfterSpawn = $state(true); // New state to track if achievements should show after spawn
+    let shouldShowAchievementsAfterSpawn = $state(false); // New state to track if achievements should show after spawn
 
     const unreadCount = $derived($unreadMessages);
 

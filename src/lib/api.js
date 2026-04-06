@@ -81,7 +81,9 @@ export const actions = {
   startCrafting:        (data) => apiPost('/actions/startCrafting',        data),
   cancelCrafting:       (data) => apiPost('/actions/cancelCrafting',       data),
   recruitUnits:         (data) => apiPost('/actions/recruitUnits',         data),
-  cancelRecruitment:    (data) => apiPost('/actions/cancelRecruitment',    data)
+  cancelRecruitment:    (data) => apiPost('/actions/cancelRecruitment',    data),
+  loadGroup:            (data) => apiPost('/actions/loadGroup',            data),
+  unloadGroup:          (data) => apiPost('/actions/unloadGroup',          data)
 };
 
 // ---------------------------------------------------------------------------

@@ -1,11 +1,11 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { derived, get } from "svelte/store"; 
+  import { derived } from "svelte/store";
 
   import { user } from '../../../lib/stores/user';
   import { game, currentPlayer } from "../../../lib/stores/game.js";
-  import { 
-    map, 
+  import {
+    map,
     ready,
     coordinates,
     TILE_SIZE,
@@ -168,9 +168,24 @@
   // Add a separate check just for paths which should hide during movement
   const shouldRenderPaths = $derived(shouldRenderDetails && !isMoving);
   
+  // Overlay spawn structures from world data onto coordinates at read-time so
+  // they are never wiped by chunk loads (spawns live in world.spawns, not chunks).
+  function applySpawnOverlay(cells, gameState) {
+    const spawns = Object.values(gameState.worlds?.[gameState.worldKey]?.spawns || {});
+    if (!spawns.length) return cells;
+    return cells.map(cell => {
+      if (cell.structure) return cell;
+      const spawn = spawns.find(s => (s.x ?? s.position?.x) === cell.x && (s.y ?? s.position?.y) === cell.y);
+      return spawn ? { ...cell, structure: { type: 'spawn', name: spawn.name, race: spawn.race } } : cell;
+    });
+  }
+
   const gridArray = derived(
-    coordinates,
-    $coordinates => $coordinates?.filter(cell => cell.isInMainView) || []
+    [coordinates, game],
+    ([$coordinates, $game]) => applySpawnOverlay(
+      $coordinates?.filter(cell => cell.isInMainView) || [],
+      $game
+    )
   );
   
   $effect(() => {
@@ -682,12 +697,9 @@
     }
   });
   
-  // Simplified player position logic (already exists - no change needed)
-  const playerPosition = $derived(() => {
-    const gameState = get(game);  // Get current game state
-    // Only use lastLocation when needed
-    return gameState.player?.alive ? gameState.player?.lastLocation : null;
-  });
+  const playerPosition = $derived(
+    $game.player?.alive ? $game.player?.lastLocation : null
+  );
 
   // Add a helper function to calculate distance from player to a tile
   function getDistanceFromPlayer(x, y) {

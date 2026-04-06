@@ -190,9 +190,20 @@
     }
   }
   
+  // Overlay spawn structures from world data at read-time (spawns live in world.spawns, not chunks)
+  function withSpawns(cells, gameState) {
+    const spawns = Object.values(gameState.worlds?.[gameState.worldKey]?.spawns || {});
+    if (!spawns.length) return cells;
+    return cells.map(cell => {
+      if (cell.structure) return cell;
+      const spawn = spawns.find(s => (s.x ?? s.position?.x) === cell.x && (s.y ?? s.position?.y) === cell.y);
+      return spawn ? { ...cell, structure: { type: 'spawn', name: spawn.name, race: spawn.race } } : cell;
+    });
+  }
+
   // Extract all entities from all visible coordinates - simplified battle extraction
   const allStructures = $derived(
-    $coordinates
+    withSpawns($coordinates, $game)
       .map(cell => cell.structure ? {
         ...cell.structure,
         x: cell.x,

@@ -9,8 +9,6 @@
     let password = $state('');
     let error = $state(null);
     let loading = $state(false);
-    let googleLoading = $state(false);
-    
     // Add effect to redirect authenticated users
     $effect(() => {
         if (browser && !$userLoading && $user) {
@@ -48,15 +46,7 @@
         }
     };
 
-    const handleGoogleSignIn = async () => {
-        googleLoading = true;
-        error = null;
-        
-        // Your Google Auth implementation would go here
-        // For now we're just improving the layout
-        
-        googleLoading = false;
-    };
+
 </script>
 
 {#if $userLoading || $user === null}
@@ -96,17 +86,10 @@
         <div class="separator">
             <span>or</span>
         </div>
-        
-        <div class="auth-alternatives">
-            <button type="button" class="auth-provider" onclick={handleGoogleSignIn} disabled={googleLoading || loading}>
-                <span class="provider-icon">G</span>
-                {googleLoading ? 'Connecting...' : 'Continue with Google'}
-            </button>
-            
-            <button type="button" class="secondary" onclick={handleAnonymousLogin} disabled={loading || googleLoading}>
-                {loading ? 'Logging in...' : 'Continue as Guest'}
-            </button>
-        </div>
+
+        <button type="button" class="secondary" onclick={handleAnonymousLogin} disabled={loading}>
+            {loading ? 'Logging in...' : 'Continue as Guest'}
+        </button>
         
         <p class="signup-link">Don't have an account? <a href="/signup">Sign Up</a></p>
     </div>
@@ -249,14 +232,6 @@
             margin: 1em 0;
         }
 
-        .auth-alternatives {
-            gap: 0.6em;
-        }
-        
-        .auth-provider {
-            font-size: 0.9em;
-            padding: 0.6em;
-        }
     }
 
     .separator {
@@ -278,46 +253,6 @@
         padding: 0 0.75em;
         color: var(--color-text-secondary);
         font-size: 0.9em;
-    }
-    
-    .auth-alternatives {
-        display: flex;
-        flex-direction: column;
-        gap: 0.8em;
-        width: 100%;
-    }
-    
-    .auth-provider {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.8em;
-        background-color: transparent;
-        border: 1px solid var(--color-panel-border);
-        color: var(--color-text);
-        padding: 0.75em;
-        cursor: pointer;
-        font-size: 1em;
-        border-radius: 0.25em;
-        transition: all 0.2s ease;
-    }
-    
-    .auth-provider:hover:not(:disabled) {
-        background-color: rgba(255, 255, 255, 0.05);
-        transform: translateY(-0.1em);
-    }
-    
-    .provider-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.2em;
-        height: 1.2em;
-        border-radius: 50%;
-        background: #fff;
-        color: #444;
-        font-weight: 600;
-        font-size: 1em;
     }
     
     button.secondary {

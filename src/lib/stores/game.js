@@ -18,7 +18,7 @@ export const recentUnlock = writable(null);
 
 export const game = writable({
   worldKey: null,
-  joinedWorlds: [],
+  joinedWorlds: null,  // null = not yet fetched; [] = fetched but empty
   worlds: {},
   player: null,
   loading: true,
@@ -120,6 +120,11 @@ export async function getWorldInfo(worldId) {
     const info = await apiGet(`/worlds/${worldId}`);
     if (info) {
       game.update(s => ({ ...s, worldLoading: false, worlds: { ...s.worlds, [worldId]: info } }));
+      // Pre-populate worldInfo from the HTTP response so NextWorldTick shows immediately
+      // (it will be overwritten by WebSocket world_tick when that arrives)
+      if (info.lastTick) {
+        worldInfo.set({ ...info, loading: false });
+      }
     }
     return info;
   } catch (e) {

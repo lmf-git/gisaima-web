@@ -618,6 +618,62 @@
     return totalItemPower;
   }
   
+  // Boat helpers
+  function isBoatGroup(group) {
+    return group?.motion?.includes('water') && group?.boatCapacity > 0;
+  }
+
+  function getBoatPassengers(group) {
+    return Object.entries(group?.passengers || {}).map(([id, g]) => ({ ...g, id }));
+  }
+
+  function getLoadableGroups(boatGroup) {
+    if (!detailsData?.groups) return [];
+    const used = Object.keys(boatGroup.passengers || {});
+    return detailsData.groups.filter(g =>
+      g.id !== boatGroup.id &&
+      g.owner === $currentPlayer?.id &&
+      g.status === 'idle' &&
+      !used.includes(g.id)
+    );
+  }
+
+  function getRemainingCapacity(boatGroup) {
+    const passengerUnits = Object.values(boatGroup.passengers || {})
+      .reduce((sum, g) => sum + Object.keys(g.units || {}).length, 0);
+    return boatGroup.boatCapacity - (boatGroup.transportedUnits || 0) - passengerUnits;
+  }
+
+  async function handleLoadGroup(boatGroup, passengerGroup, event) {
+    if (event) event.stopPropagation();
+    try {
+      await actions.loadGroup({
+        worldId: $game.worldKey,
+        boatGroupId: boatGroup.id,
+        passengerGroupId: passengerGroup.id,
+        tileX: detailsData.x,
+        tileY: detailsData.y
+      });
+    } catch (e) {
+      console.error('Failed to load group:', e);
+    }
+  }
+
+  async function handleUnloadGroup(boatGroup, passengerGroupId, event) {
+    if (event) event.stopPropagation();
+    try {
+      await actions.unloadGroup({
+        worldId: $game.worldKey,
+        boatGroupId: boatGroup.id,
+        passengerGroupId,
+        tileX: detailsData.x,
+        tileY: detailsData.y
+      });
+    } catch (e) {
+      console.error('Failed to unload group:', e);
+    }
+  }
+
   // Function to cancel group gathering
   async function cancelGroupGather(group, event) {
     if (!group || !$currentPlayer) {
@@ -1038,6 +1094,25 @@
                         <button class="entity-action" onclick={() => executeAction('joinBattle', { group })}>
                           Join Battle
                         </button>
+                      {/if}
+                      {#if isBoatGroup(group)}
+                        {@const loadable = getLoadableGroups(group)}
+                        {@const capacity = getRemainingCapacity(group)}
+                        <span class="boat-capacity-badge">
+                          {capacity}/{group.boatCapacity} capacity
+                        </span>
+                        {#each loadable as pg}
+                          {#if Object.keys(pg.units || {}).length <= capacity}
+                            <button class="entity-action boat-action" onclick={(e) => handleLoadGroup(group, pg, e)}>
+                              Board: {pg.name || 'Group'}
+                            </button>
+                          {/if}
+                        {/each}
+                        {#each getBoatPassengers(group) as pg}
+                          <button class="entity-action boat-action disembark" onclick={(e) => handleUnloadGroup(group, pg.id, e)}>
+                            Disembark: {pg.name || 'Group'}
+                          </button>
+                        {/each}
                       {/if}
                     </div>
                   {:else if isOwnedByCurrentPlayer(group) && group.status === 'moving'}
@@ -2383,6 +2458,33 @@
   .entity-action.flee-action:disabled {
     opacity: 0.6;
     cursor: wait;
+  }
+
+  .entity-action.boat-action {
+    background-color: rgba(2, 119, 189, 0.1);
+    border-color: rgba(2, 119, 189, 0.4);
+    color: rgba(2, 119, 189, 0.95);
+  }
+
+  .entity-action.boat-action:hover:not(:disabled) {
+    background-color: rgba(2, 119, 189, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .entity-action.boat-action.disembark {
+    background-color: rgba(0, 137, 123, 0.1);
+    border-color: rgba(0, 137, 123, 0.4);
+    color: rgba(0, 137, 123, 0.95);
+  }
+
+  .boat-capacity-badge {
+    font-size: 0.7em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.25em;
+    background: rgba(2, 119, 189, 0.1);
+    border: 1px solid rgba(2, 119, 189, 0.3);
+    color: rgba(2, 119, 189, 0.9);
+    align-self: center;
   }
 
   .group-power {
