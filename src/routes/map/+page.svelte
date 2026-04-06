@@ -9,16 +9,17 @@
 
     import { user, isAuthReady } from '../../lib/stores/user.js'; 
     
-    import { 
-      game, 
+    import {
+      game,
+      currentPlayer,
       getWorldInfo,
       setCurrentWorld,
       savePlayerAchievement,
       subscribeToWorldInfo
     } from "../../lib/stores/game.js";
     
-    import { 
-        map, 
+    import {
+        map,
         ready,
         targetStore,
         initialize,
@@ -27,7 +28,8 @@
         isInternalUrlChange,
         setHighlighted,
         coordinates,
-        hasTileContent
+        hasTileContent,
+        entities
     } from "../../lib/stores/map.js";
     
     import { unreadMessages } from "../../lib/stores/chat.js";
@@ -937,12 +939,23 @@
             });
             break;
               
-          case 'move':
-            showModal({
-              type: 'move',
-              data: actionData
-            });
+          case 'move': {
+            const tile = actionData.tile;
+            const playerId = get(currentPlayer)?.id;
+            const eligibleGroups = tile?.groups?.filter(g =>
+              g.owner === playerId && g.status === 'idle'
+            ) ?? [];
+            if (eligibleGroups.length === 1) {
+              // Skip the dialog — go straight to path drawing
+              startPathDrawing({
+                ...eligibleGroups[0],
+                startPoint: { x: actionData.x, y: actionData.y }
+              });
+            } else {
+              showModal({ type: 'move', data: actionData });
+            }
             break;
+          }
               
           case 'attack':
             showModal({
@@ -1083,6 +1096,31 @@
         })
         .then((result) => {
             console.log('Group movement initiated successfully:', result);
+
+            // Optimistically update the entity store so move lines appear immediately
+            if (result.path && pathDrawingGroup) {
+                const groupId = pathDrawingGroup.id;
+                const startKey = `${startPoint.x},${startPoint.y}`;
+                const steps = result.path.length - 1;
+                const tickMs = steps > 0 ? Math.round(result.estimatedTimeMs / steps) : 60000;
+                const nextMoveTime = Date.now() + tickMs;
+                entities.update(current => {
+                    const tileGroups = current.groups[startKey];
+                    if (!tileGroups) return current;
+                    return {
+                        ...current,
+                        groups: {
+                            ...current.groups,
+                            [startKey]: tileGroups.map(g =>
+                                g.id === groupId
+                                    ? { ...g, status: 'moving', movementPath: result.path, pathIndex: 0, nextMoveTime }
+                                    : g
+                            )
+                        }
+                    };
+                });
+            }
+
             modalState = {
                 type: 'success',
                 data: {

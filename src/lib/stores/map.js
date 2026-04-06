@@ -485,7 +485,7 @@ export const chunks = derived(
     for (const chunk of chunksToLoad) {
       try {
         // Fetch initial chunk data via HTTP
-        apiGet(`/worlds/${worldId}/chunks/${encodeURIComponent(chunk.chunkKey)}`)
+        apiGet(`/worlds/${worldId}/chunks/${chunk.chunkKey}`)
           .then(tiles => { if (tiles) processChunkData(tiles, chunk.chunkKey); })
           .catch(e => console.error(`Error loading chunk ${chunk.chunkKey}:`, e));
 

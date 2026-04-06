@@ -704,11 +704,11 @@
   // Add a helper function to calculate distance from player to a tile
   function getDistanceFromPlayer(x, y) {
     if (!playerPosition) return null;
-    
+
     // Calculate Manhattan distance from player's last location
     return Math.abs(x - playerPosition.x) + Math.abs(y - playerPosition.y);
   }
-  
+
   function isCurrentPlayer(playerEntity) {
     if (!playerEntity || !$currentPlayer) return false;
     return $currentPlayer?.id === playerEntity.id;
@@ -717,40 +717,41 @@
   function hasCurrentPlayerEntity(cell) {
     return cell.players && cell.players.some(p => isCurrentPlayer(p));
   }
-  
-  // New function to check if player's group is on this tile
-  function hasCurrentPlayerGroupOnTile(cell) {
-    if (!cell.groups || !$currentPlayer) return false;
-    
-    // Check if user ID exists
+
+  function isPlayerInGroup(group) {
     const userId = $user?.uid;
-    if (!userId) return false;
-    
-    // Check if any group on this tile contains the player
-    return cell.groups.some(group => {
-      // Check if player owns this group
-      if (group.owner === userId) return true;
-      
-      // Check if player is a member of this group (not the owner)
-      if (group.members && group.members[userId]) return true;
-      
-      // Alternate format: check memberIds array if present
-      if (group.memberIds && Array.isArray(group.memberIds)) {
-        return group.memberIds.includes(userId);
-      }
-      
-      return false;
-    });
+    if (!userId || !group) return false;
+    if (group.owner === userId) return true;
+    if (group.members && group.members[userId]) return true;
+    if (group.memberIds && Array.isArray(group.memberIds)) return group.memberIds.includes(userId);
+    return false;
   }
-  
+
+  // Canonical position: the single tile where YouAreHere should render.
+  // Priority: player entity in chunk data > player's group > lastLocation fallback.
+  // Computing this once prevents all three conditions from firing on different tiles.
+  const canonicalPlayerTile = $derived.by(() => {
+    if (!$game.player?.alive) return null;
+
+    // Priority 1: player entity present in loaded chunk data
+    const entityCell = $coordinates.find(cell =>
+      cell.players?.some(p => isCurrentPlayer(p))
+    );
+    if (entityCell) return { x: entityCell.x, y: entityCell.y };
+
+    // Priority 2: player is in a group (mobilised)
+    const groupCell = $coordinates.find(cell =>
+      cell.groups?.some(g => isPlayerInGroup(g))
+    );
+    if (groupCell) return { x: groupCell.x, y: groupCell.y };
+
+    // Priority 3: lastLocation fallback (e.g. tile not yet loaded into chunks)
+    return playerPosition ? { x: playerPosition.x, y: playerPosition.y } : null;
+  });
+
   function shouldShowPlayerPosition(cell) {
-    // Show player marker if either:
-    // 1. This cell contains the current player entity
-    // 2. This is where lastLocation says the player should be (as fallback)
-    // 3. This cell contains a group that the player is in
-    return hasCurrentPlayerEntity(cell) || 
-           (playerPosition && cell.x === playerPosition.x && cell.y === playerPosition.y) ||
-           hasCurrentPlayerGroupOnTile(cell);
+    const canonical = canonicalPlayerTile;
+    return !!canonical && cell.x === canonical.x && cell.y === canonical.y;
   }
   
   function getPlayerCount(cell) {

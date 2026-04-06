@@ -91,13 +91,25 @@
     return lastTick + (ticksRemaining * adjustedInterval);
   }
   
+  // For moving groups, nextMoveTime is a floor — movement actually fires at the
+  // first world tick whose timestamp >= nextMoveTime.  Align the display to that.
+  function getNextTickForMove() {
+    const nextMoveTime = group?.nextMoveTime;
+    if (!nextMoveTime) return null;
+    const lastTick = $worldInfo?.lastTick;
+    if (!lastTick) return nextMoveTime; // fallback: show nextMoveTime as-is
+    const tickInterval = Math.round(60000 / ($worldInfo.speed || 1));
+    const ticksNeeded = Math.ceil((nextMoveTime - lastTick) / tickInterval);
+    return lastTick + Math.max(1, ticksNeeded) * tickInterval;
+  }
+
   // Functions to get relevant time values for each status
   function getRelevantTime() {
     if (!group) return null;
-    
+
     switch(group.status) {
       case 'moving':
-        return group.nextMoveTime;
+        return getNextTickForMove();
       case 'mobilizing':
       case 'demobilising':
         // Calculate endTime based on next tick
@@ -125,7 +137,7 @@
     
     switch(group.status) {
       case 'moving':
-        const moveTime = group.nextMoveTime;
+        const moveTime = getNextTickForMove();
         return isPending(moveTime) ? 'Pending' : formatTime(moveTime);
       case 'mobilizing':
       case 'demobilising':

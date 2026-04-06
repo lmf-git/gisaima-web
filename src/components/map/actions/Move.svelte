@@ -24,19 +24,9 @@
   const eligibleGroups = $derived(getEligibleGroups());
   
   onMount(() => {
-    // If there's only one eligible group, auto-select it and start path drawing
+    // Auto-select the group if there's only one eligible option
     if (eligibleGroups.length === 1) {
-      // Auto-select the group
       selectedGroupId = eligibleGroups[0].id;
-      
-      // Use a small timeout to ensure component initialization is complete
-      setTimeout(() => {
-        // Auto-start path drawing if we still only have one eligible group
-        if (eligibleGroups.length === 1 && !processing) {
-          console.log('Only one eligible group, auto-starting path drawing');
-          startPathDrawing();
-        }
-      }, 100);
     }
   });
 
