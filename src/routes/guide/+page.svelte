@@ -2365,17 +2365,6 @@
     list-style-type: none;
   }
 
-  .guide-section ol {
-    list-style-position: inside;
-    padding-left: 0;
-    margin: 1em 0;
-  }
-
-  .guide-section ol li {
-    margin-bottom: 0.5em;
-    line-height: 1.6;
-  }
-  
   /* FAQ section styling */
   .faq-item {
     background-color: rgba(255, 255, 255, 0.5);

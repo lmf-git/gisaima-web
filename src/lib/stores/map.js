@@ -246,11 +246,17 @@ function processChunkData(data = {}, chunkKey) {
   const validItemKeys = new Set();
   const validBattleKeys = new Set();  // Track valid battle keys
 
+  // Track ALL tile keys present in this update (whether or not they have a structure).
+  // We only remove a cached structure when the server explicitly sent data for that
+  // tile AND omitted the structure field — meaning the structure is gone.
+  const updatedTileKeys = new Set();
+
   let entitiesChanged = false;
 
   Object.entries(data).forEach(([tileKey, tileData]) => {
     const [x, y] = tileKey.split(',').map(Number);
     const fullTileKey = `${x},${y}`;
+    updatedTileKeys.add(fullTileKey);
 
     // Process structure - prioritize these
     if (tileData.structure) {
@@ -358,11 +364,15 @@ function processChunkData(data = {}, chunkKey) {
 
       // Process all entity types in one update
 
-      // Clean up missing structures in this chunk
+      // Clean up missing structures in this chunk.
+      // Only remove a structure when the server explicitly sent data for that tile
+      // AND that tile data contained no structure — meaning the structure is gone.
+      // If the server omitted the tile entirely (e.g. only group data changed) we
+      // keep the cached structure to avoid false-positive removals.
       Object.keys(current.structure).forEach(key => {
         if (getChunkKey(parseInt(key.split(',')[0]), parseInt(key.split(',')[1])) === chunkKey) {
-          if (!validStructureKeys.has(key)) {
-            delete newState.structure[key]; // Remove structure if not in the valid set
+          if (updatedTileKeys.has(key) && !validStructureKeys.has(key)) {
+            delete newState.structure[key];
           }
         }
       });

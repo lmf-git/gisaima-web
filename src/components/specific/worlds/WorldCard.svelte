@@ -415,12 +415,13 @@
       <div class="loading-indicator"></div>
     </div>
   {:else}
-    <div 
+    <div
       class="terrain-grid"
       style="--grid-cols: {cols}; --grid-rows: {rows};"
       onmousedown={handleDragStart}
       ontouchstart={handleDragStart}
       class:dragging={isDragging && wasDrag}
+      role="presentation"
     >
       {#each terrainGrid as tile (tile.x + ',' + tile.y)}
         <svelte:element
