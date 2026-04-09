@@ -455,16 +455,6 @@
     height: 1.2rem;
   }
   
-  /* Add style for history notice */
-  .history-notice {
-    font-style: italic;
-    font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.5);
-    text-align: center;
-    padding: 0.25rem;
-    background-color: rgba(255, 255, 0, 0.1);
-  }
-  
   /* Responsive design */
   @media (max-width: 600px) {
     .chat-container {

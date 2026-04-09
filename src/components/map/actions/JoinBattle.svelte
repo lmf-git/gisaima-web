@@ -156,10 +156,11 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div 
-  class="join-battle-modal" 
+<div
+  class="join-battle-modal"
   class:active={isActive}
   onmouseenter={onMouseEnter}
+  role="dialog"
   transition:scale={{ start: 0.95, duration: 200 }}
 >
   <header class="modal-header">
@@ -505,11 +506,6 @@
     font-size: 0.8em;
   }
 
-  .debug-info {
-    border: 1px solid rgba(255, 0, 0, 0.3);
-    background-color: rgba(255, 0, 0, 0.1);
-  }
-
   .message.error {
     margin-bottom: 1em;
     border-radius: 0.4em;
@@ -539,12 +535,6 @@
     align-items: center;
   }
 
-  .debug-info {
-    font-size: 0.8em;
-    opacity: 0.7;
-    font-style: italic;
-  }
-  
   @media (min-width: 768px) {
     .battle-join {
       display: grid;

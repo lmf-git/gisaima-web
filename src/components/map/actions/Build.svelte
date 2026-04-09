@@ -354,10 +354,11 @@
   }
 </script>
 
-<div 
-  class="build-modal" 
+<div
+  class="build-modal"
   class:active={isActive}
   onmouseenter={onMouseEnter}
+  role="dialog"
   transition:scale={{ start: 0.95, duration: 200 }}
 >
   <header class="modal-header">

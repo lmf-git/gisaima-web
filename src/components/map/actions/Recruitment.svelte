@@ -612,10 +612,11 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div 
-    class="recruitment-modal" 
+<div
+    class="recruitment-modal"
     class:active={isActive}
-    onmouseenter={onMouseEnter}>
+    onmouseenter={onMouseEnter}
+    role="dialog">
     <header class="modal-header">
         <h3>
             Recruitment at {structureData?.name || "Structure"} ({x}, {y})

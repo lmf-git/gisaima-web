@@ -100,7 +100,7 @@
     
     // Don't handle clicks if these conditions apply
     if (isPathDrawingMode || detailed || modalOpen) {
-      console.log('Not showing Peek: path drawing mode, detailed view, or modal open');
+      console.log('Not showing Peek:', { isPathDrawingMode, detailed, modalOpen });
       return;
     }
     

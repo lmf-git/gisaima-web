@@ -44,7 +44,7 @@
 
 <button 
   class="control-button follow-button" 
-  on:click={toggleFollow}
+  onclick={toggleFollow}
   aria-label={followPlayerPosition ? "Stop following player" : "Follow player"}
   {disabled}>
   

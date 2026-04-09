@@ -483,8 +483,9 @@
         // Update the stored position
         lastKnownPlayerPosition = {...currentPosition};
         
-        // Only move the map if auto-follow is enabled
-        if (followPlayerPosition) {
+        // Only move the map if auto-follow is enabled AND the details panel is not open
+        // (to prevent jumping away from a structure the user is actively viewing)
+        if (followPlayerPosition && !detailed) {
           console.log('Auto-following player to new location');
           moveTarget(currentPosition.x, currentPosition.y);
         }
@@ -1074,16 +1075,10 @@
         
         // Exit path drawing mode immediately to improve UX
         isPathDrawingMode = false;
-        
+
         // Get the first and last points of the path
         const startPoint = path[0];
         const endPoint = path[path.length - 1];
-        
-        modalState = {
-            type: 'loading',
-            data: { message: 'Sending movement orders...' },
-            visible: true
-        };
 
         actions.moveGroup({
             groupId: pathDrawingGroup.id,
@@ -1120,27 +1115,9 @@
                     };
                 });
             }
-
-            modalState = {
-                type: 'success',
-                data: {
-                    message: 'Movement orders sent!',
-                    details: `Your group will move to (${endPoint.x}, ${endPoint.y}) in ${result.totalSteps} steps.`
-                },
-                visible: true
-            };
-            setTimeout(() => { closeModal(); }, 2000);
         })
         .catch((error) => {
             console.error('Error moving group:', error);
-            modalState = {
-                type: 'error',
-                data: {
-                    message: 'Failed to send movement orders',
-                    details: error.message
-                },
-                visible: true
-            };
         })
         .finally(() => {
             pathDrawingGroup = null;

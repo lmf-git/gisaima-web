@@ -134,10 +134,11 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div 
-  class="demobilise-modal" 
+<div
+  class="demobilise-modal"
   class:active={isActive}
   onmouseenter={onMouseEnter}
+  role="dialog"
   transition:scale={{ start: 0.95, duration: 200 }}
 >
   <header class="modal-header">

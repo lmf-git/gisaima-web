@@ -6,7 +6,7 @@
   
   import { calculateGroupPower } from 'gisaima-shared/war/battles.js';
 
-  import { coordinates, targetStore } from "../../../lib/stores/map.js";
+  import { coordinates, targetStore, entities } from "../../../lib/stores/map.js";
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
   
   import Close from '../../icons/Close.svelte';
@@ -528,14 +528,28 @@
     try {
       // Use the cancelMove function imported from game store
       const result = await cancelMove(group.id, group.x, group.y);
-      
+
       if (result.success) {
-        console.log('Movement cancelled successfully:', result.data);
+        // Optimistically update the group status so movement lines disappear immediately
+        const tileKey = `${group.x},${group.y}`;
+        entities.update(current => {
+          const tileGroups = current.groups[tileKey];
+          if (!tileGroups) return current;
+          return {
+            ...current,
+            groups: {
+              ...current.groups,
+              [tileKey]: tileGroups.map(g =>
+                g.id === group.id
+                  ? { ...g, status: 'stopping', movementPath: null, pathIndex: null }
+                  : g
+              )
+            }
+          };
+        });
       } else {
         console.error('Failed to cancel movement:', result.error);
       }
-      
-      // No need to update UI here as Firebase will trigger changes via subscription
     } catch (error) {
       console.error('Error cancelling movement:', error);
     }

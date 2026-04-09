@@ -7,6 +7,20 @@ import { replaceState } from '$app/navigation'; // Import from SvelteKit instead
 import { getWorldCenterCoordinates, game } from './game.js';
 // Import getChunkKey from the shared module
 import { getChunkKey, CHUNK_SIZE } from 'gisaima-shared/map/cartography.js';
+import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
+
+// Convert the items object {CODE: quantity, _x, _y} stored in entities into an
+// enriched array [{code, quantity, name, type, rarity}] expected by UI components.
+function itemsObjToArray(itemsObj) {
+  if (!itemsObj || typeof itemsObj !== 'object') return [];
+  if (Array.isArray(itemsObj)) return itemsObj; // already converted
+  return Object.entries(itemsObj)
+    .filter(([key]) => !key.startsWith('_'))
+    .map(([code, quantity]) => {
+      const def = ITEMS[code] || {};
+      return { code, quantity, name: def.name || code, type: def.type || 'resource', rarity: def.rarity || 'common' };
+    });
+}
 
 // New constants for controlling debug output
 const DEBUG_MODE = false; // Set to true to enable verbose logging
@@ -164,7 +178,7 @@ export function hasTileContent(tile) {
     tile && (
       (tile.structure) || 
       (tile.groups && tile.groups.length > 0) || 
-      (tile.items && Object.keys(tile.items).filter(key => !key.startsWith('_')).length > 0) ||
+      (tile.items && tile.items.length > 0) ||
       (tile.players && tile.players.length > 0) ||
       (tile.battles && tile.battles.length > 0)
     )
@@ -630,7 +644,7 @@ export const coordinates = derived(
         const structure = $entities.structure[locationKey];
         const groups = $entities.groups[locationKey] || [];
         const players = $entities.players[locationKey] || [];
-        const items = $entities.items[locationKey] || [];
+        const items = itemsObjToArray($entities.items[locationKey]);
         const battles = $entities.battles[locationKey] || [];  // Add battles
 
         result.push({

@@ -3,7 +3,7 @@
   import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
-  import { targetStore } from '../../../lib/stores/map';
+  import { targetStore, entities } from '../../../lib/stores/map';
 
   import Close from '../../icons/Close.svelte';
   import Human from '../../icons/Human.svelte';
@@ -242,6 +242,23 @@
 
       if (result.success) {
         console.log('Attack started:', result);
+        // Optimistically update attacker groups to 'fighting' status
+        const tileKey = `${tileData.x},${tileData.y}`;
+        entities.update(current => {
+          const tileGroups = current.groups[tileKey];
+          if (!tileGroups) return current;
+          return {
+            ...current,
+            groups: {
+              ...current.groups,
+              [tileKey]: tileGroups.map(g =>
+                selectedPlayerGroups.some(sg => sg.id === g.id)
+                  ? { ...g, status: 'fighting' }
+                  : g
+              )
+            }
+          };
+        });
         onClose(true);
       } else {
         errorMessage = result.error || 'Failed to start attack';
@@ -310,10 +327,11 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div 
-  class="attack-modal" 
+<div
+  class="attack-modal"
   class:active={isActive}
   onmouseenter={onMouseEnter}
+  role="dialog"
   transition:scale={{ start: 0.95, duration: 200 }}
 >
   <header class="modal-header">
