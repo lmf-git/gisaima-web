@@ -9,9 +9,9 @@
  *   Receive: { type: 'chunk_update' | 'world_tick' | 'chat_message', worldId, ... }
  */
 
-import { browser } from '$app/environment';
+import { browser, dev } from '$app/environment';
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+export const API_BASE = import.meta.env.VITE_API_URL || (dev ? 'http://localhost:3001' : 'https://gisaima-app-80a85ed95aa0.herokuapp.com');
 
 // ---------------------------------------------------------------------------
 // Token helpers
