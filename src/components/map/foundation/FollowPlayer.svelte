@@ -20,6 +20,14 @@
       }
     }
   });
+
+  // Follow player position whenever it changes
+  $effect(() => {
+    const loc = $game?.player?.lastLocation;
+    if (followPlayerPosition && loc?.x !== undefined && loc?.y !== undefined) {
+      moveTarget(loc.x, loc.y);
+    }
+  });
   
   // Function to handle toggle
   function toggleFollow() {
