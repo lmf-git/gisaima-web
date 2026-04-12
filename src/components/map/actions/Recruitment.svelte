@@ -616,7 +616,8 @@
     class="recruitment-modal"
     class:active={isActive}
     onmouseenter={onMouseEnter}
-    role="dialog">
+    role="dialog"
+    tabindex="-1">
     <header class="modal-header">
         <h3>
             Recruitment at {structureData?.name || "Structure"} ({x}, {y})

@@ -729,6 +729,7 @@
   class:active={isActive}
   onmouseenter={onMouseEnter}
   role="dialog"
+  tabindex="-1"
   aria-label="Tile details"
   aria-modal="true"
 >
@@ -1323,7 +1324,6 @@
                   <div class="entity-info">
                     <div class="entity-name">
                       {item.name || _fmt(item.type) || "Unknown Item"}
-                      <span class="entity-coords">({formatCoords(item.x, item.y)})</span>
                     </div>
                     <div class="entity-details">
                       {#if item.type}

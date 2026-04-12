@@ -251,48 +251,52 @@
   // VISIBILITY MANAGEMENT
   let isExiting = $state(false);
   let isVisible = $state(false);
+  let isFullyOpen = $state(false); // true once the opening animation completes
   let exitTimeout;
-  
+
   // Track which buttons are currently visible
   let visibleButtons = $state([]);
-  
+
   // Simple handler for the close button - calls parent's onClose
   function handleClose() {
     // Simply call the parent's onClose handler
     // This will set isOpen to false, which will trigger our effect
     onClose();
   }
-  
+
   // Watch isOpen prop changes to trigger animations
   $effect(() => {
     if (isOpen && !isVisible && !isExiting) {
       // Set component as visible immediately but start with no buttons
       isVisible = true;
+      isFullyOpen = false;
       visibleButtons = [];
-      
+
       // Add buttons one by one with staggered animation
       const showInterval = 80; // Same interval as removal for consistency
-      
+
       // First add all action buttons in sequence
       for (let i = 0; i < totalItems - 1; i++) {
         setTimeout(() => {
           visibleButtons = [...visibleButtons, i];
         }, i * showInterval);
       }
-      
-      // Add the close button last
+
+      // Add the close button last, then mark as fully open
       setTimeout(() => {
         visibleButtons = [...Array(totalItems).keys()];
+        isFullyOpen = true;
       }, (totalItems - 1) * showInterval);
-      
+
     } else if (!isOpen && isVisible && !isExiting) {
       // Start closing animation
+      isFullyOpen = false;
       isExiting = true;
-      
+
       // Remove buttons in REVERSE sequence (last to first)
       let currentButtons = [...visibleButtons];
       const removeInterval = 80; // Time between button removals (ms)
-      
+
       // Schedule removal of each action button in REVERSE order
       // Start from highest index (totalItems - 2) down to 0
       // We exclude the close button (totalItems - 1) which is removed separately
@@ -304,17 +308,24 @@
           }
         }, (totalItems - 2 - i) * removeInterval);
       }
-      
+
       // Remove the close button last
       setTimeout(() => {
         visibleButtons = [];
-        
+
         // Finally, hide the entire component
         setTimeout(() => {
           isVisible = false;
           isExiting = false;
         }, 100);
       }, (totalItems - 1) * removeInterval);
+    }
+  });
+
+  // When available actions change while peek is fully open, show all current buttons
+  $effect(() => {
+    if (isFullyOpen && isOpen && isVisible && !isExiting) {
+      visibleButtons = [...Array(totalItems).keys()];
     }
   });
 
@@ -335,8 +346,8 @@
       {#each allItems as item}
         <!-- Remove the conditional rendering but add a class based on visibility -->
         {#if item.type === 'action'}
-          <button 
-            class="action-button {item.action.id}-button {!visibleButtons.includes(item.index) ? 'hidden' : ''}" 
+          <button
+            class="action-button {item.action.id}-button {(!isFullyOpen && !visibleButtons.includes(item.index)) ? 'hidden' : ''}"
             style="--x:{item.position.x}em; --y:{item.position.y}em; --index:{item.index}; --total:{totalItems};"
             onclick={(e) => handleActionClick(item.action.id, e)}
           >
@@ -346,8 +357,8 @@
             <span class="action-label">{item.action.label}</span>
           </button>
         {:else if item.type === 'close'}
-          <button 
-            class="action-button close-button {!visibleButtons.includes(item.index) ? 'hidden' : ''}" 
+          <button
+            class="action-button close-button {(!isFullyOpen && !visibleButtons.includes(item.index)) ? 'hidden' : ''}"
             style="--x:{item.position.x}em; --y:{item.position.y}em; --index:{item.index}; --total:{totalItems};"
             onclick={handleClose}
           >

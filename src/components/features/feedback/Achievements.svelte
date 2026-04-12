@@ -169,6 +169,7 @@
   in:fade={{ duration: animationDuration }}
   out:fade={{ duration: animationDuration }}
   role="dialog"
+  tabindex="-1"
   aria-labelledby="achievements-heading"
 >
   <div class="achievements-panel" class:closing>

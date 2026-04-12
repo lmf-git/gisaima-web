@@ -696,7 +696,7 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <div class="modal-container">
-  <div class="structure-modal" class:active={isActive} onmouseenter={onMouseEnter} role="dialog">
+  <div class="structure-modal" class:active={isActive} onmouseenter={onMouseEnter} role="dialog" tabindex="-1">
     <header class="modal-header">
       <h3>
         {formatText(tileData?.structure?.type || 'Structure')} 

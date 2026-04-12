@@ -63,7 +63,7 @@
         elemental: Elemental
     }
 
-    const Icon = icons[unitIconKey?.toLowerCase()]
+    const Icon = $derived(icons[unitIconKey?.toLowerCase()])
 </script>
 
 {#if Icon}

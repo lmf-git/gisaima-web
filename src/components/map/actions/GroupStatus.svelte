@@ -18,7 +18,7 @@
   
   // Local state variables
   let intervalId;
-  let localUpdateCounter = $state(updateCounter || 0); // Use parent counter or our own
+  let localUpdateCounter = $state(0); // Local tick counter for when parent doesn't provide one
   
   // Simplified function to format time remaining
   function formatTime(endTime) {

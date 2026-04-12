@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte';
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
   import Dwarf from '../../icons/Dwarf.svelte';
@@ -50,7 +51,7 @@
 
   // Component state
   let selectedRace = $state(null);
-  let displayName = $state(initialName);
+  let displayName = $state(untrack(() => initialName));
   let displayNameError = $state('');
   let submitting = $state(false);
   let currentStep = $state(1); // Added step tracker: 1 = race selection, 2 = name input

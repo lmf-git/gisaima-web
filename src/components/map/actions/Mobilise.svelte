@@ -249,6 +249,7 @@
   class:active={isActive}
   onmouseenter={onMouseEnter}
   role="dialog"
+  tabindex="-1"
   transition:scale={{ start: 0.95, duration: 200 }}>
   
   <header class="modal-header">

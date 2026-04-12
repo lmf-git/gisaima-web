@@ -6,8 +6,8 @@
   
   import { user } from '../../../lib/stores/user';
   import { game } from '../../../lib/stores/game';
-  import { 
-    moveTarget, map, targetStore, clearSavedTargetPosition 
+  import {
+    moveTarget, map, targetStore, clearSavedTargetPosition, entities
   } from '../../../lib/stores/map';
 
   import Torch from '../../icons/Torch.svelte';
@@ -204,6 +204,23 @@
           ...s.player,
           alive: true,
           lastLocation: { x: spawnX, y: spawnY, timestamp: result.timestamp }
+        }
+      }));
+
+      // Optimistically add the player to the spawn tile so peek actions update immediately
+      const tileKey = `${spawnX},${spawnY}`;
+      const spawnedPlayer = {
+        id: $user.uid,
+        displayName: $game.player?.displayName || $user.uid.substring(0, 8),
+        race: $game.player?.race || 'human',
+        x: spawnX,
+        y: spawnY
+      };
+      entities.update(e => ({
+        ...e,
+        players: {
+          ...e.players,
+          [tileKey]: [...(e.players[tileKey] || []).filter(p => p.id !== $user.uid), spawnedPlayer]
         }
       }));
 

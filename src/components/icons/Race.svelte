@@ -15,7 +15,7 @@
         fairy: Fairy
     }
 
-    const Icon = races[raceKey.toLowerCase()]
+    const Icon = $derived(races[raceKey?.toLowerCase()])
 </script>
 
 {#if Icon}

@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, untrack } from "svelte";
   import { derived } from "svelte/store";
 
   import { user } from '../../../lib/stores/user';
@@ -45,7 +45,7 @@
   } = $props();
   
   // Add zoom level state
-  let zoomLevel = $state(initialZoom);
+  let zoomLevel = $state(untrack(() => initialZoom));
   let currentTileSize = $state(TILE_SIZE);
   let hoverTimeout = $state(null); // Add the missing hoverTimeout variable
   
@@ -1795,8 +1795,8 @@
                 <div class="highlight-indicator"></div>
               {/if}
 
-              <!-- Add structure name display -->
-              {#if cell.structure && cell.structure.name}
+              <!-- Add structure name display (center/target tile only) -->
+              {#if cell.structure && cell.structure.name && cell.isCenter}
                 <div class="structure-name-label">
                   { cell.structure.name.length > 20 ? cell.structure.name.substring(0, 20) + '...' : cell.structure.name }
                 </div>

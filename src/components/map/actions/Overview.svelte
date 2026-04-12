@@ -459,12 +459,13 @@
   // ...existing code...
 </script>
 
-<section 
-  class="entities-wrapper" 
-  class:closing 
+<div
+  class="entities-wrapper"
+  class:closing
   class:active={isActive}
   onmouseenter={onMouseEnter}
   role="dialog"
+  tabindex="-1"
   aria-label="Map entities overview"
   aria-modal="true"
 >
@@ -1373,7 +1374,7 @@
       {/if}
     </div>
   </div>
-</section>
+</div>
 
 <style>
   .entities-wrapper {
