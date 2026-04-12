@@ -7,7 +7,17 @@ import { browser } from '$app/environment';
 import { apiGet, apiPost, wsWorld, actions } from '$lib/api.js';
 import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 import { user, isAuthReady as userAuthReady } from './user.js';
-import { clearSavedTargetPosition } from './map.js';
+// Intentionally not importing from map.js to avoid circular dependency.
+// (map.js imports `game` from this file; game.js must not import from map.js)
+const _TARGET_X_SUFFIX = '-targetX';
+const _TARGET_Y_SUFFIX = '-targetY';
+function _clearSavedTargetPosition(worldId) {
+  if (!browser || !worldId) return;
+  try {
+    localStorage.removeItem(`${worldId}${_TARGET_X_SUFFIX}`);
+    localStorage.removeItem(`${worldId}${_TARGET_Y_SUFFIX}`);
+  } catch { /* ignore */ }
+}
 
 const CURRENT_WORLD_KEY = 'gisaima-current-world';
 const CHUNK_SIZE = 20;
@@ -156,7 +166,7 @@ export function setCurrentWorld(worldId, _world = null, callback = null) {
   }
   const wid = String(worldId);
   if (browser) localStorage.setItem(CURRENT_WORLD_KEY, wid);
-  if (browser && wid) clearSavedTargetPosition(wid);
+  if (browser && wid) _clearSavedTargetPosition(wid);
 
   game.update(s => ({ ...s, worldKey: wid }));
   subscribeToWorldInfo(wid);
