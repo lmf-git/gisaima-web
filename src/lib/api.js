@@ -93,6 +93,7 @@ export const actions = {
 let _ws = null;
 let _wsListeners = new Map();   // channel → Set<callback>
 let _reconnectTimer = null;
+let _pingTimer = null;          // client-side keepalive
 
 /**
  * Connect (or reconnect) the WebSocket.
@@ -112,6 +113,12 @@ export function connectWs() {
     for (const channel of _wsListeners.keys()) {
       _sendSubscription(channel);
     }
+    // Client-side keepalive: send a ping every 25 s so Heroku doesn't close
+    // the connection after 55 s of inactivity (H15 error).
+    if (_pingTimer) clearInterval(_pingTimer);
+    _pingTimer = setInterval(() => {
+      if (_ws && _ws.readyState === 1) _ws.send(JSON.stringify({ type: 'ping' }));
+    }, 25_000);
   });
 
   _ws.addEventListener('message', (ev) => {
@@ -126,6 +133,7 @@ export function connectWs() {
 
   _ws.addEventListener('close', () => {
     console.log('[ws] disconnected — reconnecting in 3s');
+    if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; }
     _ws = null;
     _reconnectTimer = setTimeout(connectWs, 3000);
   });

@@ -30,7 +30,8 @@
         coordinates,
         hasTileContent,
         entities,
-        currentPlayerPosition
+        currentPlayerPosition,
+        loadTargetFromLocalStorage
     } from "../../lib/stores/map.js";
     
     import { unreadMessages } from "../../lib/stores/chat.js";
@@ -247,7 +248,7 @@
     $effect(() => {
         if (!browser || !$ready || urlProcessingComplete) return;
 
-        
+        // URL coordinates always win
         const coords = parseUrlCoordinates();
         if (coords) {
             debugLog(`Applying URL coordinates: ${coords.x},${coords.y}`);
@@ -255,7 +256,23 @@
             urlProcessingComplete = true;
             return;
         }
-            
+
+        // Read follow preference from localStorage directly to avoid timing races
+        const savedFollow = localStorage.getItem('follow_player_position');
+        const isFollowing = savedFollow !== null ? savedFollow === 'true' : true;
+
+        if (!isFollowing && $game.worldKey) {
+            // Follow is OFF — restore last manually targeted position
+            const savedPos = loadTargetFromLocalStorage($game.worldKey);
+            if (savedPos) {
+                debugLog(`Restoring saved target position: ${savedPos.x},${savedPos.y}`);
+                moveTarget(savedPos.x, savedPos.y);
+                urlProcessingComplete = true;
+                return;
+            }
+        }
+
+        // Follow is ON, or no saved position — go to player if available
         if ($currentPlayerPosition) {
             moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
             playerPositionSet = true;
@@ -264,17 +281,17 @@
         urlProcessingComplete = true;
     });
 
-    // New effect to handle player position updates
+    // Wait for player position to load asynchronously, then apply it if following
     $effect(() => {
-        // Skip if not ready or if position already set from URL
-        if (!browser || !$ready) return;
+        if (!browser || !$ready || playerPositionSet) return;
 
-        // If URL had coordinates, don't override with player position
         const coords = parseUrlCoordinates();
         if (coords) return;
 
-        // If player data becomes available and position not already set from URL
-        if ($currentPlayerPosition && !playerPositionSet) {
+        const savedFollow = localStorage.getItem('follow_player_position');
+        const isFollowing = savedFollow !== null ? savedFollow === 'true' : true;
+
+        if (isFollowing && $currentPlayerPosition) {
             moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
             playerPositionSet = true;
         }

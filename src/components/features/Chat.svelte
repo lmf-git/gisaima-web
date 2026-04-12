@@ -17,80 +17,87 @@
   let chatInput = $state('');
   let chatContainer = $state(null);
   let messagesContainer = $state(null);
-  
+
+  // Filter state: 'all' | 'monsters' | 'players' | 'mine'
+  let activeFilter = $state('all');
+
   // Constants
   const MAX_MESSAGE_LENGTH = 200;
-  const VISIBLE_MESSAGES_LIMIT = 50; // Limit visible messages for better performance
-  
+  const VISIBLE_MESSAGES_LIMIT = 50;
+
   // Cleanup function
   let cleanup = $state(() => {});
-  
-  // Add extensive debugging for raw messages
-  $effect(() => {
-    const rawMessages = $messages;
-    console.log(`Raw messages from store: ${rawMessages.length} messages`);
-    
-    if (rawMessages.length > 0) {
-      // Force display the first message to verify data
-      console.log(`First message: ${JSON.stringify(rawMessages[0])}`);
-    }
-  });
-  
-  // Skip the derived value and use the store directly for simplicity
+
+  const currentUid = $derived($user?.uid);
+
+  // All messages from store
   let displayMessages = $derived($messages || []);
-  
-  // Create limited view for display
-  let limitedMessages = $derived(() => {
+
+  // Filtered messages based on activeFilter
+  const filteredMessages = $derived((() => {
     const msgs = displayMessages;
-    console.log(`Creating limited view of ${msgs.length} messages`);
-    
-    if (msgs.length > VISIBLE_MESSAGES_LIMIT) {
-      return msgs.slice(-VISIBLE_MESSAGES_LIMIT);
-    }
+    const uid = currentUid;
+    if (activeFilter === 'all') return msgs;
+    if (activeFilter === 'monsters') return msgs.filter(m => m.category === 'monster');
+    if (activeFilter === 'players') return msgs.filter(m =>
+      m.category === 'player' || m.type === 'system' || m.type === 'user'
+    );
+    if (activeFilter === 'mine') return msgs.filter(m => uid && m.userId === uid);
     return msgs;
-  });
-  
+  })());
+
+  // Visible messages (limited for performance)
+  const visibleMessages = $derived(
+    filteredMessages.length > VISIBLE_MESSAGES_LIMIT
+      ? filteredMessages.slice(-VISIBLE_MESSAGES_LIMIT)
+      : filteredMessages
+  );
+
   // Derived values using runes
   const isLoading = $derived($chatStore.loading);
   const hasError = $derived($chatStore.error);
   const worldKey = $derived($game.worldKey);
   const messagesVisible = $derived(displayMessages.length > 0);
   
-  // Log derived state conditions that affect display
-  $effect(() => {
-    console.log(`Display conditions: loading=${isLoading}, error=${hasError}, messages=${displayMessages.length}, visible=${messagesVisible}`);
-  });
-  
   // Track state for scroll behavior
   let messageCount = $state(0);
   let shouldScrollToBottom = $state(true);
   let lastProcessedCount = $state(0);
-  
+
+  const filters = [
+    { id: 'all',      label: 'All' },
+    { id: 'monsters', label: 'Monsters' },
+    { id: 'players',  label: 'Players' },
+    { id: 'mine',     label: 'Mine' },
+  ];
+
   // Effect to setup chat when world changes
   $effect(() => {
     if (worldKey) {
-      console.log(`Initializing chat for world: ${worldKey}`);
       cleanup = initializeChat(worldKey);
     }
-    
-    // Auto-cleanup when component is destroyed
     return () => cleanup();
   });
-  
+
+  // Scroll to bottom when filter changes
+  $effect(() => {
+    activeFilter; // track dependency
+    if (messagesContainer) {
+      requestAnimationFrame(() => {
+        if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+    }
+  });
+
   // Handle form submission with achievement tracking
   function handleSubmit(event) {
     event.preventDefault();
-    
+
     if (!chatInput.trim()) return;
-    
-    // Set flag to scroll to bottom after sending
+
     shouldScrollToBottom = true;
-    
     sendMessage(chatInput);
-    
-    // Check and unlock the first message achievement
     unlockFirstMessageAchievement();
-    
     chatInput = '';
   }
 
@@ -132,11 +139,10 @@
     shouldScrollToBottom = scrollBottom < 50;
   }
   
-  // Track message count changes efficiently
+  // Track message count changes for auto-scroll
   $effect(() => {
-    const newCount = displayMessages.length;
+    const newCount = visibleMessages.length;
     if (newCount !== messageCount) {
-      console.log(`Message count updated: ${messageCount} -> ${newCount}`);
       messageCount = newCount;
     }
   });
@@ -206,10 +212,21 @@
       <Close extraClass="close-icon" />
     </button>
   </div>
-  
-  <div 
-    class="chat-messages" 
-    bind:this={messagesContainer} 
+
+  <div class="chat-filters" role="group" aria-label="Filter messages">
+    {#each filters as f}
+      <button
+        class="filter-btn"
+        class:active={activeFilter === f.id}
+        onclick={() => { activeFilter = f.id; }}
+        aria-pressed={activeFilter === f.id}
+      >{f.label}</button>
+    {/each}
+  </div>
+
+  <div
+    class="chat-messages"
+    bind:this={messagesContainer}
     onscroll={handleScroll}
   >
     {#if isLoading}
@@ -220,21 +237,22 @@
       <div class="chat-message system-message error">
         <span class="message-text">Error: {$chatStore.error}</span>
       </div>
-    {:else if !messagesVisible}
+    {:else if visibleMessages.length === 0}
       <div class="chat-message system-message">
-        <span class="message-text">No messages yet. (Debug: Raw count: {$messages?.length})</span>
+        <span class="message-text">{displayMessages.length === 0 ? 'No messages yet.' : 'No messages match this filter.'}</span>
       </div>
     {:else}
-      <!-- USE $messages DIRECTLY in the #each loop rather than displayMessages -->
-      {#each $messages as message (message.id)}
+      {#each visibleMessages as message (message.id)}
         {@const isUser = message.type === 'user'}
         {@const isSystem = message.type === 'system'}
         {@const isEvent = message.type === 'event'}
-        
-        <div 
+        {@const isMonster = message.category === 'monster'}
+
+        <div
           class="chat-message"
-          class:system-message={isSystem}
-          class:event-message={isEvent}
+          class:system-message={isSystem && !isMonster}
+          class:event-message={isEvent && !isMonster}
+          class:monster-message={isMonster}
           class:player-message={isUser}
           data-timestamp={message.timestamp}
         >
@@ -243,12 +261,12 @@
           {/if}
           <span class="message-text">{message.text}</span>
           <span class="message-time">{getMessageTime(message.timestamp)}</span>
-          
+
           {#if message.location}
-            <button 
+            <button
               class="location-button"
               onclick={() => {
-                const event = new CustomEvent('goto-location', { 
+                const event = new CustomEvent('goto-location', {
                   detail: { x: message.location.x, y: message.location.y }
                 });
                 window.dispatchEvent(event);
@@ -332,6 +350,40 @@
     color: rgba(0, 0, 0, 0.9);
   }
   
+  .chat-filters {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.3rem 0.5rem;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.6);
+    color: rgba(0, 0, 0, 0.65);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .filter-btn.active {
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    border-color: transparent;
+  }
+
   .chat-messages {
     padding: 0.5rem;
     overflow-y: auto;
@@ -403,6 +455,12 @@
   .event-message {
     background-color: rgba(255, 200, 200, 0.5);
     border: 1px solid rgba(255, 100, 100, 0.3);
+  }
+
+  .monster-message {
+    background-color: rgba(255, 160, 60, 0.18);
+    border: 1px solid rgba(200, 100, 0, 0.3);
+    color: rgba(120, 50, 0, 0.9);
   }
   
   .player-message {

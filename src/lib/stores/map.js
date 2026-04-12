@@ -51,7 +51,7 @@ function saveTargetToLocalStorage(worldId, x, y) {
   }
 }
 
-function loadTargetFromLocalStorage(worldId) {
+export function loadTargetFromLocalStorage(worldId) {
   if (typeof window === 'undefined' || !worldId) return null;
 
   try {
@@ -761,7 +761,7 @@ export function moveTarget(newX, newY, updateUrl = false) {
   if (updateUrl && !isInternalUrlUpdate) updateUrlWithCoordinates(x, y);
 
   // Save target position to localStorage
-  const worldId = currentState.worlds;
+  const worldId = get(game).worldKey;
   if (worldId) saveTargetToLocalStorage(worldId, x, y);
 }
 

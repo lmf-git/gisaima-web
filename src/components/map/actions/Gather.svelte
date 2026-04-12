@@ -87,34 +87,39 @@
         locationY: tileData.y,
         worldId: $game.worldKey
       });
-      
-      // Optimistically update the group status so the UI reflects it immediately
-      const tileKey = `${tileData.x},${tileData.y}`;
-      const groupId = selectedGroup.id;
-      entities.update(current => {
-        const tileGroups = current.groups[tileKey];
-        if (!tileGroups) return current;
-        return {
-          ...current,
-          groups: {
-            ...current.groups,
-            [tileKey]: tileGroups.map(g =>
-              g.id === groupId
-                ? { ...g, status: 'gathering', gatheringTicksRemaining: 2 }
-                : g
-            )
-          }
-        };
-      });
 
-      if (onGather) {
-        onGather({
-          group: selectedGroup,
-          location: { x: tileData.x, y: tileData.y }
+      if (result?.success) {
+        // Optimistically update the group status so the UI reflects it immediately
+        const tileKey = `${tileData.x},${tileData.y}`;
+        const groupId = selectedGroup.id;
+        entities.update(current => {
+          const tileGroups = current.groups[tileKey];
+          if (!tileGroups) return current;
+          return {
+            ...current,
+            groups: {
+              ...current.groups,
+              [tileKey]: tileGroups.map(g =>
+                g.id === groupId
+                  ? { ...g, status: 'gathering', gatheringTicksRemaining: 2 }
+                  : g
+              )
+            }
+          };
         });
+
+        if (onGather) {
+          onGather({
+            group: selectedGroup,
+            location: { x: tileData.x, y: tileData.y }
+          });
+        }
+
+        onClose(true);
+      } else {
+        error = result?.message || 'Failed to start gathering';
+        operationInProgress = false;
       }
-      
-      onClose(true);
 
     } catch (err) {
       console.error('Gathering error:', err);

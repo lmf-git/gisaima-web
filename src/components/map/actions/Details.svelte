@@ -165,21 +165,12 @@
   // This ensures hovering over the minimap doesn't change the displayed information
   const detailsData = $derived($targetStore || null);
 
-  // Create sorted entity lists based on detailsData instead of $highlightedStore
-  $effect(() => {
-    if (!detailsData) return;
-    
-    sortedGroups = sortEntities(detailsData.groups || [], 'groups');
-    sortedPlayers = sortEntities(detailsData.players || [], 'players');
-    sortedItems = sortEntities(detailsData.items || [], 'items');
-    sortedBattles = sortEntities(detailsData.battles || [], 'battles');
-  });
-
-  // Define the sorted arrays
-  let sortedGroups = $state([]);
-  let sortedPlayers = $state([]);
-  let sortedItems = $state([]);
-  let sortedBattles = $state([]);
+  // Derive sorted entity lists synchronously so status changes from optimistic
+  // entity updates are reflected immediately without the async $effect delay.
+  const sortedGroups  = $derived(sortEntities(detailsData?.groups  || [], 'groups'));
+  const sortedPlayers = $derived(sortEntities(detailsData?.players || [], 'players'));
+  const sortedItems   = $derived(sortEntities(detailsData?.items   || [], 'items'));
+  const sortedBattles = $derived(sortEntities(detailsData?.battles || [], 'battles'));
 
   // Function to execute action
   function executeAction(action, data = null) {
