@@ -1,16 +1,16 @@
 <script>
   import { browser } from '$app/environment';
   import { game } from '../../../lib/stores/game';
-  import { moveTarget } from '../../../lib/stores/map';
+  import { moveTarget, currentPlayerPosition } from '../../../lib/stores/map';
   import BoundIcon from '../../icons/BoundIcon.svelte';
   import UnboundIcon from '../../icons/UnboundIcon.svelte';
-  
+
   // Props using Svelte 5 runes approach
   let { disabled = false, onFollowToggle = undefined } = $props();
-  
+
   // Track state internally using runes
   let followPlayerPosition = $state(true);
-  
+
   // Sync with localStorage on component init
   $effect(() => {
     if (browser && $game?.initialized) {
@@ -21,28 +21,23 @@
     }
   });
 
-  // Follow player position whenever it changes
+  // Follow player whenever their real-time position changes
   $effect(() => {
-    const loc = $game?.player?.lastLocation;
-    if (followPlayerPosition && loc?.x !== undefined && loc?.y !== undefined) {
+    const loc = $currentPlayerPosition;
+    if (followPlayerPosition && loc) {
       moveTarget(loc.x, loc.y);
     }
   });
-  
+
   // Function to handle toggle
   function toggleFollow() {
     followPlayerPosition = !followPlayerPosition;
-    
-    if (followPlayerPosition && $game.player?.lastLocation) {
-      // Immediately move to player's position when re-enabling following
-      moveTarget($game.player.lastLocation.x, $game.player.lastLocation.y);
-    }
-    
+
     // Save preference to localStorage
     if (browser) {
       localStorage.setItem('follow_player_position', followPlayerPosition.toString());
     }
-    
+
     // Call the callback if provided
     if (typeof onFollowToggle === 'function') {
       onFollowToggle(followPlayerPosition);

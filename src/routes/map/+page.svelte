@@ -29,7 +29,8 @@
         setHighlighted,
         coordinates,
         hasTileContent,
-        entities
+        entities,
+        currentPlayerPosition
     } from "../../lib/stores/map.js";
     
     import { unreadMessages } from "../../lib/stores/chat.js";
@@ -255,29 +256,26 @@
             return;
         }
             
-        if ($game.player?.lastLocation) {
-            const location = $game.player.lastLocation;
-            moveTarget(location.x, location.y);
-            playerPositionSet = true; // Mark that we've set the player position
+        if ($currentPlayerPosition) {
+            moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
+            playerPositionSet = true;
         }
-        
+
         urlProcessingComplete = true;
     });
-    
+
     // New effect to handle player position updates
     $effect(() => {
         // Skip if not ready or if position already set from URL
         if (!browser || !$ready) return;
-        
+
         // If URL had coordinates, don't override with player position
         const coords = parseUrlCoordinates();
         if (coords) return;
-        
+
         // If player data becomes available and position not already set from URL
-        if ($game.player?.lastLocation && !playerPositionSet) {
-            debugLog(`Setting position from player data: ${$game.player.lastLocation.x},${$game.player.lastLocation.y}`);
-            const location = $game.player.lastLocation;
-            moveTarget(location.x, location.y);
+        if ($currentPlayerPosition && !playerPositionSet) {
+            moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
             playerPositionSet = true;
         }
     });
@@ -464,29 +462,25 @@
     });
 
     $effect(() => {
-      if (!browser || !$ready || !$game.player?.lastLocation) return;
-      
-      const currentPosition = $game.player.lastLocation;
-      
+      if (!browser || !$ready || !$currentPlayerPosition) return;
+
+      const currentPosition = $currentPlayerPosition;
+
       // Store initial position
       if (!lastKnownPlayerPosition) {
-        lastKnownPlayerPosition = {...currentPosition};
+        lastKnownPlayerPosition = { ...currentPosition };
         return;
       }
-      
+
       // Check if position actually changed
-      if (currentPosition.x !== lastKnownPlayerPosition.x || 
+      if (currentPosition.x !== lastKnownPlayerPosition.x ||
           currentPosition.y !== lastKnownPlayerPosition.y) {
-        
-        console.log(`Player position changed from (${lastKnownPlayerPosition.x},${lastKnownPlayerPosition.y}) to (${currentPosition.x},${currentPosition.y})`);
-        
+
         // Update the stored position
-        lastKnownPlayerPosition = {...currentPosition};
-        
+        lastKnownPlayerPosition = { ...currentPosition };
+
         // Only move the map if auto-follow is enabled AND the details panel is not open
-        // (to prevent jumping away from a structure the user is actively viewing)
         if (followPlayerPosition && !detailed) {
-          console.log('Auto-following player to new location');
           moveTarget(currentPosition.x, currentPosition.y);
         }
       }
@@ -1128,11 +1122,9 @@
     // Add a function to toggle position following
     function toggleFollowPlayerPosition() {
       followPlayerPosition = !followPlayerPosition;
-      if (followPlayerPosition && $game.player?.lastLocation) {
-        // Immediately move to player's position when re-enabling following
-        moveTarget($game.player.lastLocation.x, $game.player.lastLocation.y);
+      if (followPlayerPosition && $currentPlayerPosition) {
+        moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
       }
-      // Save preference to localStorage
       if (browser) {
         localStorage.setItem('follow_player_position', followPlayerPosition.toString());
       }
@@ -1154,20 +1146,13 @@
 
     // Function to handle follow state changes from the FollowPlayer component
     function handleFollowToggle(isFollowing) {
-        // Update the local followPlayerPosition state
         followPlayerPosition = isFollowing;
-        
-        // Save preference to localStorage
         if (browser) {
             localStorage.setItem('follow_player_position', isFollowing.toString());
         }
-        
-        // If following is enabled and we have player location, move to it
-        if (isFollowing && $game.player?.lastLocation) {
-            moveTarget($game.player.lastLocation.x, $game.player.lastLocation.y);
+        if (isFollowing && $currentPlayerPosition) {
+            moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
         }
-        
-        console.log(`Follow state changed to: ${isFollowing}`);
     }
 </script>
 

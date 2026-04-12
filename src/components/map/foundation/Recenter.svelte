@@ -1,5 +1,5 @@
 <script>
-  import { moveTarget, targetStore, map } from '../../../lib/stores/map';
+  import { moveTarget, targetStore, map, currentPlayerPosition } from '../../../lib/stores/map';
   import { game } from '../../../lib/stores/game';
   import Torch from '../../icons/Torch.svelte';
   // Import race icons
@@ -30,7 +30,7 @@
 
   // Check if player position is in main view - more efficient calculation
   $effect(() => {
-    const playerLocation = $game.player?.lastLocation;
+    const playerLocation = $currentPlayerPosition;
     if (!$game?.player?.alive || !playerLocation) {
       playerInMainView = false;
       return;
@@ -39,7 +39,7 @@
     // Calculate main view boundaries based on current target and grid dimensions
     const halfCols = Math.floor($map.cols / 2);
     const halfRows = Math.floor($map.rows / 2);
-    
+
     const minX = $targetStore.x - halfCols;
     const maxX = $targetStore.x + halfCols;
     const minY = $targetStore.y - halfRows;
@@ -47,23 +47,21 @@
 
     // Check if player's location is within these boundaries
     playerInMainView = (
-      playerLocation.x >= minX && 
-      playerLocation.x <= maxX && 
-      playerLocation.y >= minY && 
+      playerLocation.x >= minX &&
+      playerLocation.x <= maxX &&
+      playerLocation.y >= minY &&
       playerLocation.y <= maxY
     );
   });
-  
+
   $effect(() => {
     // Get current target coordinates
     const tx = $targetStore.x;
     const ty = $targetStore.y;
-    
+
     // Check for player location first
-    const playerLocation = $game.player?.lastLocation;
-    if ($game?.player?.alive && playerLocation && 
-        typeof playerLocation.x === 'number' && 
-        typeof playerLocation.y === 'number') {
+    const playerLocation = $currentPlayerPosition;
+    if ($game?.player?.alive && playerLocation) {
       
       // Calculate distance to player
       const dist = getDistance(tx, ty, playerLocation.x, playerLocation.y);

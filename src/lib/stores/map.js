@@ -5,6 +5,7 @@ import { apiGet, wsChunk } from '$lib/api.js';
 import { replaceState } from '$app/navigation'; // Import from SvelteKit instead of using history directly
 // Import getWorldCenterCoordinates function from game store
 import { getWorldCenterCoordinates, game } from './game.js';
+import { user } from './user.js';
 // Import getChunkKey from the shared module
 import { getChunkKey, CHUNK_SIZE } from 'gisaima-shared/map/cartography.js';
 import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
@@ -119,6 +120,29 @@ export const entities = writable({
 });
 
 export const ready = derived(map, $map => $map.ready);
+
+// Derived store that tracks the player's real-time position.
+// Priority 1: live tile from chunk WebSocket data (entities.players).
+// Priority 2: lastLocation from the game store (one-time API fetch, used as fallback).
+export const currentPlayerPosition = derived(
+  [entities, game, user],
+  ([$entities, $game, $user]) => {
+    if (!$game.player?.alive) return null;
+    const uid = $user?.uid;
+    if (!uid) return null;
+
+    // Search live chunk data for the current user's player entity
+    for (const players of Object.values($entities.players)) {
+      const match = players?.find(p => p.id?.toString() === uid.toString());
+      if (match) return { x: match.x, y: match.y };
+    }
+
+    // Fall back to the last known location from the initial API load
+    const loc = $game.player.lastLocation;
+    if (loc?.x !== undefined && loc?.y !== undefined) return { x: loc.x, y: loc.y };
+    return null;
+  }
+);
 
 // Create a derived store that efficiently tracks target position changes
 export const targetPosition = derived(map, ($map) => {

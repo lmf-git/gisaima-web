@@ -3,7 +3,7 @@
   import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
-  import { targetStore } from '../../../lib/stores/map';
+  import { targetStore, entities } from '../../../lib/stores/map';
 
   import Close from '../../icons/Close.svelte';
 
@@ -88,10 +88,25 @@
         worldId: $game.worldKey
       });
       
-      console.log('Gathering started:', result);
-      // Update message to indicate multiple ticks
-      statusMessage = `Gathering started! Resources will be collected in 2 game ticks.`;
-      
+      // Optimistically update the group status so the UI reflects it immediately
+      const tileKey = `${tileData.x},${tileData.y}`;
+      const groupId = selectedGroup.id;
+      entities.update(current => {
+        const tileGroups = current.groups[tileKey];
+        if (!tileGroups) return current;
+        return {
+          ...current,
+          groups: {
+            ...current.groups,
+            [tileKey]: tileGroups.map(g =>
+              g.id === groupId
+                ? { ...g, status: 'gathering', gatheringTicksRemaining: 2 }
+                : g
+            )
+          }
+        };
+      });
+
       if (onGather) {
         onGather({
           group: selectedGroup,

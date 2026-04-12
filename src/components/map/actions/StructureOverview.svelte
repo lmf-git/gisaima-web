@@ -4,7 +4,7 @@
   import { BUILDINGS, ITEMS } from "gisaima-shared";
 
   import { currentPlayer } from "../../../lib/stores/game.js";
-  import { targetStore } from "../../../lib/stores/map.js";
+  import { targetStore, coordinates } from "../../../lib/stores/map.js";
 
   import Close from '../../icons/Close.svelte';
   import Structure from '../../icons/Structure.svelte';
@@ -565,38 +565,70 @@
     return structureLevel > buildingsCount;
   }
 
+  // Check if a tile qualifies as water
+  function isWaterTile(tile) {
+    if (!tile) return false;
+    if (tile.biome?.water) return true;
+    if (tile.riverValue > 0.2 || tile.lakeValue > 0.2) return true;
+    return false;
+  }
+
+  // Check if the current tile or any neighbour (8-directional) is water
+  function hasAdjacentWater() {
+    if (!tileData) return false;
+    if (isWaterTile(tileData)) return true;
+
+    const offsets = [
+      { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }
+    ];
+
+    for (const offset of offsets) {
+      const neighbour = $coordinates.find(
+        c => c.x === tileData.x + offset.x && c.y === tileData.y + offset.y
+      );
+      if (isWaterTile(neighbour)) return true;
+    }
+    return false;
+  }
+
   // Get available building types based on structure level and existing buildings
   function getAvailableBuildingTypes() {
     if (!tileData?.structure) return [];
-    
+
     const structureLevel = tileData.structure.level || 1;
     const existingBuildings = tileData.structure.buildings || {};
     const existingTypes = Object.values(existingBuildings).map(b => b.type);
-    
+
     // All possible building types
     const allBuildingTypes = Object.keys(BUILDINGS.types).map(type => ({
       type,
       name: BUILDINGS.types[type].name,
       description: BUILDINGS.types[type].description
     }));
-    
+
     // Filter out already built types (only allow one of each type for simplicity)
-    const filteredByType = allBuildingTypes.filter(b => !existingTypes.includes(b.type));
-    
+    let filteredByType = allBuildingTypes.filter(b => !existingTypes.includes(b.type));
+
+    // Harbour requires an adjacent water tile
+    if (!hasAdjacentWater()) {
+      filteredByType = filteredByType.filter(b => b.type !== 'harbour');
+    }
+
     // Special handling for spawn structures - allow more buildings
     if (tileData.structure.type === 'spawn') {
       // Spawn points can have up to 5 buildings regardless of level
       const buildingsCount = Object.keys(existingBuildings).length;
       const availableSlots = Math.max(0, 5 - buildingsCount);
-      
+
       if (availableSlots <= 0) return [];
       return filteredByType;
     }
-    
+
     // Regular handling for other structures
     const buildingsCount = Object.keys(existingBuildings).length;
     const availableSlots = Math.max(0, structureLevel - buildingsCount);
-    
+
     if (availableSlots <= 0) return [];
     return filteredByType;
   }

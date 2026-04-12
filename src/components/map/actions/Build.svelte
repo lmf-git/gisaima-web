@@ -7,7 +7,7 @@
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js'; // Import BUILDINGS
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
-  import { targetStore } from '../../../lib/stores/map';
+  import { targetStore, coordinates } from '../../../lib/stores/map';
 
   import Close from '../../icons/Close.svelte';
 
@@ -92,41 +92,24 @@
     return false;
   }
 
-  // Function to check if any adjacent tile is water
+  // Function to check if the current tile or any adjacent tile is water
   function hasAdjacentWater() {
-    if (!tileData || !$targetStore || !$targetStore.coordinates) return false;
-    
-    // Check the current tile first
+    if (!tileData) return false;
+
     if (isWaterTile(tileData)) return true;
-    
-    // Get coordinates from the map store
-    const coords = $targetStore.coordinates;
-    
-    // Check adjacent tiles (up, down, left, right)
+
     const adjacentOffsets = [
-      { x: 0, y: -1 }, // North
-      { x: 1, y: 0 },  // East
-      { x: 0, y: 1 },  // South
-      { x: -1, y: 0 }, // West
-      { x: 1, y: -1 }, // Northeast
-      { x: 1, y: 1 },  // Southeast
-      { x: -1, y: 1 }, // Southwest
-      { x: -1, y: -1 } // Northwest
+      { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }
     ];
-    
-    // For each adjacent position, check if it's a water tile
+
     for (const offset of adjacentOffsets) {
-      const adjacentX = tileData.x + offset.x;
-      const adjacentY = tileData.y + offset.y;
-      
-      // Find this tile in the coordinates
-      const adjacentTile = coords.find(c => c.x === adjacentX && c.y === adjacentY);
-      
-      if (adjacentTile && isWaterTile(adjacentTile)) {
-        return true;
-      }
+      const neighbour = $coordinates.find(
+        c => c.x === tileData.x + offset.x && c.y === tileData.y + offset.y
+      );
+      if (isWaterTile(neighbour)) return true;
     }
-    
+
     return false;
   }
 
