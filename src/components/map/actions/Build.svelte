@@ -42,7 +42,7 @@
   // Transform STRUCTURES object into the format expected by the UI
   const transformStructures = () => {
     return Object.entries(STRUCTURES)
-      .filter(([_, structure]) => !structure.monster) // Filter out monster structures
+      .filter(([id, structure]) => !structure.monster && id !== 'spawn') // Filter out monster structures and spawn
       .map(([id, structure]) => ({
         id,
         name: structure.name,

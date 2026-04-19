@@ -882,10 +882,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gisaima-shared@lmf-git/gisaima-v3-shared#47b8f11178814935e11fe21faad96f2be1bc3912":
+"gisaima-shared@lmf-git/gisaima-v3-shared#d3cb38bd93646e3798b18079993d37552b65cb36":
   version: 1.0.0
-  resolution: "gisaima-shared@https://github.com/lmf-git/gisaima-v3-shared.git#commit=47b8f11178814935e11fe21faad96f2be1bc3912"
-  checksum: 10c0/ac0325cde67b2ba2beea4e73cd9acceced1b18cc74fb3e5e92f650c146d5d9d11ff41c4fc43508f37f7f6ccbb4f7d878e9f8e85c1c670342f52216f97ceb89c9
+  resolution: "gisaima-shared@https://github.com/lmf-git/gisaima-v3-shared.git#commit=d3cb38bd93646e3798b18079993d37552b65cb36"
+  checksum: 10c0/9f6e4719715f36433fc85ed85b3c2458ec19fe0a8580a77d877549ba5e465f539abb60d2a11ce46f65a6449e1110309dda82e95e28d224a7696c4d6a98d637b3
   languageName: node
   linkType: hard
 
@@ -898,7 +898,7 @@ __metadata:
     "@sveltejs/adapter-static": "npm:^3.0.0"
     "@sveltejs/kit": "npm:^2.16.0"
     "@sveltejs/vite-plugin-svelte": "npm:^5.0.0"
-    gisaima-shared: "lmf-git/gisaima-v3-shared#47b8f11178814935e11fe21faad96f2be1bc3912"
+    gisaima-shared: "lmf-git/gisaima-v3-shared#d3cb38bd93646e3798b18079993d37552b65cb36"
     svelte: "npm:^5.0.0"
     vite: "npm:^6.0.0"
   languageName: unknown

@@ -6,10 +6,11 @@
 
   const { onClose = () => {}, onMouseEnter = () => {} } = $props();
 
-  let tab = $state('kills'); // 'kills' | 'structures' | 'points'
-  let rankings = $state(null);
-  let loading = $state(true);
-  let error = $state('');
+  let tab        = $state('kills');   // 'kills' | 'structures' | 'points'
+  let entity     = $state('player');  // 'player' | 'tribe'
+  let rankings   = $state(null);
+  let loading    = $state(true);
+  let error      = $state('');
 
   const worldId = $derived($game.worldKey);
 
@@ -28,7 +29,14 @@
     { id: 'points',     label: 'Points' },
   ];
 
-  const rows = $derived(rankings?.[tab] || []);
+  const rows = $derived(() => {
+    if (!rankings) return [];
+    if (entity === 'tribe') {
+      const key = tab === 'kills' ? 'tribeKills' : tab === 'structures' ? 'tribeStructures' : 'tribePoints';
+      return rankings[key] || [];
+    }
+    return rankings[tab] || [];
+  });
 </script>
 
 <div
@@ -45,6 +53,11 @@
     </button>
   </div>
 
+  <div class="entity-toggle">
+    <button class="toggle-btn" class:active={entity === 'player'} onclick={() => (entity = 'player')}>Players</button>
+    <button class="toggle-btn" class:active={entity === 'tribe'}  onclick={() => (entity = 'tribe')}>Tribes</button>
+  </div>
+
   <div class="tab-bar">
     {#each tabs as t}
       <button class="tab-btn" class:active={tab === t.id} onclick={() => (tab = t.id)}>
@@ -58,16 +71,23 @@
       <div class="empty">Loading…</div>
     {:else if error}
       <div class="empty error-text">{error}</div>
-    {:else if rows.length === 0}
+    {:else if rows().length === 0}
       <div class="empty">No data yet.</div>
     {:else}
       <ol class="rank-list">
-        {#each rows as row, i}
+        {#each rows() as row, i}
           <li class="rank-row" class:top3={i < 3}>
             <span class="rank-num">{i + 1}</span>
-            <span class="rank-name">{row.displayName}</span>
+            {#if entity === 'tribe'}
+              <span class="rank-name">
+                <span class="tribe-tag">[{row.tag}]</span> {row.name}
+                <span class="member-count">{row.memberCount}m</span>
+              </span>
+            {:else}
+              <span class="rank-name">{row.displayName}</span>
+            {/if}
             <span class="rank-value">
-              {#if tab === 'kills'}{row.kills.toLocaleString()} kills
+              {#if tab === 'kills'}{(row.kills).toLocaleString()} kills
               {:else if tab === 'structures'}{row.structureCount} owned
               {:else}{row.structurePoints} pts
               {/if}
@@ -125,6 +145,33 @@
     transition: color 0.15s;
   }
   .close-btn:hover { color: rgba(0, 0, 0, 0.9); }
+
+  .entity-toggle {
+    display: flex;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+    flex-shrink: 0;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 0.35em 0.5em;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .toggle-btn:hover { color: rgba(0, 0, 0, 0.7); }
+  .toggle-btn.active {
+    color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.06);
+  }
 
   .tab-bar {
     display: flex;
@@ -209,6 +256,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  .tribe-tag {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: rgba(66, 133, 244, 0.8);
+    flex-shrink: 0;
+  }
+
+  .member-count {
+    font-size: 0.75em;
+    color: rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
   }
 
   .rank-value {

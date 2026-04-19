@@ -5,6 +5,7 @@
   import { slide } from "svelte/transition";
   
   import { calculateGroupPower } from 'gisaima-shared/war/battles.js';
+  import UNITS from 'gisaima-shared/definitions/UNITS.js';
 
   import { coordinates, targetStore, entities } from "../../../lib/stores/map.js";
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
@@ -29,6 +30,7 @@
   import Unit from '../../icons/Unit.svelte';
   import Race from '../../icons/Race.svelte';
   import GroupStatus from './GroupStatus.svelte';
+  import UnitDetails from './UnitDetails.svelte';
 
   const { 
     onClose = () => {}, 
@@ -63,6 +65,11 @@
   
   // Add state to track expanded group units
   let expandedGroups = $state({});
+
+  // Unit details dialog
+  let selectedUnit      = $state(null);  // { unit, unitId, group }
+  function openUnitDetails(unit, unitId, group) { selectedUnit = { unit, unitId, group }; }
+  function closeUnitDetails() { selectedUnit = null; }
   
   // Use simpler mounting animation control
   onMount(() => {
@@ -458,9 +465,16 @@
   // Function to display item count for a group
   function getGroupItemCount(group) {
     if (!group.items) return 0;
-    return Array.isArray(group.items) ? group.items.length : Object.keys(group.items).length;
+    if (Array.isArray(group.items)) return group.items.reduce((s, i) => s + (i.quantity || 1), 0);
+    return Object.values(group.items).reduce((s, i) => s + (typeof i === 'number' ? i : (i.quantity || 1)), 0);
   }
-  
+
+  function getGroupCarryCapacity(group) {
+    if (!group.units) return 0;
+    const units = Array.isArray(group.units) ? group.units : Object.values(group.units);
+    return units.reduce((sum, u) => sum + (UNITS[u.type]?.carryCapacity || 0), 0);
+  }
+
   // Function to count units in a group
   function getGroupUnitCount(group) {
     if (!group.units) return 0;
@@ -977,7 +991,9 @@
                         <div class="entity-details-left">
                           <span class="unit-count">
                             {getGroupUnitCount(group)} units
-                            {#if getGroupItemCount(group) > 0}
+                            {#if getGroupCarryCapacity(group) > 0}
+                              • <span class="item-count">{getGroupItemCount(group)}/{getGroupCarryCapacity(group)} items</span>
+                            {:else if getGroupItemCount(group) > 0}
                               • <span class="item-count">{getGroupItemCount(group)} items</span>
                             {/if}
                             {#if getGroupUnitCount(group) > 0}
@@ -1003,7 +1019,16 @@
                             <div class="expanded-section-title">Units ({getGroupUnitCount(group)})</div>
                             <div class="group-units-list">
                               {#each Object.entries(group.units) as [unitId, unit]}
-                                <div class="group-unit">
+                                {@const isOwned = group.owner === $currentPlayer?.id}
+                                <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+                                <div
+                                  class="group-unit"
+                                  class:clickable={isOwned}
+                                  role={isOwned ? 'button' : undefined}
+                                  tabindex={isOwned ? 0 : undefined}
+                                  onclick={isOwned ? () => openUnitDetails(unit, unitId, group) : undefined}
+                                  onkeydown={isOwned ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openUnitDetails(unit, unitId, group); } } : undefined}
+                                >
                                   <div class="unit-icon">
                                     {#if unit.type === 'player'}
                                       <Race raceKey={unit.race} extraClass="expanded-unit-race-icon" />
@@ -1017,13 +1042,27 @@
                                       {#if unit.id === $currentPlayer?.id}
                                         <span class="entity-badge owner-badge">You</span>
                                       {/if}
+                                      {#if isOwned}
+                                        <span class="unit-equip-hint">⚙ Equip</span>
+                                      {/if}
                                     </div>
                                     <div class="unit-details">
                                       {#if unit.type === 'player' }
                                         <span class="unit-race-tag">{_fmt(unit.race)}</span>
                                       {/if}
-
                                       <span class="unit-type-tag">{_fmt(unit.type)}</span>
+                                      {#if unit.power !== undefined || UNITS[unit.type]?.power}
+                                        <span class="unit-stat-tag">PWR {unit.power ?? UNITS[unit.type]?.power}</span>
+                                      {/if}
+                                      {#if unit.type !== 'player'}
+                                        <span
+                                          class="unit-level-tag"
+                                          title="XP: {unit.xp ?? 0} / {(unit.level ?? 1) * 100}"
+                                        >Lv {unit.level ?? 1}</span>
+                                      {/if}
+                                      {#if unit.equipment && Object.values(unit.equipment).some(Boolean)}
+                                        <span class="unit-equipped-tag">⚔ Equipped</span>
+                                      {/if}
                                     </div>
                                   </div>
                                 </div>
@@ -1032,7 +1071,7 @@
                           {/if}
                           
                           {#if getGroupItemCount(group) > 0}
-                            <div class="expanded-section-title">Items ({getGroupItemCount(group)})</div>
+                            <div class="expanded-section-title">Items ({getGroupItemCount(group)}{#if getGroupCarryCapacity(group) > 0}/{getGroupCarryCapacity(group)}{/if})</div>
                             <div class="group-items-list">
                               {#if Array.isArray(group.items)}
                                 {#each group.items as item}
@@ -1057,20 +1096,22 @@
                                 {/each}
                               {:else}
                                 {#each Object.entries(group.items) as [itemId, item]}
-                                  <div class="group-item {getRarityClass(item.rarity)}">
+                                  {@const qty = typeof item === 'number' ? item : (item.quantity || 1)}
+                                  {@const itemObj = typeof item === 'object' ? item : null}
+                                  <div class="group-item {getRarityClass(itemObj?.rarity)}">
                                     <div class="item-name">
-                                      {item.name || _fmt(item.type) || itemId || "Unknown Item"}
-                                      {#if item.quantity > 1}
-                                        <span class="item-quantity">×{item.quantity}</span>
+                                      {itemObj?.name || _fmt(itemObj?.type) || _fmt(itemId) || "Unknown Item"}
+                                      {#if qty > 1}
+                                        <span class="item-quantity">×{qty}</span>
                                       {/if}
                                     </div>
-                                    {#if item.type || item.rarity}
+                                    {#if itemObj?.type || itemObj?.rarity}
                                       <div class="item-details">
-                                        {#if item.type}
-                                          <span class="item-type-tag">{_fmt(item.type)}</span>
+                                        {#if itemObj?.type}
+                                          <span class="item-type-tag">{_fmt(itemObj.type)}</span>
                                         {/if}
-                                        {#if item.rarity && item.rarity !== 'common'}
-                                          <span class="item-rarity-tag {item.rarity.toLowerCase()}">{_fmt(item.rarity)}</span>
+                                        {#if itemObj?.rarity && itemObj.rarity !== 'common'}
+                                          <span class="item-rarity-tag {itemObj.rarity.toLowerCase()}">{_fmt(itemObj.rarity)}</span>
                                         {/if}
                                       </div>
                                     {/if}
@@ -1562,6 +1603,17 @@
     </div>
   </div>
 </div>
+
+{#if selectedUnit}
+  <UnitDetails
+    unit={selectedUnit.unit}
+    unitId={selectedUnit.unitId}
+    group={selectedUnit.group}
+    tileData={$targetStore}
+    onClose={closeUnitDetails}
+    onEquipped={closeUnitDetails}
+  />
+{/if}
 
 <style>
   .modal-container {
@@ -2574,6 +2626,31 @@
     min-width: 120px;
     box-sizing: border-box;
   }
+
+  .group-unit.clickable {
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .group-unit.clickable:hover {
+    background-color: rgba(66, 133, 244, 0.08);
+    border-color: rgba(66, 133, 244, 0.3);
+  }
+
+  .unit-equip-hint {
+    font-size: 0.62em;
+    color: rgba(66, 133, 244, 0.7);
+    font-weight: 500;
+    margin-left: 0.3em;
+  }
+
+  .unit-equipped-tag {
+    font-size: 0.65em;
+    padding: 0.1em 0.35em;
+    background: rgba(156, 39, 176, 0.12);
+    color: #7b1fa2;
+    border-radius: 0.25em;
+    font-weight: 600;
+  }
   
   /* Add margin to unit icons */
   .unit-icon {
@@ -2600,5 +2677,44 @@
     width: 48%;
     min-width: 120px;
     box-sizing: border-box;
+  }
+
+  .unit-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .unit-name {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+    margin-bottom: 0.2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .unit-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25em;
+    font-size: 0.8em;
+  }
+
+  .unit-stat-tag {
+    font-size: 0.75em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.2em;
+    background-color: rgba(183, 28, 28, 0.08);
+    color: #b71c1c;
+  }
+
+  .unit-level-tag {
+    font-size: 0.75em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.2em;
+    background-color: rgba(25, 118, 210, 0.1);
+    color: #1565c0;
+    cursor: help;
   }
 </style>

@@ -600,12 +600,14 @@
     const existingBuildings = tileData.structure.buildings || {};
     const existingTypes = Object.values(existingBuildings).map(b => b.type);
 
-    // All possible building types
-    const allBuildingTypes = Object.keys(BUILDINGS.types).map(type => ({
-      type,
-      name: BUILDINGS.types[type].name,
-      description: BUILDINGS.types[type].description
-    }));
+    // All possible building types, excluding monster-only buildings
+    const allBuildingTypes = Object.keys(BUILDINGS.types)
+      .filter(type => !BUILDINGS.types[type].monster)
+      .map(type => ({
+        type,
+        name: BUILDINGS.types[type].name,
+        description: BUILDINGS.types[type].description
+      }));
 
     // Filter out already built types (only allow one of each type for simplicity)
     let filteredByType = allBuildingTypes.filter(b => !existingTypes.includes(b.type));
