@@ -21,11 +21,18 @@
     }
   });
 
-  // Follow player whenever their real-time position changes
+  // Track last position we followed to, so we only snap when player actually moves
+  let lastFollowedX = $state(null);
+  let lastFollowedY = $state(null);
+
   $effect(() => {
     const loc = $currentPlayerPosition;
     if (followPlayerPosition && loc) {
-      moveTarget(loc.x, loc.y);
+      if (loc.x !== lastFollowedX || loc.y !== lastFollowedY) {
+        lastFollowedX = loc.x;
+        lastFollowedY = loc.y;
+        moveTarget(loc.x, loc.y);
+      }
     }
   });
 
