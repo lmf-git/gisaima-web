@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../lib/api.js';
+  import { apiPost } from '../../lib/api.js';
 
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -98,7 +98,7 @@
         clearSavedTargetPosition(selectedWorld.id);
       }
       
-      const result = await actions.joinWorld({
+      const result = await apiPost('/actions/joinWorld', {
         worldId: selectedWorld.id,
         race,
         displayName: name,

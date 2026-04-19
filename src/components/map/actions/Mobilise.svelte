@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   // Import unit definitions to get boat capacities
@@ -187,7 +187,7 @@
         race: $currentPlayer?.race
       });
       
-      const result = await actions.mobiliseUnits({
+      const result = await apiPost('/actions/mobiliseUnits', {
         worldId: $game.worldKey,
         tileX: tileData.x,
         tileY: tileData.y,

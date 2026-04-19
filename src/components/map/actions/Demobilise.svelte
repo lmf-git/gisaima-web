@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { targetStore } from '../../../lib/stores/map';
@@ -85,7 +85,7 @@
     statusMessage = 'Starting demobilization...';
 
     try {
-      const result = await actions.demobiliseUnits({
+      const result = await apiPost('/actions/demobiliseUnits', {
         groupId: selectedGroup.id,
         structureId: tileData.structure.id,
         locationX: tileData.x,

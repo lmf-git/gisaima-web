@@ -4,7 +4,7 @@
 
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
-import { apiGet, apiPost, wsWorld, actions } from '$lib/api.js';
+import { apiGet, apiPost, wsWorld } from '$lib/api.js';
 import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 import { user, isAuthReady as userAuthReady } from './user.js';
 // Intentionally not importing from map.js to avoid circular dependency.
@@ -303,7 +303,7 @@ export async function cancelMove(groupId, x, y) {
   if (!$user?.uid)      return { success: false, error: 'Not authenticated' };
   if (!$game.worldKey)  return { success: false, error: 'No world selected' };
   try {
-    const r = await actions.cancelMovement({ worldId: $game.worldKey, groupId, x, y });
+    const r = await apiPost('/actions/cancelMovement', { worldId: $game.worldKey, groupId, x, y });
     return { success: true, data: r };
   } catch (e) {
     return { success: false, error: e.message };

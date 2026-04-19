@@ -1,5 +1,5 @@
 <script>
-    import { actions } from '../../../lib/api.js';
+    import { apiPost } from '../../../lib/api.js';
 
     import { onMount } from "svelte";
     import { get } from "svelte/store";
@@ -510,7 +510,7 @@
             isLoading = true;
             error = null;
 
-            const result = await actions.recruitUnits({
+            const result = await apiPost('/actions/recruitUnits', {
                 structureId: structureData.id,
                 x,
                 y,
@@ -560,7 +560,7 @@
             isLoading = true;
             error = null;
 
-            await actions.cancelRecruitment({
+            await apiPost('/actions/cancelRecruitment', {
                 recruitmentId,
                 structureId: structureData.id,
                 x,

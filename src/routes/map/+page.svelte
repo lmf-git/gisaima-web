@@ -1,5 +1,5 @@
 <script>
-    import { actions } from '../../lib/api.js';
+    import { apiPost } from '../../lib/api.js';
     import { get } from 'svelte/store';
     import { onMount, onDestroy } from 'svelte'; // Add this import
 
@@ -73,6 +73,12 @@
     import BoundIcon from '../../components/icons/BoundIcon.svelte';
     import UnboundIcon from '../../components/icons/UnboundIcon.svelte';
     import Logo from '../../components/Logo.svelte';
+    import GameHeader from '../../components/map/foundation/GameHeader.svelte';
+    import Reports from '../../components/map/foundation/Reports.svelte';
+    import Diplomacy from '../../components/map/foundation/Diplomacy.svelte';
+    import Rankings from '../../components/map/foundation/Rankings.svelte';
+    import { reports, unreadReports } from '../../lib/stores/reports.js';
+    import { diplomacy } from '../../lib/stores/diplomacy.js';
     
     
     const DEBUG_MODE = true;
@@ -82,6 +88,9 @@
     let detailed = $state(false);
     let loading = $state(true);
     let error = $state(null);
+    let showReports    = $state(false);
+    let showDiplomacy  = $state(false);
+    let showRankings   = $state(false);
     
     let urlProcessingComplete = $state(false);
     let playerPositionSet = $state(false); // New flag to track if player position has been set
@@ -643,6 +652,8 @@
             });
             
             loading = false;
+            reports.fetch($game.worldKey);
+            diplomacy.fetchTribes($game.worldKey);
         } catch (err) {
             console.error('Error initializing map:', err);
             loading = false;
@@ -650,6 +661,21 @@
         }
     }
     
+    function toggleReports() {
+      showReports = !showReports;
+      if (showReports) { showDiplomacy = false; showRankings = false; lastActivePanel = 'reports'; }
+    }
+
+    function toggleDiplomacy() {
+      showDiplomacy = !showDiplomacy;
+      if (showDiplomacy) { showReports = false; showRankings = false; lastActivePanel = 'diplomacy'; }
+    }
+
+    function toggleRankings() {
+      showRankings = !showRankings;
+      if (showRankings) { showReports = false; showDiplomacy = false; lastActivePanel = 'rankings'; }
+    }
+
     function toggleMinimap() {
       if (!$game?.player?.alive || isTutorialVisible) {
         return;
@@ -1091,7 +1117,7 @@
         const startPoint = path[0];
         const endPoint = path[path.length - 1];
 
-        actions.moveGroup({
+        apiPost('/actions/moveGroup', {
             groupId: pathDrawingGroup.id,
             fromX: startPoint.x,
             fromY: startPoint.y,
@@ -1202,7 +1228,16 @@
             <button onclick={() => goto('/worlds')}>Go to Worlds</button>
         </div>
     {:else}
-        <Grid 
+        <GameHeader
+            showReports={showReports}
+            showDiplomacy={showDiplomacy}
+            showRankings={showRankings}
+            onOpenReports={toggleReports}
+            onOpenDiplomacy={toggleDiplomacy}
+            onOpenRankings={toggleRankings}
+        />
+
+        <Grid
             detailed={detailed}
             onClick={handleGridClick}
             isPathDrawingMode={isPathDrawingMode}
@@ -1376,16 +1411,58 @@
             </div>
 
             {#if showAchievements && !isTutorialVisible}
-                <div class="achievements-wrapper" 
+                <div class="achievements-wrapper"
                     class:visible={true}
                     class:active={lastActivePanel === 'achievements'}
                     onmouseenter={() => handlePanelHover('achievements')}
                     role="region"
                     aria-label="Achievements panel container"
                 >
-                    <Achievements 
-                      onClose={toggleAchievements} 
+                    <Achievements
+                      onClose={toggleAchievements}
                       onMouseEnter={() => handlePanelHover('achievements')}
+                    />
+                </div>
+            {/if}
+
+            {#if showReports && !isTutorialVisible}
+                <div class="reports-wrapper"
+                    class:active={lastActivePanel === 'reports'}
+                    onmouseenter={() => handlePanelHover('reports')}
+                    role="region"
+                    aria-label="Reports panel container"
+                >
+                    <Reports
+                        onClose={toggleReports}
+                        onMouseEnter={() => handlePanelHover('reports')}
+                    />
+                </div>
+            {/if}
+
+            {#if showDiplomacy && !isTutorialVisible}
+                <div class="diplomacy-wrapper"
+                    class:active={lastActivePanel === 'diplomacy'}
+                    onmouseenter={() => handlePanelHover('diplomacy')}
+                    role="region"
+                    aria-label="Diplomacy panel container"
+                >
+                    <Diplomacy
+                        onClose={toggleDiplomacy}
+                        onMouseEnter={() => handlePanelHover('diplomacy')}
+                    />
+                </div>
+            {/if}
+
+            {#if showRankings && !isTutorialVisible}
+                <div class="rankings-wrapper"
+                    class:active={lastActivePanel === 'rankings'}
+                    onmouseenter={() => handlePanelHover('rankings')}
+                    role="region"
+                    aria-label="Rankings panel container"
+                >
+                    <Rankings
+                        onClose={toggleRankings}
+                        onMouseEnter={() => handlePanelHover('rankings')}
                     />
                 </div>
             {/if}
@@ -1778,13 +1855,16 @@
     /* Create a unified z-index system for all panels */
     .chat-wrapper,
     .achievements-wrapper,
+    .reports-wrapper,
+    .diplomacy-wrapper,
+    .rankings-wrapper,
     :global(.modal-container),
     :global(.overview-container) {
         position: fixed;
         z-index: 1500; /* Base z-index for all panels above minimap */
         transition: opacity 300ms ease, z-index 0s linear;
     }
-    
+
     .chat-wrapper.visible,
     .achievements-wrapper.visible {
         opacity: 1;
@@ -1801,20 +1881,23 @@
         /* Add a small delay before hiding completely to allow animations to complete */
         transition: opacity 300ms ease, z-index 0s linear 300ms;
     }
-    
+
     /* Active state for any panel will raise it to top */
     .chat-wrapper.active,
     .achievements-wrapper.active,
+    .reports-wrapper.active,
+    .diplomacy-wrapper.active,
+    .rankings-wrapper.active,
     :global(.modal-container.active),
     :global(.overview-container.active) {
         z-index: 1600 !important; /* Force highest z-index when active */
     }
-    
+
     /* Minimap should be below all panels */
     :global(.minimap-container) {
         z-index: 1000 !important; /* Always below panels */
     }
-    
+
     /* Original positioning for each panel */
     .chat-wrapper {
         bottom: 1em;
@@ -1822,6 +1905,13 @@
         opacity: 0;
         /* Remove pointer-events: none so the component can be interacted with */
         /* pointer-events: none; */
+    }
+
+    .reports-wrapper,
+    .diplomacy-wrapper,
+    .rankings-wrapper {
+        bottom: 6em;
+        right: 1em;
     }
 
     .help-button {

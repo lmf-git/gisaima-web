@@ -19,6 +19,7 @@
   import YouAreHere from './YouAreHere.svelte';
 
   import Torch from '../../icons/Torch.svelte';
+  import Hammer from '../../icons/Hammer.svelte';
   import Structure from '../../icons/Structure.svelte';
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
@@ -29,6 +30,7 @@
   import Compass from '../../icons/Compass.svelte';
   
   import { BIOMES } from "gisaima-shared/definitions/BIOMES.js";
+  import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
   
   // Props with defaults using Svelte 5 $props() rune
   const { 
@@ -1736,10 +1738,11 @@
           <div
             class="tile {cell?.structure?.type} {cell.terrain?.rarity || 'common'}"
             class:center={cell.isCenter}
-            class:subdivided={cell.structure && cell.isCenter} 
+            class:subdivided={cell.structure && cell.isCenter}
             tabindex={cell.isCenter ? "0" : "-1"}
             class:highlighted={cell.highlighted}
             class:has-structure={cell.structure}
+            class:under-construction={cell.structure?.status === 'building'}
             class:has-groups={cell.groups?.length > 0}
             class:has-players={hasPlayers}
             class:has-items={cell.items?.length > 0}
@@ -1758,29 +1761,38 @@
           >
             <!-- Only render additional elements when initial animations are complete, don't hide during movement -->
             {#if shouldRenderDetails}
-              <!-- Add structure subdivision grid - MODIFIED: Only show for center tile -->
-              {#if cell.structure && cell.isCenter}
-                <div class="structure-subgrid">
+              <!-- Structure subdivision grid — shown on all tiles with structures -->
+              {#if cell.structure}
+                <div class="structure-subgrid" class:center-subgrid={cell.isCenter}>
                   {#each Array(9) as _, index}
                     {@const row = Math.floor(index / 3)}
                     {@const col = index % 3}
-                    <div 
-                      class="subgrid-cell" 
+                    <div
+                      class="subgrid-cell"
                       class:center-cell={row === 1 && col === 1}
                       data-position={`${row}-${col}`}
                     >
-                      {#if row === 1 && col === 1 && cell.structure.type !== 'spawn'}
+                      {#if cell.isCenter && row === 1 && col === 1}
                         <div class="subgrid-structure-icon">
-                          <Structure size="90%" extraClass="structure-icon {cell.structure.type}-icon" />
-                        </div>
-                      {:else if row === 1 && col === 1 && cell.structure.type === 'spawn'}
-                        <div class="subgrid-structure-icon">
-                          <Torch size="90%" extraClass="spawn-icon" />
+                          {#if cell.structure.status === 'building'}
+                            <Hammer size="80%" extraClass="construction-icon" />
+                          {:else if cell.structure.type === 'spawn'}
+                            <Torch size="90%" extraClass="spawn-icon" />
+                          {:else}
+                            <Structure size="90%" extraClass="structure-icon {cell.structure.type}-icon" />
+                          {/if}
                         </div>
                       {/if}
                     </div>
                   {/each}
                 </div>
+                {#if cell.structure.status === 'building'}
+                  {@const buildTime = STRUCTURES[cell.structure.type]?.buildTime || 1}
+                  {@const progress = Math.min(1, (cell.structure.buildProgress || 0) / buildTime)}
+                  <div class="construction-progress-bar">
+                    <div class="construction-progress-fill" style="width: {progress * 100}%"></div>
+                  </div>
+                {/if}
               {/if}
 
               <!-- Add YouAreHere component for player's position -->
@@ -2133,6 +2145,53 @@
   /* When hovering the tile, enhance the subgrid */
   .tile.subdivided:hover .structure-subgrid {
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+
+  /* Non-center tiles: subtle grid lines only, no backgrounds */
+  .structure-subgrid:not(.center-subgrid) .subgrid-cell {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+  }
+  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(1),
+  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(3),
+  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(7),
+  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(9) {
+    background-color: transparent;
+  }
+
+  /* Construction state */
+  .tile.under-construction {
+    outline: 1px dashed rgba(255, 200, 50, 0.4);
+    outline-offset: -1px;
+  }
+  :global(.construction-icon) {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 3px rgba(255, 200, 50, 0.8));
+    animation: construction-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes construction-pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  /* Construction progress bar */
+  .construction-progress-bar {
+    position: absolute;
+    bottom: 2px;
+    left: 4px;
+    right: 4px;
+    height: 3px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
+    z-index: 10;
+    overflow: hidden;
+  }
+  .construction-progress-fill {
+    height: 100%;
+    background-color: rgba(255, 200, 50, 0.85);
+    border-radius: 2px;
+    transition: width 0.5s ease-out;
   }
 
   /* Initial state for animated tiles */

@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
@@ -22,6 +22,7 @@
   let error = $state(null);
   let statusMessage = $state('');
   let processing = $state(false);
+  let gatherUntilFull = $state(false);
   
   // Add a flag to prevent re-filtering groups once an operation has started
   let operationInProgress = $state(false);
@@ -81,11 +82,12 @@
     statusMessage = 'Starting gathering...';
     
     try {
-      const result = await actions.startGathering({
+      const result = await apiPost('/actions/startGathering', {
         groupId: selectedGroup.id,
         locationX: tileData.x,
         locationY: tileData.y,
-        worldId: $game.worldKey
+        worldId: $game.worldKey,
+        gatherUntilFull
       });
 
       if (result?.success) {
@@ -197,10 +199,15 @@
           </div>
         </div>
         
+        <label class="toggle-row">
+          <input type="checkbox" bind:checked={gatherUntilFull} disabled={processing} />
+          <span>Gather until full capacity</span>
+        </label>
+
         {#if error}
           <div class="error">{error}</div>
         {/if}
-        
+
         {#if statusMessage}
           <div class="status">
             {statusMessage}
@@ -384,6 +391,16 @@
 
   .group-units {
     font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 1em;
+    cursor: pointer;
+    font-size: 0.9em;
     color: rgba(0, 0, 0, 0.75);
   }
 

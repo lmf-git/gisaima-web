@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { slide } from "svelte/transition";
@@ -558,7 +558,7 @@
     }
     
     try {
-      const result = await actions.flee({
+      const result = await apiPost('/actions/flee', {
         groupId: group.id,
         x: group.x,
         y: group.y,
@@ -652,7 +652,7 @@
   async function handleLoadGroup(boatGroup, passengerGroup, event) {
     if (event) event.stopPropagation();
     try {
-      await actions.loadGroup({
+      await apiPost('/actions/loadGroup', {
         worldId: $game.worldKey,
         boatGroupId: boatGroup.id,
         passengerGroupId: passengerGroup.id,
@@ -667,7 +667,7 @@
   async function handleUnloadGroup(boatGroup, passengerGroupId, event) {
     if (event) event.stopPropagation();
     try {
-      await actions.unloadGroup({
+      await apiPost('/actions/unloadGroup', {
         worldId: $game.worldKey,
         boatGroupId: boatGroup.id,
         passengerGroupId,
@@ -691,7 +691,7 @@
     }
     
     try {
-      const result = await actions.cancelGathering({
+      const result = await apiPost('/actions/cancelGathering', {
         groupId: group.id,
         locationX: group.x,
         locationY: group.y,

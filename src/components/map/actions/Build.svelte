@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
@@ -258,7 +258,7 @@
     processing = true;
     
     try {
-      const result = await actions.buildStructure({
+      const result = await apiPost('/actions/buildStructure', {
         worldId: $game.worldKey,
         groupId: selectedGroup.id,
         tileX: tileData.x,

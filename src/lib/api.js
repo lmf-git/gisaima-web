@@ -60,33 +60,6 @@ export const apiGet  = (path)         => apiFetch(path);
 export const apiPost = (path, body)   => apiFetch(path, { method: 'POST', body });
 
 // ---------------------------------------------------------------------------
-// Game actions (convenience wrappers)
-// ---------------------------------------------------------------------------
-
-export const actions = {
-  joinWorld:            (data) => apiPost('/actions/joinWorld',            data),
-  spawnPlayer:          (data) => apiPost('/actions/spawnPlayer',          data),
-  mobiliseUnits:        (data) => apiPost('/actions/mobiliseUnits',        data),
-  demobiliseUnits:      (data) => apiPost('/actions/demobiliseUnits',      data),
-  moveGroup:            (data) => apiPost('/actions/moveGroup',            data),
-  cancelGathering:      (data) => apiPost('/actions/cancelGathering',      data),
-  cancelMovement:       (data) => apiPost('/actions/cancelMovement',       data),
-  attack:               (data) => apiPost('/actions/attack',               data),
-  joinBattle:           (data) => apiPost('/actions/joinBattle',           data),
-  flee:                 (data) => apiPost('/actions/flee',                 data),
-  startGathering:       (data) => apiPost('/actions/startGathering',       data),
-  buildStructure:       (data) => apiPost('/actions/buildStructure',       data),
-  startStructureUpgrade:(data) => apiPost('/actions/startStructureUpgrade',data),
-  startBuildingUpgrade: (data) => apiPost('/actions/startBuildingUpgrade', data),
-  startCrafting:        (data) => apiPost('/actions/startCrafting',        data),
-  cancelCrafting:       (data) => apiPost('/actions/cancelCrafting',       data),
-  recruitUnits:         (data) => apiPost('/actions/recruitUnits',         data),
-  cancelRecruitment:    (data) => apiPost('/actions/cancelRecruitment',    data),
-  loadGroup:            (data) => apiPost('/actions/loadGroup',            data),
-  unloadGroup:          (data) => apiPost('/actions/unloadGroup',          data)
-};
-
-// ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------
 

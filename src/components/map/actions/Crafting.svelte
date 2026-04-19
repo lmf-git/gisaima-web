@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale, fade } from 'svelte/transition';
 
   import { BUILDINGS } from 'gisaima-shared';
@@ -190,7 +190,7 @@
     error = null;
     
     try {
-      const result = await actions.startCrafting({
+      const result = await apiPost('/actions/startCrafting', {
         recipeId: selectedRecipe.id,
         worldId: $game.worldKey,
         x,

@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
@@ -237,7 +237,7 @@
       console.log('Starting attack with params:', params);
       
       console.log('Calling attack function...');
-      const result = await actions.attack(params);
+      const result = await apiPost('/actions/attack', params);
       console.log('Attack function result:', result);
 
       if (result.success) {

@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
@@ -93,7 +93,7 @@
     errorMessage = '';
     
     try {
-      const result = await actions.joinBattle({
+      const result = await apiPost('/actions/joinBattle', {
         groupId: selectedGroup.id,
         battleId: selectedBattle.id,
         side: parseInt(selectedSide),

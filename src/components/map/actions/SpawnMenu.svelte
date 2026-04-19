@@ -1,5 +1,5 @@
 <script>
-  import { actions } from '../../../lib/api.js';
+  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { goto } from '$app/navigation';
@@ -178,7 +178,7 @@
 
       console.log(`Spawning player at ${spawnX},${spawnY} for spawn ID: ${spawn.id || 'unknown'}`);
       
-      const result = await actions.spawnPlayer({
+      const result = await apiPost('/actions/spawnPlayer', {
         worldId: $game.worldKey,
         spawnId: spawn.id || null,
         spawnX,
