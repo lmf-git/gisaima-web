@@ -1,7 +1,6 @@
 <script>
   import { browser } from '$app/environment';
   import { game } from '../../../lib/stores/game';
-  import { moveTarget, currentPlayerPosition } from '../../../lib/stores/map';
   import BoundIcon from '../../icons/BoundIcon.svelte';
   import UnboundIcon from '../../icons/UnboundIcon.svelte';
 
@@ -17,21 +16,6 @@
       const savedFollow = localStorage.getItem('follow_player_position');
       if (savedFollow !== null) {
         followPlayerPosition = savedFollow === 'true';
-      }
-    }
-  });
-
-  // Track last position we followed to, so we only snap when player actually moves
-  let lastFollowedX = $state(null);
-  let lastFollowedY = $state(null);
-
-  $effect(() => {
-    const loc = $currentPlayerPosition;
-    if (followPlayerPosition && loc) {
-      if (loc.x !== lastFollowedX || loc.y !== lastFollowedY) {
-        lastFollowedX = loc.x;
-        lastFollowedY = loc.y;
-        moveTarget(loc.x, loc.y);
       }
     }
   });

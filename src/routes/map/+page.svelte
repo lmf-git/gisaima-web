@@ -59,7 +59,8 @@
     import Demobilise from '../../components/map/actions/Demobilise.svelte';
     import Recruitment from '../../components/map/actions/Recruitment.svelte';
     import Attack from '../../components/map/actions/Attack.svelte';
-    import Build from '../../components/map/actions/Build.svelte'; 
+    import Build from '../../components/map/actions/Build.svelte';
+    import UnitDetails from '../../components/map/actions/UnitDetails.svelte';
     import JoinBattle from '../../components/map/actions/JoinBattle.svelte';
     import Crafting from '../../components/map/actions/Crafting.svelte';
     import Tutorial from '../../components/map/actions/Tutorial.svelte';
@@ -86,6 +87,7 @@
 
     let isTutorialVisible = $state(false);
     let detailed = $state(false);
+    let selectedUnit = $state(null); // { unit, unitId, group } — lifted from Details
     let loading = $state(true);
     let error = $state(null);
     let showReports    = $state(false);
@@ -795,13 +797,6 @@
     function handleGridClick(coords) {
         if (!$game?.player?.alive) return;
 
-        // Disable auto-follow when clicking on the grid
-        if (coords && coords.x !== undefined && coords.y !== undefined &&
-            $game.player?.lastLocation &&
-            (coords.x !== $game.player.lastLocation.x || coords.y !== $game.player.lastLocation.y)) {
-          handleManualPositionChange();
-        }
-
         // Check if this is a path confirmation action
         if (coords && coords.confirmPath === true) {
             confirmPathDrawing(currentPath);
@@ -1499,12 +1494,13 @@
             />
         {/if}
 
-        {#if detailed && !isTutorialVisible && $game?.player?.alive}
-            <Details 
-                onClose={() => toggleDetailsModal(false)} 
-                onShowModal={showModal} 
+        {#if detailed && !isTutorialVisible && $game?.player?.alive && !selectedUnit}
+            <Details
+                onClose={() => toggleDetailsModal(false)}
+                onShowModal={showModal}
                 isActive={lastActivePanel === 'details'}
                 onMouseEnter={() => handlePanelHover('details')}
+                onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
             />
         {:else if $ready && !isPathDrawingMode && !isTutorialVisible && !modalState.visible}
             <Legend 
@@ -1515,6 +1511,17 @@
                     toggleDetailsModal(true);
                 }} 
             />
+        {/if}
+
+        {#if selectedUnit && detailed}
+          <UnitDetails
+            unit={selectedUnit.unit}
+            unitId={selectedUnit.unitId}
+            group={selectedUnit.group}
+            tileData={$targetStore}
+            onClose={() => { selectedUnit = null; }}
+            onEquipped={() => { selectedUnit = null; }}
+          />
         {/if}
 
         {#if modalState.visible}

@@ -30,13 +30,12 @@
   import Unit from '../../icons/Unit.svelte';
   import Race from '../../icons/Race.svelte';
   import GroupStatus from './GroupStatus.svelte';
-  import UnitDetails from './UnitDetails.svelte';
-
-  const { 
-    onClose = () => {}, 
+  const {
+    onClose = () => {},
     onShowModal = null,
-    isActive = false, // New prop to determine z-index priority
-    onMouseEnter = () => {} // Add prop for mouse enter event
+    isActive = false,
+    onMouseEnter = () => {},
+    onOpenUnitDetails = () => {}
   } = $props();
 
   // Add state to track collapsed sections
@@ -66,11 +65,6 @@
   // Add state to track expanded group units
   let expandedGroups = $state({});
 
-  // Unit details dialog
-  let selectedUnit      = $state(null);  // { unit, unitId, group }
-  function openUnitDetails(unit, unitId, group) { selectedUnit = { unit, unitId, group }; }
-  function closeUnitDetails() { selectedUnit = null; }
-  
   // Use simpler mounting animation control
   onMount(() => {
     // Short timeout to ensure DOM is ready
@@ -1026,8 +1020,8 @@
                                   class:clickable={isOwned}
                                   role={isOwned ? 'button' : undefined}
                                   tabindex={isOwned ? 0 : undefined}
-                                  onclick={isOwned ? () => openUnitDetails(unit, unitId, group) : undefined}
-                                  onkeydown={isOwned ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openUnitDetails(unit, unitId, group); } } : undefined}
+                                  onclick={isOwned ? () => onOpenUnitDetails(unit, unitId, group) : undefined}
+                                  onkeydown={isOwned ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenUnitDetails(unit, unitId, group); } } : undefined}
                                 >
                                   <div class="unit-icon">
                                     {#if unit.type === 'player'}
@@ -1603,17 +1597,6 @@
     </div>
   </div>
 </div>
-
-{#if selectedUnit}
-  <UnitDetails
-    unit={selectedUnit.unit}
-    unitId={selectedUnit.unitId}
-    group={selectedUnit.group}
-    tileData={$targetStore}
-    onClose={closeUnitDetails}
-    onEquipped={closeUnitDetails}
-  />
-{/if}
 
 <style>
   .modal-container {

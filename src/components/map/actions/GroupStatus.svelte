@@ -221,6 +221,12 @@
     border: 1px solid rgba(138, 43, 226, 0.3);
     color: #8a2be2;
   }
+
+  .entity-status-badge.building {
+    background: rgba(255, 152, 0, 0.15);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    color: #e65100;
+  }
   
   .entity-status-badge.fighting {
     background: rgba(220, 20, 60, 0.15);

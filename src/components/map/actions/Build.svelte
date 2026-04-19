@@ -7,7 +7,7 @@
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js'; // Import BUILDINGS
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
-  import { targetStore, coordinates } from '../../../lib/stores/map';
+  import { targetStore, coordinates, entities } from '../../../lib/stores/map';
 
   import Close from '../../icons/Close.svelte';
 
@@ -268,6 +268,21 @@
       });
 
       if (result.success) {
+        const tileKey = `${tileData.x},${tileData.y}`;
+        const groupId = selectedGroup.id;
+        entities.update(current => {
+          const tileGroups = current.groups[tileKey];
+          if (!tileGroups) return current;
+          return {
+            ...current,
+            groups: {
+              ...current.groups,
+              [tileKey]: tileGroups.map(g =>
+                g.id === groupId ? { ...g, status: 'building' } : g
+              )
+            }
+          };
+        });
         onBuild(result);
         onClose();
       } else {
