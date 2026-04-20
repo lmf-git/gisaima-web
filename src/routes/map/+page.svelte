@@ -320,12 +320,23 @@
         }
     });
 
+    function setScreenHeight() {
+        // screen.height is CSS pixels (physical / devicePixelRatio) — covers full physical screen
+        // including the area behind iOS liquid glass address bar which viewport units miss
+        document.documentElement.style.setProperty('--screen-height', window.screen.height + 'px');
+    }
+
     onMount(() => {
-        if (browser) document.body.classList.add('map-page-active');
+        if (browser) {
+            document.body.classList.add('map-page-active');
+            setScreenHeight();
+            screen.orientation?.addEventListener('change', setScreenHeight);
+        }
     })
     onDestroy(() => {
         if (browser) {
             document.body.classList.remove('map-page-active');
+            screen.orientation?.removeEventListener('change', setScreenHeight);
             cleanup();
         }
     });
@@ -1628,7 +1639,8 @@
         top: 0;
         left: 0;
         right: 0;
-        bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+        height: 100lvh;
+        height: var(--screen-height, 100lvh);
     }
     
     .map.dragging {
@@ -1649,20 +1661,15 @@
         pointer-events: all; /* Allow pointer events on the spawn menu itself */
     }
     
-    :global(html) {
-        height: 100lvh;
+    :global(html:has(body.map-page-active)) {
         overflow: hidden;
     }
 
     :global(body.map-page-active) {
         overflow: hidden;
         overscroll-behavior: none;
-        position: fixed;
-        top: 0;
-        left: 0;
+        touch-action: none;
         width: 100%;
-        height: 100vh;
-        height: 100lvh;
     }
     
     .loading-overlay,
