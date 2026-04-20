@@ -1753,7 +1753,7 @@
               background-color: {cell.isCenter ? 'var(--center-tile-color)' : cell.color || 'var(--terrain-color)'};
               transition-delay: {cell.distance * 0.02 + 's'};
             "
-            onmouseenter={() => handleTileHover(cell)}
+            onpointerenter={e => e.pointerType === 'mouse' && handleTileHover(cell)}
             onclick={cell.isCenter ? handleCenterTileClick : undefined}
             onkeydown={cell.isCenter ? (e) => (e.key === 'Enter' || e.key === ' ') && handleCenterTileClick(e) : undefined}
             aria-label={`Coordinates ${cell.x},${cell.y}`}
