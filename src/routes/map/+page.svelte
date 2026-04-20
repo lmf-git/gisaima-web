@@ -1624,12 +1624,11 @@
 
 <style>
     .map {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100vh;
-        height: 100lvh;
+        right: 0;
+        bottom: 0;
     }
     
     .map.dragging {
