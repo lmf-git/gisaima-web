@@ -254,28 +254,32 @@
             {@const slotDef = EQUIPMENT_SLOTS[slotKey]}
             {@const equipped = equipment[slotKey]}
             {@const itemDef = equipped ? ITEMS[equipped] : null}
-            <button
-              class="equip-slot"
-              class:occupied={!!equipped}
-              onclick={() => openPicker(slotKey)}
-              title={slotDef.name}
-            >
+            <div class="equip-cell">
+              <button
+                class="equip-slot"
+                class:occupied={!!equipped}
+                onclick={() => openPicker(slotKey)}
+                title={slotDef.name}
+              >
+                {#if equipped && itemDef}
+                  <div class="slot-item-icon" title={itemDef.name}>
+                    {itemDef.stats?.attack ? '⚔️' : itemDef.stats?.defense ? '🛡️' : slotDef.icon}
+                  </div>
+                  <div class="slot-item-name">{itemDef.name}</div>
+                {:else}
+                  <div class="slot-empty-icon">{slotDef.icon}</div>
+                  <div class="slot-label">{slotDef.name}</div>
+                {/if}
+              </button>
               {#if equipped && itemDef}
-                <div class="slot-item-icon" title={itemDef.name}>
-                  {itemDef.stats?.attack ? '⚔️' : itemDef.stats?.defense ? '🛡️' : slotDef.icon}
-                </div>
-                <div class="slot-item-name">{itemDef.name}</div>
                 <button
                   class="slot-unequip"
                   onclick={(e) => { e.stopPropagation(); unequip(slotKey); }}
                   disabled={equipping}
                   title="Unequip"
                 >✕</button>
-              {:else}
-                <div class="slot-empty-icon">{slotDef.icon}</div>
-                <div class="slot-label">{slotDef.name}</div>
               {/if}
-            </button>
+            </div>
           {:else}
             <!-- empty grid cell -->
             <div class="equip-cell-empty"></div>
@@ -517,6 +521,10 @@
     gap: 0.4em;
   }
 
+  .equip-cell {
+    position: relative;
+  }
+
   .equip-slot {
     position: relative;
     display: flex;
@@ -525,6 +533,7 @@
     justify-content: center;
     padding: 0.5em 0.3em;
     min-height: 4.5em;
+    width: 100%;
     background: rgba(0, 0, 0, 0.03);
     border: 1px dashed rgba(0, 0, 0, 0.18);
     border-radius: 0.3em;

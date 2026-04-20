@@ -4,8 +4,8 @@
   
   // Import game definition files
   import UNITS from "gisaima-shared/definitions/UNITS.js";
-  import { ITEMS, ITEM_CATEGORIES } from "gisaima-shared/definitions/ITEMS.js";
-  import { STRUCTURES, STRUCTURE_TYPES } from "gisaima-shared/definitions/STRUCTURES.js";
+  import { ITEMS } from "gisaima-shared/definitions/ITEMS.js";
+  import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
   import { BUILDINGS } from "gisaima-shared/definitions/BUILDINGS.js";
   
   // Import the BattleSimulator component

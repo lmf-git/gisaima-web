@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
-  import { ITEMS, getItemPower } from 'gisaima-shared/definitions/ITEMS.js';
+  import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
   import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
   import { 
     calculateGroupPower, 

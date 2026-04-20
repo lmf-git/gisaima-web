@@ -29,7 +29,6 @@
   import Monster from '../../icons/Monster.svelte';
   import Compass from '../../icons/Compass.svelte';
   
-  import { BIOMES } from "gisaima-shared/definitions/BIOMES.js";
   import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
   
   // Props with defaults using Svelte 5 $props() rune
@@ -1051,10 +1050,11 @@
     }
     
     // For regular mode, handle as before - always move to the clicked position
+    setHighlighted(tileX, tileY);
     if (onClick) {
       const tileData = $coordinates.find(cell => cell.x === tileX && cell.y === tileY);
-      onClick({ 
-        x: tileX, 
+      onClick({
+        x: tileX,
         y: tileY,
         tileData: tileData || null
       });
