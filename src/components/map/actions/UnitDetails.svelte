@@ -36,36 +36,41 @@
   // Current equipment (live-reactive to prop)
   let equipment = $derived(unit.equipment || {});
 
-  // Base unit power from definition
+  // Unit definition lookup
   const unitDef = $derived(() => {
     if (!unit.type) return null;
     return Object.values(UNITS).find(u => u.type === unit.type) || UNITS[unit.type] || null;
   });
-  const basePower = $derived(unitDef()?.power ?? unit.power ?? 1);
 
-  // Equipment power bonus
-  const equipPower = $derived(
-    SLOT_ORDER.reduce((sum, slot) => {
-      const code = equipment[slot];
-      if (!code) return sum;
-      return sum + (ITEMS[code]?.power || 0);
-    }, 0)
-  );
+  // Typed combat stats scaled by level (attack stats scale, carryCapacity does not)
+  const combatStats = $derived(() => {
+    const def = unitDef();
+    if (!def) return { meleeAtk: 0, rangedAtk: 0, magicAtk: 0, meleeDef: 0, rangedDef: 0, magicDef: 0 };
+    const sf = 1 + ((unit.level || 1) - 1) * 0.15;
+    if (def.meleeAttack !== undefined) {
+      return {
+        meleeAtk: (def.meleeAttack || 0) * sf,
+        rangedAtk: (def.rangedAttack || 0) * sf,
+        magicAtk:  (def.magicAttack  || 0) * sf,
+        meleeDef:  (def.meleeDefense  || 0) * sf,
+        rangedDef: (def.rangedDefense || 0) * sf,
+        magicDef:  (def.magicDefense  || 0) * sf,
+      };
+    }
+    const p = (def.power || 1) * sf;
+    return { meleeAtk: p, rangedAtk: 0, magicAtk: 0, meleeDef: 1 * sf, rangedDef: 1 * sf, magicDef: 1 * sf };
+  });
 
-  const totalPower = $derived(basePower + equipPower + (unit.level || 0));
-
-  // Collect equipment stats totals
-  const equipStats = $derived(() => {
-    const s = { attack: 0, defense: 0, speed: 0 };
+  // Equipment attack/defense bonuses (shown alongside base stats)
+  const equipBonus = $derived(() => {
+    let atk = 0, def = 0;
     for (const slot of SLOT_ORDER) {
       const code = equipment[slot];
       if (!code) continue;
-      const stats = ITEMS[code]?.stats || {};
-      s.attack  += stats.attack  || 0;
-      s.defense += stats.defense || 0;
-      s.speed   += stats.speed   || 0;
+      atk += ITEMS[code]?.stats?.attack  || 0;
+      def += ITEMS[code]?.stats?.defense || 0;
     }
-    return s;
+    return { atk, def };
   });
 
   // Items available for the current picker slot
@@ -196,31 +201,42 @@
     <button class="close-btn" onclick={onClose}><Close size="1.4em" /></button>
   </header>
 
-  <!-- Stats bar -->
-  <div class="stats-bar">
-    <div class="stat">
-      <span class="stat-label">Power</span>
-      <span class="stat-value">{totalPower}</span>
-      {#if equipPower > 0}<span class="stat-bonus">(+{equipPower})</span>{/if}
+  <!-- Stats section: two rows (attack / defense + carry) -->
+  <div class="stats-section">
+    <div class="stats-row atk-row">
+      <div class="stat">
+        <span class="stat-label">M.Atk</span>
+        <span class="stat-value atk-val">{combatStats().meleeAtk.toFixed(1)}</span>
+        {#if equipBonus().atk > 0}<span class="stat-bonus">+{equipBonus().atk}</span>{/if}
+      </div>
+      <div class="stat">
+        <span class="stat-label">R.Atk</span>
+        <span class="stat-value atk-val">{combatStats().rangedAtk.toFixed(1)}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Mg.Atk</span>
+        <span class="stat-value atk-val">{combatStats().magicAtk.toFixed(1)}</span>
+      </div>
     </div>
-    {#if equipStats().attack > 0}
+    <div class="stats-row def-row">
       <div class="stat">
-        <span class="stat-label">Attack</span>
-        <span class="stat-value">+{equipStats().attack}</span>
+        <span class="stat-label">M.Def</span>
+        <span class="stat-value def-val">{combatStats().meleeDef.toFixed(1)}</span>
+        {#if equipBonus().def > 0}<span class="stat-bonus">+{equipBonus().def}</span>{/if}
       </div>
-    {/if}
-    {#if equipStats().defense > 0}
       <div class="stat">
-        <span class="stat-label">Defense</span>
-        <span class="stat-value">+{equipStats().defense}</span>
+        <span class="stat-label">R.Def</span>
+        <span class="stat-value def-val">{combatStats().rangedDef.toFixed(1)}</span>
       </div>
-    {/if}
-    {#if equipStats().speed > 0}
       <div class="stat">
-        <span class="stat-label">Speed</span>
-        <span class="stat-value">+{equipStats().speed}</span>
+        <span class="stat-label">Mg.Def</span>
+        <span class="stat-value def-val">{combatStats().magicDef.toFixed(1)}</span>
       </div>
-    {/if}
+      <div class="stat carry-stat">
+        <span class="stat-label">Carry</span>
+        <span class="stat-value carry-val">{unitDef()?.carryCapacity ?? '—'}</span>
+      </div>
+    </div>
   </div>
 
   {#if errorMsg}
@@ -417,11 +433,22 @@
   .close-btn:hover { background: rgba(0, 0, 0, 0.08); }
   .close-btn.small { padding: 0.1em; }
 
-  .stats-bar {
+  .stats-section {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .stats-row {
     display: flex;
     gap: 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .atk-row {
+    background: rgba(244, 67, 54, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .def-row {
+    background: rgba(33, 150, 243, 0.03);
   }
 
   .stat {
@@ -429,27 +456,34 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.5em 0.3em;
+    padding: 0.4em 0.25em;
     border-right: 1px solid rgba(0, 0, 0, 0.06);
   }
   .stat:last-child { border-right: none; }
 
+  .carry-stat { flex: 1; }
+
   .stat-label {
-    font-size: 0.65em;
+    font-size: 0.62em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: rgba(0, 0, 0, 0.45);
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.4);
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .stat-value {
-    font-size: 1em;
+    font-size: 0.95em;
     font-weight: 700;
     color: rgba(0, 0, 0, 0.8);
   }
 
+  .atk-val { color: rgba(198, 40, 40, 0.85); }
+  .def-val { color: rgba(2, 119, 189, 0.85); }
+  .carry-val { color: rgba(0, 0, 0, 0.65); }
+
   .stat-bonus {
-    font-size: 0.7em;
+    font-size: 0.65em;
     color: rgba(76, 175, 80, 0.9);
     font-weight: 600;
   }

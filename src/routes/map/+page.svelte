@@ -1628,7 +1628,7 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100dvh;
+        height: 100vh;
     }
     
     .map.dragging {
@@ -1729,7 +1729,7 @@
     
     .left-controls {
         position: absolute;
-        bottom: 2em;
+        bottom: calc(2em + env(safe-area-inset-bottom));
         left: 3em;
         z-index: 998;
         display: flex;
@@ -1740,7 +1740,7 @@
 
     .controls-right {
         position: fixed;
-        bottom: 2em;
+        bottom: calc(2em + env(safe-area-inset-bottom));
         right: 3em;
         z-index: 1001;
         display: flex;
@@ -1907,7 +1907,7 @@
 
     /* Original positioning for each panel */
     .chat-wrapper {
-        bottom: 1em;
+        bottom: calc(1em + env(safe-area-inset-bottom));
         right: 1em;
         opacity: 0;
         /* Remove pointer-events: none so the component can be interacted with */
@@ -1917,7 +1917,7 @@
     .reports-wrapper,
     .diplomacy-wrapper,
     .rankings-wrapper {
-        bottom: 6em;
+        bottom: calc(6em + env(safe-area-inset-bottom));
         right: 1em;
     }
 

@@ -2082,18 +2082,13 @@
   
   /* Structure subgrid styling */
   .structure-subgrid {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1px;
     z-index: 3;
     pointer-events: none;
-    /* Add a subtle scale transition on hover */
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     will-change: transform, box-shadow;
   }
@@ -2105,14 +2100,14 @@
   }
   
   .subgrid-cell {
-    width: 100%;
-    height: 100%;
+    flex: 1 0 calc(33.33% - 1px);
+    min-height: calc(33.33% - 1px);
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative; /* This is correct - establishes positioning context */
+    position: relative;
     transition: background-color 0.2s ease-out;
   }
   
