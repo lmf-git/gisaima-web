@@ -1650,12 +1650,20 @@
         pointer-events: all; /* Allow pointer events on the spawn menu itself */
     }
     
+    :global(html) {
+        height: 100lvh;
+        overflow: hidden;
+    }
+
     :global(body.map-page-active) {
         overflow: hidden;
         overscroll-behavior: none;
         position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: 100%;
+        height: 100vh;
+        height: 100lvh;
     }
     
     .loading-overlay,
