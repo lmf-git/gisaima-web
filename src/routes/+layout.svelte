@@ -385,13 +385,12 @@
     }
 
     .app.map {
-        height: 100%;
         position: relative;
-        min-height: 100lvh;
+        height: 100lvh;
     }
 
     .app.map .main-content {
-        min-height: 100vh;
+        height: 100%;
     }
 
     /* Main content area with padding for absolute header */

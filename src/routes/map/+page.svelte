@@ -1628,11 +1628,11 @@
 
 <style>
     .map {
-        position: fixed;
-        top: calc(-1 * env(safe-area-inset-top, 0px));
+        position: absolute;
+        top: 0;
         left: 0;
         right: 0;
-        height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+        bottom: 0;
     }
     
     .map.dragging {
@@ -1655,7 +1655,7 @@
     
     :global(html.map-page-active),
     :global(body.map-page-active) {
-        height: 100vh;
+        height: 100%;
         overscroll-behavior: none;
         touch-action: none;
     }
