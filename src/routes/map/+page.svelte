@@ -321,11 +321,15 @@
     });
 
     onMount(() => {
-        if (browser) document.body.classList.add('map-page-active');
+        if (browser) {
+            document.body.classList.add('map-page-active');
+            document.documentElement.classList.add('map-page-active');
+        }
     })
     onDestroy(() => {
         if (browser) {
             document.body.classList.remove('map-page-active');
+            document.documentElement.classList.remove('map-page-active');
             cleanup();
         }
     });
@@ -1649,7 +1653,9 @@
         pointer-events: all; /* Allow pointer events on the spawn menu itself */
     }
     
+    :global(html.map-page-active),
     :global(body.map-page-active) {
+        height: 100vh;
         overscroll-behavior: none;
         touch-action: none;
     }

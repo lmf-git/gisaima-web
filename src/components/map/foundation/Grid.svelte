@@ -1951,19 +1951,6 @@
     </div>
   {/if}
 
-  {#if !isPathDrawingMode && $ready}
-    <div class="zoom-controls">
-      <button class="zoom-button" onclick={zoomOut} aria-label="Zoom out">
-        -
-      </button>
-      <button class="zoom-button reset-zoom" onclick={resetZoom} aria-label="Reset zoom">
-        {Math.round(zoomLevel * 100)}%
-      </button>
-      <button class="zoom-button" onclick={zoomIn} aria-label="Zoom in">
-        +
-      </button>
-    </div>
-  {/if}
 </div>
 
 <style>
@@ -2596,13 +2583,6 @@
         inset 0 0 0 3px rgba(255, 255, 255, 0.8),
         inset 0 0 0.7em rgba(255, 255, 255, 0.4),
         0 0 1.2em rgba(255, 255, 255, 0.3);
-    }
-
-    /* Ensure touch targets are large enough */
-    .zoom-controls .zoom-button {
-      min-height: 44px;
-      min-width: 44px;
-      margin: 0.15em;
     }
 
     /* Make the path controls easier to tap */
