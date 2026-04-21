@@ -1624,11 +1624,11 @@
 
 <style>
     .map {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
+        height: 100lvh;
     }
     
     .map.dragging {
@@ -1650,7 +1650,6 @@
     }
     
     :global(body.map-page-active) {
-        overflow: hidden;
         overscroll-behavior: none;
         touch-action: none;
     }
