@@ -114,6 +114,20 @@ export function connectWs() {
   _ws.addEventListener('error', (e) => console.error('[ws] error', e));
 }
 
+// Reconnect immediately when the app returns to foreground (phone unlocked / tab visible).
+// On iOS, WebSocket connections die in the background and the close-event timer may
+// not fire while the app is suspended, so we force reconnect on visibility change.
+if (browser) {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
+    // Close any zombie connection (readyState: CLOSING=2 or CLOSED=3)
+    if (_ws && _ws.readyState > 1) { _ws = null; }
+    connectWs();
+  });
+}
+
+
 function _messageChannel(msg) {
   if (msg.type === 'chunk_update') return `chunk:${msg.worldId}:${msg.chunkKey}`;
   if (msg.type === 'world_tick')   return `world:${msg.worldId}`;

@@ -546,10 +546,10 @@
       wasDrag = true;
     }
     
-    handleDragAction({ 
-      type: 'touchmove', 
-      touches: event.touches 
-    }, 1.5);
+    handleDragAction({
+      type: 'touchmove',
+      touches: event.touches
+    }, 0.6);
   }
   
   function handleTouchEnd(event) {
@@ -1955,30 +1955,27 @@
 
 <style>
   .map-container {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background: var(--color-dark-blue);
-    user-select: none;
-    z-index: 1; /* Keep this z-index low */
-    -webkit-touch-callout: none;
-       -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    transform: translateZ(0);
-    will-change: transform;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    /* Add these lines to prevent browser default touch behaviors */
+    overflow: hidden;
+    background: var(--color-dark-blue);
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    z-index: 1;
+    transform: translateZ(0);
+    will-change: transform;
     touch-action: none;
     -ms-touch-action: none;
   }
 
   .map {
+    position: relative;
     width: 100%;
     height: 100%;
     cursor: grab;
@@ -1990,18 +1987,8 @@
       color-mix(in srgb, var(--terrain-color) 15%, var(--color-dark-blue))
     );
     transition: background 1s ease;
-    /* Ensure map consistency during movement */
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0;
-    padding: 0;
     touch-action: none;
     -ms-touch-action: none;
-    /* Add will-change to improve performance */
-    will-change: transform;
   }
   
   .grid {
@@ -2016,20 +2003,9 @@
 
   .main-grid {
     grid-template-columns: repeat(var(--cols), 1fr);
-       grid-template-rows: repeat(var(--rows), 1fr);
+    grid-template-rows: repeat(var(--rows), 1fr);
     width: 100%;
     height: 100%;
-    /* Ensure grid is always positioned the same way */
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    touch-action: none;
-    -ms-touch-action: none;
   }
   
   /* The tile cells must keep position: relative */

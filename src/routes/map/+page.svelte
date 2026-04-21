@@ -1632,7 +1632,7 @@
         top: calc(-1 * env(safe-area-inset-top, 0px));
         left: 0;
         right: 0;
-        height: calc(100vh + env(safe-area-inset-top, 0px));
+        height: calc(100vh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
     }
     
     .map.dragging {
