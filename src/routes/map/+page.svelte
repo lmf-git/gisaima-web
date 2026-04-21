@@ -1629,10 +1629,10 @@
 <style>
     .map {
         position: absolute;
-        top: 0;
+        top: calc(-1 * env(safe-area-inset-top, 0px));
         left: 0;
         right: 0;
-        bottom: 0;
+        bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
     }
     
     .map.dragging {

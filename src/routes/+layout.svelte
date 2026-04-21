@@ -386,11 +386,11 @@
 
     .app.map {
         position: relative;
-        height: 100lvh;
+        min-height: 100lvh;
     }
 
     .app.map .main-content {
-        height: 100%;
+        min-height: 100%;
     }
 
     /* Main content area with padding for absolute header */
