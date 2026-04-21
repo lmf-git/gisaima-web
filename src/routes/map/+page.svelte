@@ -324,12 +324,14 @@
         if (browser) {
             document.body.classList.add('map-page-active');
             document.documentElement.classList.add('map-page-active');
+            document.documentElement.style.setProperty('--map-full-height', window.screen.height + 'px');
         }
     })
     onDestroy(() => {
         if (browser) {
             document.body.classList.remove('map-page-active');
             document.documentElement.classList.remove('map-page-active');
+            document.documentElement.style.removeProperty('--map-full-height');
             cleanup();
         }
     });
@@ -1628,11 +1630,11 @@
 
 <style>
     .map {
-        position: absolute;
-        top: 0;
+        position: fixed;
+        top: calc(-1 * env(safe-area-inset-top, 0px));
         left: 0;
         right: 0;
-        height: 100vh;
+        height: var(--map-full-height, 100vh);
     }
     
     .map.dragging {
