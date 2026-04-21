@@ -387,6 +387,7 @@
     .app.map {
         height: 100%;
         position: relative;
+        min-height: 100lvh;
     }
 
     /* Main content area with padding for absolute header */

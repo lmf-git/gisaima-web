@@ -1726,7 +1726,7 @@
     }
     
     .left-controls {
-        position: absolute;
+        position: fixed;
         bottom: calc(2em + env(safe-area-inset-bottom));
         left: 3em;
         z-index: 998;
