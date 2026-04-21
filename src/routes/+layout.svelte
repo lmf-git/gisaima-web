@@ -390,6 +390,10 @@
         min-height: 100lvh;
     }
 
+    .app.map .main-content {
+        min-height: 100vh;
+    }
+
     /* Main content area with padding for absolute header */
     .main-content {
         flex: 1;
