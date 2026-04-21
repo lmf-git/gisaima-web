@@ -324,14 +324,12 @@
         if (browser) {
             document.body.classList.add('map-page-active');
             document.documentElement.classList.add('map-page-active');
-            document.documentElement.style.setProperty('--map-full-height', window.screen.height + 'px');
         }
     })
     onDestroy(() => {
         if (browser) {
             document.body.classList.remove('map-page-active');
             document.documentElement.classList.remove('map-page-active');
-            document.documentElement.style.removeProperty('--map-full-height');
             cleanup();
         }
     });
@@ -1634,7 +1632,7 @@
         top: calc(-1 * env(safe-area-inset-top, 0px));
         left: 0;
         right: 0;
-        height: var(--map-full-height, 100vh);
+        bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
     }
     
     .map.dragging {
