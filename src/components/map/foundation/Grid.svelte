@@ -214,12 +214,18 @@
   
   function resizeMap(mapElement) {
     if (!mapElement) return;
-    
+
     map.update(state => {
       const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
       const tileSizePx = currentTileSize * baseFontSize; // Use currentTileSize instead of TILE_SIZE
-      const width = mapElement.clientWidth;
-      const height = mapElement.clientHeight;
+      // Use physical screen dimensions so tile coverage always spans the full screen,
+      // independent of what clientHeight reports (iOS clamps fixed-element clientHeight).
+      const width = (typeof window !== 'undefined' && window.screen)
+        ? Math.max(mapElement.clientWidth, window.screen.width)
+        : mapElement.clientWidth;
+      const height = (typeof window !== 'undefined' && window.screen)
+        ? Math.max(mapElement.clientHeight, window.screen.height)
+        : mapElement.clientHeight;
 
       // Calculate how many tiles can fit in the viewport
       const rawCols = width / tileSizePx;

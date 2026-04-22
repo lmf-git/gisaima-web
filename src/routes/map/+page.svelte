@@ -324,6 +324,31 @@
         if (browser) {
             document.body.classList.add('map-page-active');
             document.documentElement.classList.add('map-page-active');
+
+            // Measure the actual safe-area env() values in CSS pixels via a probe element,
+            // then apply full-physical-screen sizing directly. CSS approaches (fixed, absolute,
+            // vh/lvh/svh units, calc with env()) are all clamped by iOS Safari to the layout
+            // viewport — JS inline styles bypass that restriction.
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;' +
+                'padding-top:env(safe-area-inset-top,0px);' +
+                'padding-bottom:env(safe-area-inset-bottom,0px);' +
+                'visibility:hidden;pointer-events:none;';
+            document.body.appendChild(probe);
+            const cs = getComputedStyle(probe);
+            const safeTop = parseFloat(cs.paddingTop) || 0;
+            const safeBottom = parseFloat(cs.paddingBottom) || 0;
+            document.body.removeChild(probe);
+
+            if (mapRef) {
+                mapRef.style.position = 'fixed';
+                mapRef.style.top = `-${safeTop}px`;
+                mapRef.style.left = '0';
+                mapRef.style.right = '0';
+                // innerHeight = layout viewport (excludes status bar + glass bar).
+                // Adding both safe areas back gives the full physical screen height.
+                mapRef.style.height = `${window.innerHeight + safeTop + safeBottom}px`;
+            }
         }
     })
     onDestroy(() => {
@@ -1185,6 +1210,7 @@
 
     // Add state for showing notices
     let showNotices = $state(true);
+    let mapRef = $state(null);
 
     // Function to handle follow state changes from the FollowPlayer component
     function handleFollowToggle(isFollowing) {
@@ -1200,7 +1226,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive}>
+<div bind:this={mapRef} class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive}>
     {#if combinedLoading}
         <div class="loading-overlay">
             <div class="loading-logo">
@@ -1628,11 +1654,12 @@
 
 <style>
     .map {
-        position: absolute;
-        top: calc(-1 * env(safe-area-inset-top, 0px));
+        /* JS onMount overrides these with exact physical-screen measurements. */
+        position: fixed;
+        top: 0;
         left: 0;
         right: 0;
-        bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+        bottom: 0;
     }
     
     .map.dragging {
