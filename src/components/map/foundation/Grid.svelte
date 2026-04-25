@@ -1494,8 +1494,15 @@
 
   // Returns the biome colour for a subgrid cell by sampling the terrain at the
   // neighbouring world coordinate that the (row, col) offset corresponds to.
-  function getSubCellColor(cellX, cellY, row, col) {
-    const data = getTerrainAt(cellX + col - 1, cellY + row - 1);
+  function getSubgridSize(level) {
+    if (level >= 5) return 5;
+    if (level >= 3) return 4;
+    return 3;
+  }
+
+  function getSubCellColor(cellX, cellY, row, col, gridSize) {
+    const center = Math.floor(gridSize / 2);
+    const data = getTerrainAt(cellX + col - center, cellY + row - center);
     return data?.color || null;
   }
 
@@ -1794,17 +1801,20 @@
             {#if shouldRenderDetails}
               <!-- Structure subdivision grid — shown on all tiles with structures -->
               {#if cell.structure}
+                {@const subN = getSubgridSize(cell.structure.level || 0)}
+                {@const subCenter = Math.floor(subN / 2)}
                 <div class="structure-subgrid"
                      class:center-subgrid={cell.isCenter}
-                     class:placement-mode={buildingPlacementMode && cell.isCenter}>
-                  {#each Array(9) as _, index}
-                    {@const row = Math.floor(index / 3)}
-                    {@const col = index % 3}
-                    {@const subColor = getSubCellColor(cell.x, cell.y, row, col)}
+                     class:placement-mode={buildingPlacementMode && cell.isCenter}
+                     style="--subcols: {subN}">
+                  {#each Array(subN * subN) as _, index}
+                    {@const row = Math.floor(index / subN)}
+                    {@const col = index % subN}
+                    {@const subColor = getSubCellColor(cell.x, cell.y, row, col, subN)}
                     {@const isPlaceable = buildingPlacementMode && cell.isCenter}
                     <div
                       class="subgrid-cell"
-                      class:center-cell={row === 1 && col === 1}
+                      class:center-cell={row === subCenter && col === subCenter}
                       class:placement-selectable={isPlaceable}
                       class:placement-hovered={isPlaceable && hoveredSubCell === index}
                       class:placement-selected={isPlaceable && selectedSubCell === index}
@@ -1817,7 +1827,7 @@
                       onclick={isPlaceable ? () => handleSubCellClick(index) : undefined}
                       onkeydown={isPlaceable ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleSubCellClick(index); } : undefined}
                     >
-                      {#if cell.isCenter && row === 1 && col === 1}
+                      {#if cell.isCenter && row === subCenter && col === subCenter}
                         <div class="subgrid-structure-icon">
                           {#if cell.structure.status === 'building'}
                             <Hammer size="80%" extraClass="construction-icon" />
@@ -2090,17 +2100,18 @@
     box-sizing: border-box;
   }
   
-  /* Hide the regular structure icon when using subdivided grid */
-  .tile.subdivided .structure-icon-container {
+  /* Hide the regular structure icon only on the target (center) tile — subgrid shows it there */
+  .tile.subdivided.center .structure-icon-container {
     display: none;
   }
-  
+
   /* Structure subgrid styling */
   .structure-subgrid {
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-wrap: wrap;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(var(--subcols, 3), 1fr);
+    grid-template-rows: repeat(var(--subcols, 3), 1fr);
     gap: 1px;
     z-index: 3;
     pointer-events: none;
@@ -2121,15 +2132,12 @@
   }
 
   .subgrid-cell {
-    flex: 1 0 calc(33.33% - 1px);
-    min-height: calc(33.33% - 1px);
     border-radius: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     transition: background-color 0.15s ease-out, outline 0.1s ease-out;
-    /* Biome colour supplied via inline style; fallback to subtle white tint */
     background-color: rgba(255, 255, 255, 0.05);
   }
 
