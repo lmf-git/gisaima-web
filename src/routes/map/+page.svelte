@@ -116,10 +116,15 @@
         visible: false
     });
 
+    // Building sub-tile placement mode
+    let buildingPlacementMode = $state(false);
+    let pendingBuildingData = $state(null);
+
     const isAnyModalOpen = $derived(
-        modalState.visible || 
-        !$game?.player?.alive || 
-        detailed || 
+        modalState.visible ||
+        buildingPlacementMode ||
+        !$game?.player?.alive ||
+        detailed ||
         isTutorialVisible
     );
 
@@ -324,31 +329,6 @@
         if (browser) {
             document.body.classList.add('map-page-active');
             document.documentElement.classList.add('map-page-active');
-
-            // Measure the actual safe-area env() values in CSS pixels via a probe element,
-            // then apply full-physical-screen sizing directly. CSS approaches (fixed, absolute,
-            // vh/lvh/svh units, calc with env()) are all clamped by iOS Safari to the layout
-            // viewport — JS inline styles bypass that restriction.
-            const probe = document.createElement('div');
-            probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;' +
-                'padding-top:env(safe-area-inset-top,0px);' +
-                'padding-bottom:env(safe-area-inset-bottom,0px);' +
-                'visibility:hidden;pointer-events:none;';
-            document.body.appendChild(probe);
-            const cs = getComputedStyle(probe);
-            const safeTop = parseFloat(cs.paddingTop) || 0;
-            const safeBottom = parseFloat(cs.paddingBottom) || 0;
-            document.body.removeChild(probe);
-
-            if (mapRef) {
-                mapRef.style.position = 'fixed';
-                mapRef.style.top = `-${safeTop}px`;
-                mapRef.style.left = '0';
-                mapRef.style.right = '0';
-                // innerHeight = layout viewport (excludes status bar + glass bar).
-                // Adding both safe areas back gives the full physical screen height.
-                mapRef.style.height = `${window.innerHeight + safeTop + safeBottom}px`;
-            }
         }
     })
     onDestroy(() => {
@@ -545,9 +525,17 @@
 
     function showModal(options) {
         if (!options) return;
-        
+
         console.log('Opening modal:', options.type, options.data);
-        
+
+        // Building placement: close the inspect panel and enter sub-tile selection mode
+        if (options.type === 'add-building') {
+            closeModal();
+            pendingBuildingData = options.data;
+            buildingPlacementMode = true;
+            return;
+        }
+
         // Don't close details panel for inspect, recruitment, or craft modals
         // since these are considered "detail" type views
         if (['mobilise', 'move', 'gather', 'demobilise', 'joinBattle', 'attack', 'build'].includes(options.type)) {
@@ -555,14 +543,29 @@
                 toggleDetailsModal(false);
             }
         }
-        
+
         lastActivePanel = options.type;
-        
+
         modalState = {
             type: options.type,
             data: options.data,
             visible: true
         };
+    }
+
+    function handleSubCellSelect(subCellIndex) {
+        buildingPlacementMode = false;
+        if (subCellIndex === null) {
+            // Cancelled
+            pendingBuildingData = null;
+            return;
+        }
+        const row = Math.floor(subCellIndex / 3);
+        const col = subCellIndex % 3;
+        const data = { ...pendingBuildingData, subCell: subCellIndex, subRow: row, subCol: col };
+        pendingBuildingData = null;
+        lastActivePanel = 'add-building';
+        modalState = { type: 'add-building', data, visible: true };
     }
 
     function closeModal() {
@@ -1210,7 +1213,6 @@
 
     // Add state for showing notices
     let showNotices = $state(true);
-    let mapRef = $state(null);
 
     // Function to handle follow state changes from the FollowPlayer component
     function handleFollowToggle(isFollowing) {
@@ -1226,7 +1228,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div bind:this={mapRef} class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive}>
+<div class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive}>
     {#if combinedLoading}
         <div class="loading-overlay">
             <div class="loading-logo">
@@ -1271,6 +1273,8 @@
             customPathPoints={currentPath}
             modalOpen={isAnyModalOpen}
             pathDrawingGroup={pathDrawingGroup}
+            buildingPlacementMode={buildingPlacementMode}
+            onSubCellSelect={handleSubCellSelect}
             onClose={() => {
                 if (isPathDrawingMode) handlePathDrawingCancel();
             }}
@@ -1647,6 +1651,22 @@
               isActive={lastActivePanel === modalState.type}
               onMouseEnter={() => handlePanelHover(modalState.type)}
             />
+          {:else if modalState.type === 'add-building' && modalState.data}
+            <div class="modal-container add-building-confirm" role="dialog">
+              <div class="add-building-panel">
+                <header class="modal-header-simple">
+                  <h3>Place {modalState.data.buildingType ? modalState.data.buildingType.charAt(0).toUpperCase() + modalState.data.buildingType.slice(1) : 'Building'}</h3>
+                  <button class="close-btn-inline" onclick={closeModal} aria-label="Close">✕</button>
+                </header>
+                <p class="sub-cell-info">
+                  Sub-tile position: row {modalState.data.subRow + 1}, col {modalState.data.subCol + 1}
+                </p>
+                <div class="add-building-actions">
+                  <button class="btn-secondary" onclick={closeModal}>Cancel</button>
+                  <button class="btn-primary" onclick={closeModal}>Confirm</button>
+                </div>
+              </div>
+            </div>
           {/if}
         {/if}
     {/if}
@@ -1654,16 +1674,12 @@
 
 <style>
     .map {
-        /* JS onMount overrides these with exact physical-screen measurements. */
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-    
-    .map.dragging {
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+    }
+
+    .map.dragging {
         touch-action: none;
     }
     
@@ -1683,8 +1699,98 @@
     :global(html.map-page-active),
     :global(body.map-page-active) {
         height: 100%;
+        overflow: hidden;
         overscroll-behavior: none;
         touch-action: none;
+    }
+
+    /* Add-building sub-tile confirmation panel */
+    .add-building-confirm {
+        position: fixed;
+        bottom: 8em;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+        pointer-events: auto;
+    }
+
+    .add-building-panel {
+        background: rgba(12, 22, 35, 0.95);
+        border: 1px solid rgba(80, 200, 120, 0.45);
+        border-radius: 0.5em;
+        padding: 1.2em 1.6em;
+        min-width: 16em;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(6px);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .modal-header-simple {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.6em;
+    }
+
+    .modal-header-simple h3 {
+        margin: 0;
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+    .close-btn-inline {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        font-size: 1em;
+        padding: 0.1em 0.3em;
+    }
+
+    .close-btn-inline:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .sub-cell-info {
+        font-size: 0.85em;
+        color: rgba(200, 220, 200, 0.8);
+        margin: 0.4em 0 1em;
+    }
+
+    .add-building-actions {
+        display: flex;
+        gap: 0.8em;
+        justify-content: flex-end;
+    }
+
+    .btn-primary {
+        background: rgba(80, 200, 120, 0.25);
+        border: 1px solid rgba(80, 200, 120, 0.6);
+        color: rgba(180, 255, 200, 0.95);
+        border-radius: 0.3em;
+        padding: 0.4em 1em;
+        cursor: pointer;
+        font-size: 0.85em;
+        transition: background 0.15s;
+    }
+
+    .btn-primary:hover {
+        background: rgba(80, 200, 120, 0.45);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 0.3em;
+        padding: 0.4em 1em;
+        cursor: pointer;
+        font-size: 0.85em;
+        transition: background 0.15s;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.14);
     }
     
     .loading-overlay,

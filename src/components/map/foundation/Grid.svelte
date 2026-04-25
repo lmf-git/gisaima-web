@@ -12,7 +12,8 @@
     moveTarget,
     targetStore,
     highlightedStore,
-    setHighlighted
+    setHighlighted,
+    getTerrainAt
   } from "../../../lib/stores/map.js";
   
   import Peek from './Peek.svelte';
@@ -32,9 +33,9 @@
   import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
   
   // Props with defaults using Svelte 5 $props() rune
-  const { 
-    detailed = false, 
-    isPathDrawingMode = false, 
+  const {
+    detailed = false,
+    isPathDrawingMode = false,
     onAddPathPoint = null,
     onClick = null,
     onClose = () => {},
@@ -42,14 +43,20 @@
     customPathPoints = [],
     modalOpen = false,
     initialZoom = 1.0,
-    pathDrawingGroup = null // Add pathDrawingGroup as a prop
+    pathDrawingGroup = null,
+    buildingPlacementMode = false,
+    onSubCellSelect = null
   } = $props();
   
   // Add zoom level state
   let zoomLevel = $state(untrack(() => initialZoom));
   let currentTileSize = $state(TILE_SIZE);
   let hoverTimeout = $state(null); // Add the missing hoverTimeout variable
-  
+
+  // Building placement sub-cell state
+  let hoveredSubCell = $state(null);
+  let selectedSubCell = $state(null);
+
   // Track last click time for the center tile to handle debouncing
   let lastCenterClickTime = $state(0);
   
@@ -217,15 +224,9 @@
 
     map.update(state => {
       const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const tileSizePx = currentTileSize * baseFontSize; // Use currentTileSize instead of TILE_SIZE
-      // Use physical screen dimensions so tile coverage always spans the full screen,
-      // independent of what clientHeight reports (iOS clamps fixed-element clientHeight).
-      const width = (typeof window !== 'undefined' && window.screen)
-        ? Math.max(mapElement.clientWidth, window.screen.width)
-        : mapElement.clientWidth;
-      const height = (typeof window !== 'undefined' && window.screen)
-        ? Math.max(mapElement.clientHeight, window.screen.height)
-        : mapElement.clientHeight;
+      const tileSizePx = currentTileSize * baseFontSize;
+      const width = mapElement.clientWidth;
+      const height = mapElement.clientHeight;
 
       // Calculate how many tiles can fit in the viewport
       const rawCols = width / tileSizePx;
@@ -1491,6 +1492,18 @@
     return dominantType;
   }
 
+  // Returns the biome colour for a subgrid cell by sampling the terrain at the
+  // neighbouring world coordinate that the (row, col) offset corresponds to.
+  function getSubCellColor(cellX, cellY, row, col) {
+    const data = getTerrainAt(cellX + col - 1, cellY + row - 1);
+    return data?.color || null;
+  }
+
+  function handleSubCellClick(index) {
+    selectedSubCell = index;
+    onSubCellSelect?.(index);
+  }
+
   // Add a function to handle the actions from Peek
   function handlePeekAction(actionId) {
     console.log(`Grid handling peek action: ${actionId}`);
@@ -1585,6 +1598,17 @@
     
     return false;
   }
+
+  // Force 1×1 grid while in building placement mode; restore on exit.
+  $effect(() => {
+    if (buildingPlacementMode) {
+      map.update(state => ({ ...state, cols: 1, rows: 1 }));
+      hoveredSubCell = null;
+      selectedSubCell = null;
+    } else if (mapElement) {
+      resizeMap(mapElement);
+    }
+  });
 </script>
 
 <svelte:window
@@ -1595,15 +1619,16 @@
   onvisibilitychange={() => document.visibilityState === 'hidden' && handleMouseUp()}
 />
 
-<div class="map-container" 
-    style="--tile-size: {currentTileSize}em; --center-tile-color: {backgroundColor};" 
-    class:modal-open={detailed} 
+<div class="map-container"
+    style="--tile-size: {currentTileSize}em; --center-tile-color: {backgroundColor};"
+    class:modal-open={detailed}
     class:touch-active={$map.isDragging && $map.dragSource === 'map'}
     class:path-drawing-mode={!!isPathDrawingMode}
     class:water-motion={pathDrawingGroup && canTraverseWater(pathDrawingGroup) && !hasFlyingMotion(pathDrawingGroup)}
     class:water-only-motion={pathDrawingGroup && isWaterOnlyGroup(pathDrawingGroup)}
     class:flying-motion={pathDrawingGroup && hasFlyingMotion(pathDrawingGroup)}
-    class:max-zoom={isMaximumZoom}>
+    class:max-zoom={isMaximumZoom}
+    class:building-placement={buildingPlacementMode}>
   <div
     class="map"
     bind:this={mapElement}
@@ -1744,7 +1769,7 @@
           <div
             class="tile {cell?.structure?.type} {cell.terrain?.rarity || 'common'}"
             class:center={cell.isCenter}
-            class:subdivided={cell.structure && cell.isCenter}
+            class:subdivided={!!cell.structure}
             tabindex={cell.isCenter ? "0" : "-1"}
             class:highlighted={cell.highlighted}
             class:has-structure={cell.structure}
@@ -1769,14 +1794,28 @@
             {#if shouldRenderDetails}
               <!-- Structure subdivision grid — shown on all tiles with structures -->
               {#if cell.structure}
-                <div class="structure-subgrid" class:center-subgrid={cell.isCenter}>
+                <div class="structure-subgrid"
+                     class:center-subgrid={cell.isCenter}
+                     class:placement-mode={buildingPlacementMode && cell.isCenter}>
                   {#each Array(9) as _, index}
                     {@const row = Math.floor(index / 3)}
                     {@const col = index % 3}
+                    {@const subColor = getSubCellColor(cell.x, cell.y, row, col)}
+                    {@const isPlaceable = buildingPlacementMode && cell.isCenter}
                     <div
                       class="subgrid-cell"
                       class:center-cell={row === 1 && col === 1}
+                      class:placement-selectable={isPlaceable}
+                      class:placement-hovered={isPlaceable && hoveredSubCell === index}
+                      class:placement-selected={isPlaceable && selectedSubCell === index}
+                      style={subColor ? `background-color: ${subColor};` : ''}
                       data-position={`${row}-${col}`}
+                      role={isPlaceable ? 'button' : undefined}
+                      tabindex={isPlaceable ? 0 : undefined}
+                      onpointerenter={isPlaceable ? () => { hoveredSubCell = index; } : undefined}
+                      onpointerleave={isPlaceable ? () => { hoveredSubCell = null; } : undefined}
+                      onclick={isPlaceable ? () => handleSubCellClick(index) : undefined}
+                      onkeydown={isPlaceable ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleSubCellClick(index); } : undefined}
                     >
                       {#if cell.isCenter && row === 1 && col === 1}
                         <div class="subgrid-structure-icon">
@@ -1957,15 +1996,22 @@
     </div>
   {/if}
 
+  {#if buildingPlacementMode}
+    <div class="placement-banner">
+      <span class="placement-banner-text">Select a sub-tile to place your building</span>
+      <button class="placement-cancel-btn" onclick={() => onSubCellSelect?.(null)} aria-label="Cancel building placement">
+        Cancel
+      </button>
+    </div>
+  {/if}
+
 </div>
 
 <style>
   .map-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     background: var(--color-dark-blue);
     user-select: none;
@@ -2061,25 +2107,53 @@
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     will-change: transform, box-shadow;
   }
-  
+
+  /* Allow pointer events when in building placement mode */
+  .structure-subgrid.placement-mode {
+    pointer-events: auto;
+    gap: 2px;
+  }
+
   /* Make subgrids more visible when in hover state */
   .tile.subdivided:hover .structure-subgrid {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-    z-index: 12; /* Ensure hovering brings it above other elements */
+    z-index: 12;
   }
-  
+
   .subgrid-cell {
     flex: 1 0 calc(33.33% - 1px);
     min-height: calc(33.33% - 1px);
-    background-color: rgba(255, 255, 255, 0.05);
     border-radius: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    transition: background-color 0.2s ease-out;
+    transition: background-color 0.15s ease-out, outline 0.1s ease-out;
+    /* Biome colour supplied via inline style; fallback to subtle white tint */
+    background-color: rgba(255, 255, 255, 0.05);
   }
-  
+
+  /* Placement-mode interactive cells */
+  .subgrid-cell.placement-selectable {
+    cursor: pointer;
+    outline: 1px solid rgba(255, 255, 255, 0.2);
+    outline-offset: -1px;
+  }
+
+  .subgrid-cell.placement-hovered {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: -2px;
+    filter: brightness(1.35);
+    z-index: 5;
+  }
+
+  .subgrid-cell.placement-selected {
+    outline: 2px solid rgba(80, 200, 120, 0.95);
+    outline-offset: -2px;
+    filter: brightness(1.2);
+    z-index: 6;
+  }
+
   .subgrid-structure-icon {
     position: absolute;
     top: 0;
@@ -2092,36 +2166,66 @@
     z-index: 4;
     transition: transform 0.2s ease-out;
   }
-  
+
   :global(.subgrid-structure-icon .structure-icon) {
     opacity: 1;
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.7));
   }
-  
-  /* Enhance corner cells with subtle visual distinction */
-  .subgrid-cell:nth-child(1),
-  .subgrid-cell:nth-child(3),
-  .subgrid-cell:nth-child(7),
-  .subgrid-cell:nth-child(9) {
-    background-color: rgba(255, 255, 255, 0.03);
-  }
-  
+
   /* When hovering the tile, enhance the subgrid */
   .tile.subdivided:hover .structure-subgrid {
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   }
 
-  /* Non-center tiles: subtle grid lines only, no backgrounds */
+  /* Non-center tiles: show biome colours with a thin dividing border */
   .structure-subgrid:not(.center-subgrid) .subgrid-cell {
-    background-color: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.25);
     border-radius: 0;
   }
-  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(1),
-  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(3),
-  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(7),
-  .structure-subgrid:not(.center-subgrid) .subgrid-cell:nth-child(9) {
-    background-color: transparent;
+
+  /* Building-placement overlay hint */
+  .building-placement .tile.center .structure-subgrid.placement-mode {
+    box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.5), 0 0 20px rgba(80, 200, 120, 0.2);
+  }
+
+  /* Building placement banner */
+  .placement-banner {
+    position: absolute;
+    bottom: 5em;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    background: rgba(10, 20, 30, 0.88);
+    border: 1px solid rgba(80, 200, 120, 0.5);
+    border-radius: 0.5em;
+    padding: 0.6em 1.2em;
+    z-index: 50;
+    pointer-events: auto;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 16px rgba(80, 200, 120, 0.2);
+  }
+
+  .placement-banner-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9em;
+    letter-spacing: 0.03em;
+  }
+
+  .placement-cancel-btn {
+    background: rgba(200, 60, 60, 0.25);
+    border: 1px solid rgba(200, 60, 60, 0.5);
+    color: rgba(255, 180, 180, 0.9);
+    border-radius: 0.3em;
+    padding: 0.3em 0.8em;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .placement-cancel-btn:hover {
+    background: rgba(200, 60, 60, 0.45);
   }
 
   /* Construction state */

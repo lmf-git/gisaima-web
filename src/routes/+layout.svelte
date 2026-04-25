@@ -375,21 +375,33 @@
         line-height: 1.5;
     }
 
+    :global(html) {
+        height: 100%;
+    }
+
+    :global(body) {
+        height: 100%;
+    }
+
     .app {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
-        background: linear-gradient(to bottom, 
-                   var(--color-background-gradient-start), 
+        min-height: 100%;
+        background: linear-gradient(to bottom,
+                   var(--color-background-gradient-start),
                    var(--color-background-gradient-end));
     }
 
     .app.map {
-        position: relative;
+        height: 100%;
+        min-height: unset;
+        overflow: hidden;
     }
 
     .app.map .main-content {
+        height: 100%;
         min-height: 0;
+        overflow: hidden;
     }
 
     /* Main content area with padding for absolute header */

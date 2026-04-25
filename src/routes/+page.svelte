@@ -7,8 +7,8 @@
 </script>
 
 <svelte:head>
-  <title>Gisaima - Strategic Territory Control MMO</title>
-  <meta name="description" content="Explore infinite procedurally generated worlds in this strategic MMO. Discover rare terrain, build structures, command unit groups, and forge alliances in an ever-expanding universe." />
+  <title>Gisaima - Hardcore Strategic Territory Control MMO</title>
+  <meta name="description" content="Hardcore no P2W strategic MMO. Discover rare terrain, build structures, command unit groups, and forge alliances in an ever-expanding universe." />
 </svelte:head>
 
 <div class="container">

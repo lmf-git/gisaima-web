@@ -204,7 +204,8 @@
               x,
               y,
               structure: tileData?.structure,
-              tile: tileData
+              tile: tileData,
+              buildingType: data.buildingType
             }
           });
           break;

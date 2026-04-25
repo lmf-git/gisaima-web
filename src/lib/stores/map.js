@@ -983,6 +983,11 @@ export function initialize(options = {}) {
   }
 }
 
+export function getTerrainAt(x, y) {
+  if (!terrain) return null;
+  return terrain.getTerrainData(x, y);
+}
+
 // Backward compatibility functions
 export function setup(options = {}) {
   return initialize(options);
