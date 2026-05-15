@@ -22,6 +22,35 @@
   import Torch from '../../icons/Torch.svelte';
   import Hammer from '../../icons/Hammer.svelte';
   import Structure from '../../icons/Structure.svelte';
+  import BasicShelter from '../../icons/BasicShelter.svelte';
+  import Watchtower from '../../icons/Watchtower.svelte';
+  import StorageDepot from '../../icons/StorageDepot.svelte';
+  import Workshop from '../../icons/Workshop.svelte';
+  import Outpost from '../../icons/Outpost.svelte';
+  import Smithy from '../../icons/Smithy.svelte';
+  import Barracks from '../../icons/Barracks.svelte';
+  import Mine from '../../icons/Mine.svelte';
+  import WallStructure from '../../icons/WallStructure.svelte';
+  import Academy from '../../icons/Academy.svelte';
+  import Market from '../../icons/Market.svelte';
+  import Farm from '../../icons/Farm.svelte';
+  import Harbour from '../../icons/Harbour.svelte';
+
+  const STRUCTURE_ICONS = {
+    basic_shelter: BasicShelter,
+    watchtower: Watchtower,
+    storage: StorageDepot,
+    workshop: Workshop,
+    outpost: Outpost,
+    smithy: Smithy,
+    barracks: Barracks,
+    mine: Mine,
+    wall: WallStructure,
+    academy: Academy,
+    market: Market,
+    farm: Farm,
+    harbour: Harbour,
+  };
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
   import Dwarf from '../../icons/Dwarf.svelte';
@@ -45,6 +74,7 @@
     initialZoom = 1.0,
     pathDrawingGroup = null,
     buildingPlacementMode = false,
+    allowedSubCells = null,
     onSubCellSelect = null
   } = $props();
   
@@ -1799,8 +1829,12 @@
           >
             <!-- Only render additional elements when initial animations are complete, don't hide during movement -->
             {#if shouldRenderDetails}
-              <!-- Structure subdivision grid — shown on all tiles with structures -->
-              {#if cell.structure}
+              <!-- Wall: full-tile border overlay (no subgrid) -->
+              {#if cell.structure?.type === 'wall'}
+                <div class="tile-wall-overlay" class:building={cell.structure.status === 'building'}></div>
+              {/if}
+              <!-- Structure subdivision grid — shown on all tiles with non-wall structures -->
+              {#if cell.structure && cell.structure.type !== 'wall'}
                 {@const subN = getSubgridSize(cell.structure.level || 0)}
                 {@const subCenter = Math.floor(subN / 2)}
                 <div class="structure-subgrid"
@@ -1810,15 +1844,16 @@
                   {#each Array(subN * subN) as _, index}
                     {@const row = Math.floor(index / subN)}
                     {@const col = index % subN}
-                    {@const subColor = getSubCellColor(cell.x, cell.y, row, col, subN)}
-                    {@const isPlaceable = buildingPlacementMode && cell.isCenter}
+                    {@const isPlaceable = buildingPlacementMode && cell.isCenter && (allowedSubCells === null || allowedSubCells.has(index))}
+                    {@const iconRow = cell.structure.subRow ?? subCenter}
+                    {@const iconCol = cell.structure.subCol ?? subCenter}
+                    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
                     <div
                       class="subgrid-cell"
                       class:center-cell={row === subCenter && col === subCenter}
                       class:placement-selectable={isPlaceable}
                       class:placement-hovered={isPlaceable && hoveredSubCell === index}
                       class:placement-selected={isPlaceable && selectedSubCell === index}
-                      style={subColor ? `background-color: ${subColor};` : ''}
                       data-position={`${row}-${col}`}
                       role={isPlaceable ? 'button' : undefined}
                       tabindex={isPlaceable ? 0 : undefined}
@@ -1827,14 +1862,15 @@
                       onclick={isPlaceable ? () => handleSubCellClick(index) : undefined}
                       onkeydown={isPlaceable ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleSubCellClick(index); } : undefined}
                     >
-                      {#if cell.isCenter && row === subCenter && col === subCenter}
+                      {#if !cell.isCenter && row === iconRow && col === iconCol}
+                        {@const Icon = STRUCTURE_ICONS[cell.structure.type] ?? Structure}
                         <div class="subgrid-structure-icon">
                           {#if cell.structure.status === 'building'}
                             <Hammer size="80%" extraClass="construction-icon" />
                           {:else if cell.structure.type === 'spawn'}
                             <Torch size="90%" extraClass="spawn-icon" />
                           {:else}
-                            <Structure size="90%" extraClass="structure-icon {cell.structure.type}-icon" />
+                            <Icon size="90%" extraClass="structure-icon {cell.structure.type}-icon" />
                           {/if}
                         </div>
                       {/if}
@@ -2112,7 +2148,6 @@
     display: grid;
     grid-template-columns: repeat(var(--subcols, 3), 1fr);
     grid-template-rows: repeat(var(--subcols, 3), 1fr);
-    gap: 1px;
     z-index: 3;
     pointer-events: none;
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
@@ -2185,12 +2220,6 @@
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
   }
 
-  /* Non-center tiles: show biome colours with a thin dividing border */
-  .structure-subgrid:not(.center-subgrid) .subgrid-cell {
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    border-radius: 0;
-  }
-
   /* Building-placement overlay hint */
   .building-placement .tile.center .structure-subgrid.placement-mode {
     box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.5), 0 0 20px rgba(80, 200, 120, 0.2);
@@ -2252,6 +2281,20 @@
   }
 
   /* Construction progress bar */
+  .tile-wall-overlay {
+    position: absolute;
+    inset: 0;
+    border: 4px solid rgba(180, 160, 120, 0.85);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 5;
+    border-radius: 1px;
+  }
+  .tile-wall-overlay.building {
+    border-color: rgba(255, 200, 50, 0.7);
+    border-style: dashed;
+  }
+
   .construction-progress-bar {
     position: absolute;
     bottom: 2px;

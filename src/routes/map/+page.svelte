@@ -14,6 +14,7 @@
       currentPlayer,
       getWorldInfo,
       setCurrentWorld,
+      clearCurrentWorld,
       savePlayerAchievement,
       subscribeToWorldInfo
     } from "../../lib/stores/game.js";
@@ -119,6 +120,7 @@
     // Building sub-tile placement mode
     let buildingPlacementMode = $state(false);
     let pendingBuildingData = $state(null);
+    let allowedSubCells = $state(null);
 
     const isAnyModalOpen = $derived(
         modalState.visible ||
@@ -528,13 +530,7 @@
 
         console.log('Opening modal:', options.type, options.data);
 
-        // Building placement: close the inspect panel and enter sub-tile selection mode
-        if (options.type === 'add-building') {
-            closeModal();
-            pendingBuildingData = options.data;
-            buildingPlacementMode = true;
-            return;
-        }
+        if (options.type === 'add-building') return;
 
         // Don't close details panel for inspect, recruitment, or craft modals
         // since these are considered "detail" type views
@@ -553,19 +549,104 @@
         };
     }
 
-    function handleSubCellSelect(subCellIndex) {
+    async function handleBuildRequest(buildData) {
+        closeModal();
+
+        // Walls cover the whole tile — no subgrid placement step
+        if (buildData.structureType === 'wall') {
+            try {
+                const result = await apiPost('/actions/buildStructure', {
+                    worldId: $game.worldKey,
+                    groupId: buildData.groupId,
+                    tileX: buildData.tileX,
+                    tileY: buildData.tileY,
+                    structureType: buildData.structureType,
+                    structureName: buildData.structureName
+                });
+                if (result.success) {
+                    const tileKey = `${buildData.tileX},${buildData.tileY}`;
+                    entities.update(current => {
+                        const tileGroups = current.groups[tileKey];
+                        if (!tileGroups) return current;
+                        return { ...current, groups: { ...current.groups, [tileKey]: tileGroups.map(g => g.id === buildData.groupId ? { ...g, status: 'building' } : g) } };
+                    });
+                }
+            } catch (e) { console.error('Error building wall:', e); }
+            return;
+        }
+
+        let allowed = null;
+        if (buildData.requiresWaterEdge) {
+            const coords = get(coordinates);
+            const { tileX, tileY } = buildData;
+            const WATER_EDGES = [
+                { dx: 0, dy: -1, cells: [0, 1, 2] },
+                { dx: 0, dy:  1, cells: [6, 7, 8] },
+                { dx: -1, dy: 0, cells: [0, 3, 6] },
+                { dx:  1, dy: 0, cells: [2, 5, 8] },
+            ];
+            const allowedSet = new Set();
+            for (const { dx, dy, cells } of WATER_EDGES) {
+                const n = coords.find(c => c.x === tileX + dx && c.y === tileY + dy);
+                if (n && (n.biome?.water || n.riverValue > 0.2 || n.lakeValue > 0.2)) {
+                    cells.forEach(i => allowedSet.add(i));
+                }
+            }
+            allowed = allowedSet.size > 0 ? allowedSet : null;
+        }
+
+        allowedSubCells = allowed;
+        pendingBuildingData = buildData;
+        buildingPlacementMode = true;
+    }
+
+    async function handleSubCellSelect(subCellIndex) {
         buildingPlacementMode = false;
+        allowedSubCells = null;
+
         if (subCellIndex === null) {
-            // Cancelled
             pendingBuildingData = null;
             return;
         }
-        const row = Math.floor(subCellIndex / 3);
-        const col = subCellIndex % 3;
-        const data = { ...pendingBuildingData, subCell: subCellIndex, subRow: row, subCol: col };
+
+        const data = pendingBuildingData;
         pendingBuildingData = null;
-        lastActivePanel = 'add-building';
-        modalState = { type: 'add-building', data, visible: true };
+
+        const subRow = Math.floor(subCellIndex / 3);
+        const subCol = subCellIndex % 3;
+
+        try {
+            const result = await apiPost('/actions/buildStructure', {
+                worldId: $game.worldKey,
+                groupId: data.groupId,
+                tileX: data.tileX,
+                tileY: data.tileY,
+                structureType: data.structureType,
+                structureName: data.structureName,
+                subCell: subCellIndex,
+                subRow,
+                subCol
+            });
+
+            if (result.success) {
+                const tileKey = `${data.tileX},${data.tileY}`;
+                entities.update(current => {
+                    const tileGroups = current.groups[tileKey];
+                    if (!tileGroups) return current;
+                    return {
+                        ...current,
+                        groups: {
+                            ...current.groups,
+                            [tileKey]: tileGroups.map(g =>
+                                g.id === data.groupId ? { ...g, status: 'building' } : g
+                            )
+                        }
+                    };
+                });
+            }
+        } catch (error) {
+            console.error('Error starting building:', error);
+        }
     }
 
     function closeModal() {
@@ -607,12 +688,21 @@
             if (worldData?.seed !== undefined) {
                 debugLog(`Successfully loaded world data for ${worldId}, seed: ${worldData.seed}`);
                 return true;
+            } else if (!worldData) {
+                clearCurrentWorld();
+                goto('/worlds');
+                return false;
             } else {
                 console.error(`Failed to load required world data for ${worldId}`);
                 error = "Failed to load world data - seed missing";
                 return false;
             }
         } catch (err) {
+            if (err.status === 404) {
+                clearCurrentWorld();
+                goto('/worlds');
+                return false;
+            }
             console.error(`Error loading world data for ${worldId}:`, err);
             error = `Error loading world: ${err.message || err}`;
             return false;
@@ -1274,6 +1364,7 @@
             modalOpen={isAnyModalOpen}
             pathDrawingGroup={pathDrawingGroup}
             buildingPlacementMode={buildingPlacementMode}
+            allowedSubCells={allowedSubCells}
             onSubCellSelect={handleSubCellSelect}
             onClose={() => {
                 if (isPathDrawingMode) handlePathDrawingCancel();
@@ -1587,10 +1678,11 @@
               onMouseEnter={() => handlePanelHover(modalState.type)}
             />
           {:else if modalState.type === 'build' && modalState.data}
-            <Build 
+            <Build
               x={modalState.data.x}
               y={modalState.data.y}
               tile={modalState.data.tile}
+              onBuild={handleBuildRequest}
               onClose={closeModal}
               isActive={lastActivePanel === modalState.type}
               onMouseEnter={() => handlePanelHover(modalState.type)}
@@ -1651,22 +1743,6 @@
               isActive={lastActivePanel === modalState.type}
               onMouseEnter={() => handlePanelHover(modalState.type)}
             />
-          {:else if modalState.type === 'add-building' && modalState.data}
-            <div class="modal-container add-building-confirm" role="dialog">
-              <div class="add-building-panel">
-                <header class="modal-header-simple">
-                  <h3>Place {modalState.data.buildingType ? modalState.data.buildingType.charAt(0).toUpperCase() + modalState.data.buildingType.slice(1) : 'Building'}</h3>
-                  <button class="close-btn-inline" onclick={closeModal} aria-label="Close">✕</button>
-                </header>
-                <p class="sub-cell-info">
-                  Sub-tile position: row {modalState.data.subRow + 1}, col {modalState.data.subCol + 1}
-                </p>
-                <div class="add-building-actions">
-                  <button class="btn-secondary" onclick={closeModal}>Cancel</button>
-                  <button class="btn-primary" onclick={closeModal}>Confirm</button>
-                </div>
-              </div>
-            </div>
           {/if}
         {/if}
     {/if}
@@ -1704,95 +1780,6 @@
         touch-action: none;
     }
 
-    /* Add-building sub-tile confirmation panel */
-    .add-building-confirm {
-        position: fixed;
-        bottom: 8em;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 200;
-        pointer-events: auto;
-    }
-
-    .add-building-panel {
-        background: rgba(12, 22, 35, 0.95);
-        border: 1px solid rgba(80, 200, 120, 0.45);
-        border-radius: 0.5em;
-        padding: 1.2em 1.6em;
-        min-width: 16em;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(6px);
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .modal-header-simple {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.6em;
-    }
-
-    .modal-header-simple h3 {
-        margin: 0;
-        font-size: 1em;
-        font-weight: 600;
-    }
-
-    .close-btn-inline {
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.6);
-        cursor: pointer;
-        font-size: 1em;
-        padding: 0.1em 0.3em;
-    }
-
-    .close-btn-inline:hover {
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .sub-cell-info {
-        font-size: 0.85em;
-        color: rgba(200, 220, 200, 0.8);
-        margin: 0.4em 0 1em;
-    }
-
-    .add-building-actions {
-        display: flex;
-        gap: 0.8em;
-        justify-content: flex-end;
-    }
-
-    .btn-primary {
-        background: rgba(80, 200, 120, 0.25);
-        border: 1px solid rgba(80, 200, 120, 0.6);
-        color: rgba(180, 255, 200, 0.95);
-        border-radius: 0.3em;
-        padding: 0.4em 1em;
-        cursor: pointer;
-        font-size: 0.85em;
-        transition: background 0.15s;
-    }
-
-    .btn-primary:hover {
-        background: rgba(80, 200, 120, 0.45);
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.07);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: rgba(255, 255, 255, 0.7);
-        border-radius: 0.3em;
-        padding: 0.4em 1em;
-        cursor: pointer;
-        font-size: 0.85em;
-        transition: background 0.15s;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.14);
-    }
-    
     .loading-overlay,
     .error-overlay {
         position: absolute;

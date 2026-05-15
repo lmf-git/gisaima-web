@@ -20,6 +20,11 @@ function _clearSavedTargetPosition(worldId) {
 }
 
 const CURRENT_WORLD_KEY = 'gisaima-current-world';
+export function clearCurrentWorld() {
+  if (!browser) return;
+  try { localStorage.removeItem(CURRENT_WORLD_KEY); } catch { /* ignore */ }
+  game.update(s => ({ ...s, worldKey: null }));
+}
 const CHUNK_SIZE = 20;
 
 export { userAuthReady as isAuthReady };

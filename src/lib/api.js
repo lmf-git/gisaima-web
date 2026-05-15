@@ -82,6 +82,9 @@ export function connectWs() {
   _ws.addEventListener('open', () => {
     console.log('[ws] connected');
     if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
+    // Authenticate so the server can apply fog-of-war filtering
+    const token = getToken();
+    if (token) _ws.send(JSON.stringify({ type: 'authenticate', token }));
     // Re-subscribe all channels
     for (const channel of _wsListeners.keys()) {
       _sendSubscription(channel);

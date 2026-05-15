@@ -1,13 +1,12 @@
 <script>
-  import { apiPost } from '../../../lib/api.js';
   import { scale } from 'svelte/transition';
 
   import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
   import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
-  import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js'; // Import BUILDINGS
+  import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
 
-  import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
-  import { targetStore, coordinates, entities } from '../../../lib/stores/map';
+  import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game';
+  import { targetStore, coordinates } from '../../../lib/stores/map';
 
   import Close from '../../icons/Close.svelte';
 
@@ -76,7 +75,6 @@
   let selectedStructure = $state(null);
   let structureName = $state("");
   let buildError = $state(null);
-  let processing = $state(false);
   let availableResources = $state({});
 
   // Function to check if a tile is a water tile
@@ -243,57 +241,23 @@
     }
   }
   
-  async function startBuilding() {
-    if (buildError || !selectedGroup || !selectedStructure || !structureName) {
-      return;
-    }
-    
-    // Check water validation before building
+  function startBuilding() {
+    if (buildError || !selectedGroup || !selectedStructure || !structureName) return;
+
     if (isHarbour(selectedStructure) && !hasAdjacentWater()) {
       buildError = "Cannot build a harbour here. It must be on or adjacent to water.";
       return;
     }
 
-    buildError = null;
-    processing = true;
-    
-    try {
-      const result = await apiPost('/actions/buildStructure', {
-        worldId: $game.worldKey,
-        groupId: selectedGroup.id,
-        tileX: tileData.x,
-        tileY: tileData.y,
-        structureType: selectedStructure.id,
-        structureName: structureName
-      });
-
-      if (result.success) {
-        const tileKey = `${tileData.x},${tileData.y}`;
-        const groupId = selectedGroup.id;
-        entities.update(current => {
-          const tileGroups = current.groups[tileKey];
-          if (!tileGroups) return current;
-          return {
-            ...current,
-            groups: {
-              ...current.groups,
-              [tileKey]: tileGroups.map(g =>
-                g.id === groupId ? { ...g, status: 'building' } : g
-              )
-            }
-          };
-        });
-        onBuild(result);
-        onClose();
-      } else {
-        buildError = result.error || 'Failed to start building';
-      }
-    } catch (error) {
-      console.error('Error during building:', error);
-      buildError = error.message || 'An unexpected error occurred';
-    } finally {
-      processing = false;
-    }
+    onBuild({
+      tileX: tileData.x,
+      tileY: tileData.y,
+      groupId: selectedGroup.id,
+      structureType: selectedStructure.id,
+      structureName,
+      requiresWaterEdge: isHarbour(selectedStructure)
+    });
+    onClose();
   }
 
   function handleKeyDown(event) {
@@ -519,12 +483,12 @@
       
       <div class="button-row">
         <button class="cancel-btn" onclick={onClose}>Cancel</button>
-        <button 
-          class="build-btn" 
-          disabled={!canBuild || processing}
+        <button
+          class="build-btn"
+          disabled={!canBuild}
           onclick={startBuilding}
         >
-          {processing ? 'Starting...' : 'Start Building'}
+          Place Building
         </button>
       </div>
     {:else}
