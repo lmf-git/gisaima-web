@@ -1477,7 +1477,7 @@
   .log-entries {
     max-height: 300px;
     overflow-y: auto;
-    font-family: monospace;
+    font-family: var(--font-mono, monospace);
     background-color: rgba(0, 0, 0, 0.02);
     padding: 0.5em;
     border-radius: 0.3em;

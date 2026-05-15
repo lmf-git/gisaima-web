@@ -250,6 +250,62 @@
 
 <style>
 
+    @font-face {
+        font-family: 'Cinzel';
+        font-style: normal;
+        font-weight: 400 900;
+        font-display: swap;
+        src: url('/fonts/cinzel.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'EB Garamond';
+        font-style: normal;
+        font-weight: 400 800;
+        font-display: swap;
+        src: url('/fonts/ebgaramond.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'EB Garamond';
+        font-style: italic;
+        font-weight: 400 800;
+        font-display: swap;
+        src: url('/fonts/ebgaramond-italic.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'IM Fell English';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/imfellenglish.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'IM Fell English';
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/imfellenglish-italic.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 100 800;
+        font-display: swap;
+        src: url('/fonts/jetbrainsmono.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: italic;
+        font-weight: 100 800;
+        font-display: swap;
+        src: url('/fonts/jetbrainsmono-italic.ttf') format('truetype');
+    }
+
     :global(*) {
         box-sizing: border-box;
         margin: 0;
@@ -257,18 +313,77 @@
     }
     
     :global(:root) {
-        /* Modern color palette */
-        --color-dark-navy: #0A192F;
-        --color-dark-blue: #112240;
-        --color-bright-accent: #64FFDA;
-        --color-accent-dark: #388F7F;
-        --color-muted-accent: #8892B0;
-        --color-text-primary: #E6F1FF;
-        --color-text-secondary: #A8B2D1;
-        --color-panel-bg: rgba(17, 34, 64, 0.8);
-        --color-panel-border: rgba(100, 255, 218, 0.3);
-        
-        /* Keep existing biome colors */
+        /* Parchment & Ink */
+        --color-parchment-100: #fbf6e7;
+        --color-parchment-200: #f5ecd1;
+        --color-parchment-300: #ecdfb6;
+        --color-parchment-400: #d9c89a;
+        --color-ink-300: #7d7b6f;
+        --color-ink-500: #4b5267;
+        --color-ink-700: #2d3548;
+        --color-ink-900: #1a2030;
+        --color-ink-1000: #0e1320;
+        --color-sage: #6f8c7a;
+        --color-sage-deep: #3f5a4e;
+        --color-sage-pale: #b8c9b3;
+
+        /* Heraldic Accents */
+        --color-vermilion: #9a3320;
+        --color-vermilion-2: #c14a2f;
+        --color-wax-red: #5b1a1f;
+        --color-aged-gold: #b08d4a;
+        --color-gold-pale: #d4b170;
+        --color-teal-deep: #16393f;
+
+        /* Semantic mappings */
+        --color-background: var(--color-ink-1000);
+        --color-background-gradient-start: var(--color-ink-1000);
+        --color-background-gradient-end: var(--color-ink-900);
+        --color-text-primary: var(--color-parchment-200);
+        --color-text-secondary: var(--color-parchment-400);
+        --color-text: var(--color-parchment-200);
+        --color-heading: var(--color-aged-gold);
+        --color-subheading: var(--color-parchment-400);
+        --color-panel-bg: rgba(26, 32, 48, 0.85);
+        --color-panel-border: rgba(176, 141, 74, 0.3);
+        --color-card-bg: var(--color-panel-bg);
+        --color-card-border: var(--color-panel-border);
+        --color-link: var(--color-aged-gold);
+        --color-link-hover: var(--color-gold-pale);
+        --color-shadow: rgba(0, 0, 0, 0.5);
+        --color-button: var(--color-ink-700);
+        --color-button-hover: var(--color-ink-500);
+        --color-button-primary: var(--color-sage-deep);
+        --color-button-primary-hover: var(--color-sage);
+        --color-button-secondary: var(--color-ink-500);
+        --color-button-secondary-hover: var(--color-ink-300);
+        --color-pale-green: var(--color-sage-pale);
+        --color-muted-teal: var(--color-sage-deep);
+
+        /* Legacy aliases — old variable names still referenced across components */
+        --color-dark-navy: var(--color-ink-1000);
+        --color-dark-blue: var(--color-ink-900);
+        --color-bright-accent: var(--color-aged-gold);
+        --color-accent-dark: var(--color-sage-deep);
+        --color-muted-accent: var(--color-ink-300);
+
+        /* Typography */
+        --font-display: 'Cinzel', serif;
+        --font-heading: 'Cinzel', serif;
+        --font-body: 'EB Garamond', serif;
+        --font-editorial: 'IM Fell English', serif;
+        --font-mono: 'JetBrains Mono', monospace;
+
+        /* Terrain — from design spec */
+        --color-terrain-water: #8fb6c2;
+        --color-terrain-shore: #c8d6c8;
+        --color-terrain-grass: #bdc78a;
+        --color-terrain-dry: #cac281;
+        --color-terrain-forest: #7a9a64;
+        --color-terrain-forest-deep: #5a7848;
+        --color-terrain-hill: #a89567;
+
+        /* Biome colors */
         /* Water biomes */
         --color-biome-ocean: #0066cc;
         --color-biome-deep-ocean: #000080;
@@ -337,34 +452,6 @@
         --color-biome-volcanic-rock: #783C28;
         --color-biome-volcanic-soil: #9A5D42;
         
-        /* Semantic color assignments */
-        --color-background: var(--color-dark-navy);
-        --color-background-gradient-start: var(--color-dark-navy);
-        --color-background-gradient-end: var(--color-dark-blue);
-        --color-text: var(--color-text-primary);
-        --color-text-secondary: var(--color-text-secondary);
-        --color-heading: var(--color-bright-accent);
-        --color-subheading: var (--color-muted-accent);
-        
-        --color-button: var(--color-dark-blue);
-        --color-button-hover: #233554;
-        --color-button-primary: var(--color-accent-dark);
-        --color-button-primary-hover: var(--color-bright-accent);
-        --color-button-secondary: var (--color-muted-accent);
-        --color-button-secondary-hover: #6D7A99;
-        
-        --color-card-bg: var(--color-panel-bg);
-        --color-card-border: var(--color-panel-border);
-        --color-link: var(--color-bright-accent);
-        --color-link-hover: #9FFFEA;
-        --color-shadow: rgba(0, 0, 0, 0.4);
-
-        --color-pale-green: var(--color-bright-accent);
-        --color-muted-teal: var(--color-accent-dark);
-
-        /* Font family definitions */
-        --font-heading: 'Cormorant Unicase', serif;
-        --font-body: 'Fira Sans Condensed', sans-serif;
     }
     
     :global(body) {
@@ -373,6 +460,33 @@
         font-family: var(--font-body);
         font-weight: 400;
         line-height: 1.5;
+    }
+
+    /* IM Fell English — lore, descriptions, flavour text */
+    :global(.structure-description),
+    :global(.feature-description),
+    :global(.race-description),
+    :global(.achievement-description),
+    :global(.recipe-description),
+    :global(.unit-description),
+    :global(.item-description),
+    :global(.spawn-description),
+    :global(.tribe-desc),
+    :global(.tribe-item-desc),
+    :global(.footer-tagline),
+    :global(.section-subtitle) {
+        font-family: var(--font-editorial);
+    }
+
+    /* JetBrains Mono — coordinates, counters, timers */
+    :global(.coordinates),
+    :global(.coord),
+    :global(.timer),
+    :global(.counter),
+    :global(.currency),
+    :global(.tick-value),
+    :global(.world-tick) {
+        font-family: var(--font-mono, monospace);
     }
 
     :global(html) {

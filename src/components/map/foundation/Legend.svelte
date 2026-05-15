@@ -79,7 +79,7 @@
     font-size: 1.2em;
     font-weight: bold;
     color: rgba(0, 0, 0, 0.9);
-    font-family: var(--font-heading); /* Add heading font for coordinates */
+    font-family: var(--font-mono, monospace);
   }
   
   .terrain {

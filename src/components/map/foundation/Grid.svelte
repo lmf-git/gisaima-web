@@ -1923,7 +1923,7 @@
                 </div>
               {/if}
 
-              {#if cell.structure}
+              {#if cell.structure && (!cell.structure.buildings || Object.keys(cell.structure.buildings).length === 0)}
                 <div class="structure-icon-container">
                   {#if cell.structure.type === 'spawn'}
                     <Torch size="70%" extraClass="spawn-icon" />
