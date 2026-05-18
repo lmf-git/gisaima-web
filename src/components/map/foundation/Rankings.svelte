@@ -103,17 +103,17 @@
   .rankings-container {
     display: flex;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(14, 19, 32, 0.85);
     border-radius: 0.5rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     overflow: hidden;
     box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(176, 141, 74, 0.3);
     width: min(340px, 90vw);
     max-height: 60vh;
-    color: rgba(0, 0, 0, 0.8);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    color: var(--color-parchment-200);
+    text-shadow: none;
   }
 
   .panel-header {
@@ -121,8 +121,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 1rem;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     flex-shrink: 0;
   }
 
@@ -130,21 +130,21 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
   }
 
   .close-btn {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     cursor: pointer;
     padding: 0.25rem;
     display: flex;
     align-items: center;
     transition: color 0.15s;
   }
-  .close-btn:hover { color: rgba(0, 0, 0, 0.9); }
+  .close-btn:hover { color: var(--color-parchment-100); }
 
   .entity-toggle {
     display: flex;
@@ -167,16 +167,16 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
-  .toggle-btn:hover { color: rgba(0, 0, 0, 0.7); }
+  .toggle-btn:hover { color: rgba(232, 228, 210, 0.78); }
   .toggle-btn.active {
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     background: rgba(0, 0, 0, 0.06);
   }
 
   .tab-bar {
     display: flex;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(176, 141, 74, 0.06);
     flex-shrink: 0;
   }
 
@@ -187,15 +187,15 @@
     padding: 0.4em 0.5em;
     font-size: 0.78em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     font-family: var(--font-body);
     transition: color 0.15s, border-color 0.15s;
   }
-  .tab-btn:hover { color: rgba(0, 0, 0, 0.8); }
+  .tab-btn:hover { color: var(--color-parchment-200); }
   .tab-btn.active {
-    color: rgba(66, 133, 244, 0.9);
+    color: rgba(212, 177, 112, 0.95);
     border-bottom-color: rgba(66, 133, 244, 0.7);
   }
 
@@ -232,7 +232,7 @@
   }
 
   .rank-row.top3 {
-    background: rgba(66, 133, 244, 0.05);
+    background: rgba(176, 141, 74, 0.08);
   }
 
   .rank-num {
@@ -264,7 +264,7 @@
   .tribe-tag {
     font-size: 0.85em;
     font-weight: 700;
-    color: rgba(66, 133, 244, 0.8);
+    color: rgba(212, 177, 112, 0.85);
     flex-shrink: 0;
   }
 
@@ -276,7 +276,7 @@
 
   .rank-value {
     font-size: 0.8em;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     font-weight: 600;
     white-space: nowrap;
   }

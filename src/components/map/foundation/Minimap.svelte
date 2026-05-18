@@ -348,28 +348,39 @@
 </div>
 
 <style>
+  /* Reference HudA minimap: small floating panel pinned to the top-right of
+     the map. Gold-bordered, ink-translucent backdrop, parchment frame inset
+     so it reads as a brass-bordered map fragment. */
   .map-container {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 0.6em;
+    right: 1em;
     z-index: 998;
+    padding: 0.2em;
+    background: rgba(14, 19, 32, 0.9);
+    border: 0.075em solid rgba(176, 141, 74, 0.45);
+    backdrop-filter: blur(0.4em);
+    box-shadow: 0 0.6em 1.6em rgba(0, 0, 0, 0.4),
+                inset 0 0 0 0.075em rgba(176, 141, 74, 0.15);
   }
-  
-  /* Remove the toggle-button styles */
-  
+
   .minimap {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: relative;
     overflow: hidden;
-    background: var(--color-panel-bg);
-    border: 0.0625em solid var(--color-panel-border);
-    box-shadow: 0 0.1875em 0.625em var(--color-shadow);
+    background: rgba(14, 19, 32, 0.45);
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    box-shadow: inset 0 0 0.6em rgba(0, 0, 0, 0.4);
     cursor: grab;
-    transition: box-shadow 0.2s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     outline: none;
-    opacity: 1; /* Always visible within container */
-    animation: slideInFromRight 0.8s ease-out forwards;
+    opacity: 1;
+    animation: slideInFromRight 0.6s ease-out forwards;
+  }
+  .minimap:hover {
+    border-color: var(--color-gold-pale, #d4b170);
+  }
+  .minimap:active {
+    cursor: grabbing;
   }
 
   .minimap.closing {
@@ -414,23 +425,25 @@
     background-color: var(--tile-color); /* Set background from CSS var instead of inline */
   }
   
+  /* Heraldic palette markers — each accent maps to the world-bar palette
+     so the minimap reads coherently with the rest of the HUD chrome. */
   .tile.has-structure {
-    border-bottom: 0.15em solid rgba(255, 255, 255, 0.6);
-    border-left: 0.15em solid rgba(255, 255, 255, 0.6);
+    border-bottom: 0.15em solid var(--color-aged-gold, #b08d4a);
+    border-left:   0.15em solid var(--color-aged-gold, #b08d4a);
   }
-  
+
   .tile.has-players {
-    border-top: 0.15em solid rgba(100, 100, 255, 0.7);
-    border-left: 0.15em solid rgba(100, 100, 255, 0.7);
+    border-top:  0.15em solid var(--color-gold-pale, #d4b170);
+    border-left: 0.15em solid var(--color-gold-pale, #d4b170);
   }
-  
+
   .tile.has-groups {
-    border-top: 0.15em solid rgba(255, 100, 100, 0.7);
-    border-right: 0.15em solid rgba(255, 100, 100, 0.7);
+    border-top:   0.15em solid var(--color-vermilion-2, #c14a2f);
+    border-right: 0.15em solid var(--color-vermilion-2, #c14a2f);
   }
-  
+
   .tile.has-spawn {
-    border: 0.15em solid rgba(0, 255, 255, 0.8);
+    border: 0.15em solid var(--color-sage-pale, #b8c9b3);
     border-radius: 50%;
   }
   
@@ -447,21 +460,22 @@
     content: "";
     position: absolute;
     inset: 0;
-    box-shadow: inset 0 0 0 0.1em white, 0 0 0.2em white;
+    box-shadow: inset 0 0 0 0.1em var(--color-gold-pale, #d4b170),
+                0 0 0.3em var(--color-gold-pale, #d4b170);
     z-index: 3;
     pointer-events: none;
   }
-  
+
   .tile.center {
     z-index: 5;
-    border: 0.125em solid white;
+    border: 0.125em solid var(--color-gold-pale, #d4b170);
   }
-  
+
   .tile.center::after {
     content: '';
     position: absolute;
     inset: 0;
-    box-shadow: 0 0 0.25em rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0.35em rgba(212, 177, 112, 0.85);
     pointer-events: none;
     z-index: 5;
   }
@@ -475,18 +489,18 @@
   }
   
   .tile.has-structure.has-players {
-    border-left: 0.15em solid rgba(177, 177, 255, 0.7);
+    border-left: 0.15em solid var(--color-gold-pale, #d4b170);
   }
-  
+
   .tile.has-structure.has-spawn {
-    border: 0.15em solid rgba(0, 255, 255, 0.8);
+    border: 0.15em solid var(--color-sage-pale, #b8c9b3);
     border-radius: 50%;
   }
-  
+
   .tile.has-spawn.has-players,
   .tile.has-spawn.has-groups,
   .tile.has-spawn.has-players.has-groups {
-    border: 0.15em solid rgba(0, 255, 255, 0.8);
+    border: 0.15em solid var(--color-sage-pale, #b8c9b3);
     border-radius: 50%;
   }
   

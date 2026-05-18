@@ -388,7 +388,7 @@
     align-items: center;
     justify-content: center; /* Center the header text since there's no close button */
     padding: 0.8em 1em;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-bottom: 1px solid #e0e0e0;
   }
   
@@ -446,7 +446,7 @@
   .welcome-text {
     font-size: 1.1em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   :global(.spawn-race-icon) {
@@ -479,7 +479,7 @@
 
   .spawn-item {
     background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.3em;
     padding: 0.8em;
     cursor: pointer;
@@ -497,7 +497,7 @@
   }
 
   :global(.spawn-icon) {
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     margin-left: 0.3em;
     margin-right: 0.3em;
   }
@@ -514,7 +514,7 @@
   }
 
   .spawn-item.selected {
-    background: rgba(66, 133, 244, 0.1);
+    background: rgba(176, 141, 74, 0.14);
     border-color: #4285F4;
     box-shadow: 0 0 0 1px #4285F4;
   }
@@ -523,25 +523,25 @@
     margin: 0 0 0.4em;
     font-size: 1.1em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
     line-height: 1.2;
   }
 
   .spawn-description {
     font-size: 0.9em;
     margin: 0 0 0.5em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
 
   .spawn-meta {
     display: flex;
     justify-content: space-between;
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
 
   .spawn-race {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     padding: 0.2em 0.5em;
     border-radius: 1em;
     text-transform: capitalize;
@@ -562,7 +562,7 @@
 
   .spawn-button {
     position: relative;
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
     padding: 0.7em 1.2em;

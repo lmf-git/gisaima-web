@@ -89,17 +89,17 @@
   .reports-container {
     display: flex;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(14, 19, 32, 0.85);
     border-radius: 0.5rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     overflow: hidden;
     box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(176, 141, 74, 0.3);
     width: min(400px, 90vw);
     max-height: 50vh;
-    color: rgba(0, 0, 0, 0.8);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    color: var(--color-parchment-200);
+    text-shadow: none;
   }
 
   .reports-header {
@@ -107,8 +107,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 1rem;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     flex-shrink: 0;
   }
 
@@ -116,7 +116,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
     display: flex;
     align-items: center;
@@ -151,12 +151,12 @@
     font-family: var(--font-body);
     transition: color 0.15s, border-color 0.15s;
   }
-  .mark-all-btn:hover { color: rgba(0, 0, 0, 0.85); border-color: rgba(0, 0, 0, 0.4); }
+  .mark-all-btn:hover { color: var(--color-parchment-100); border-color: rgba(0, 0, 0, 0.4); }
 
   .close-btn {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     cursor: pointer;
     padding: 0.25rem;
     display: flex;
@@ -164,7 +164,7 @@
     justify-content: center;
     transition: color 0.15s;
   }
-  .close-btn:hover { color: rgba(0, 0, 0, 0.9); }
+  .close-btn:hover { color: var(--color-parchment-100); }
 
   .reports-list {
     overflow-y: auto;
@@ -183,7 +183,7 @@
   }
 
   .report-item {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(176, 141, 74, 0.06);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 0.35em;
     padding: 0.55em 0.7em;
@@ -229,7 +229,7 @@
   .report-title {
     font-size: 0.9em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     margin-bottom: 0.2em;
   }
 

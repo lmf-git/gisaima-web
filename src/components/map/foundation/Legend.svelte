@@ -44,23 +44,22 @@
     transform: translateX(-50%);
     z-index: 1001;
     cursor: pointer;
-    border-radius: 0.3em;
-    padding: 0.8em 1em; /* Standardize padding */
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(255, 255, 255, 0.85); /* Increased opacity from 0.6 to 0.85 */
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    box-shadow: none;
-    font-weight: 500;
-    backdrop-filter: blur(0.5em);
-    -webkit-backdrop-filter: blur(0.5em);
-    transition: all 0.2s ease;
+    border-radius: 0;
+    padding: 0.7em 1em;
+    color: var(--color-ink-900);
+    background: var(--color-parchment-100);
+    text-shadow: none;
+    border: 1px solid var(--color-ink-900);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
     opacity: 0;
     transform: translate(-50%, 1em);
     min-width: 8em;
     text-align: center;
-    font-family: var(--font-body); /* Add body font */
-    display: none; /* Hide by default on mobile */
+    font-family: var(--font-body);
+    display: none;
   }
   
   /* Only show on larger screens */
@@ -76,25 +75,24 @@
   }
   
   .coordinates {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.9);
-    font-family: var(--font-mono, monospace);
-  }
-  
-  .terrain {
     font-size: 0.9em;
-    margin-top: 0.2em;
-    color: rgba(0, 0, 0, 0.8);
-    font-family: var(--font-body); /* Add body font */
+    font-family: var(--font-mono, monospace);
+    color: var(--color-wax-red);
+    letter-spacing: 0.05em;
+  }
+
+  .terrain {
+    font-size: 0.95em;
+    margin-top: 0.15em;
+    color: var(--color-ink-900);
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  
-  .terrain-name {
-    margin-bottom: 0.1em;
-  }
+
+  .terrain-name { margin-bottom: 0.1em; }
   
   .rarity {
     margin-left: 0.5em;

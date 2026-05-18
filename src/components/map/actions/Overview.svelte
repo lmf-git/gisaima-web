@@ -1399,13 +1399,14 @@
   }
 
   .entities-panel {
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.3em;
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(0.5em);
-    -webkit-backdrop-filter: blur(0.5em);
+    background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
+    border: 1px solid rgba(176, 141, 74, 0.35);
+    border-radius: 0;
+    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(176, 141, 74, 0.15);
+    text-shadow: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--color-parchment-200);
     width: 100%;
     max-width: 28em;
     display: flex;
@@ -1445,50 +1446,50 @@
   .subtitle {
     font-size: 0.7em;
     font-weight: normal;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.5);
     margin-left: 0.6em;
+    font-family: var(--font-mono);
   }
 
   .entity-coords {
     font-size: 0.7em;
-    color: rgba(0, 0, 0, 0.5);
+    color: var(--color-wax-red);
     margin-left: 0.6em;
     font-weight: normal;
+    font-family: var(--font-mono);
   }
 
   .at-target {
-    background-color: rgba(64, 158, 255, 0.1);
-    border-color: rgba(64, 158, 255, 0.3);
+    background-color: rgba(176, 141, 74, 0.12);
+    border-color: rgba(176, 141, 74, 0.45);
     position: relative;
   }
 
-  
   .is-here {
-    background-color: rgba(64, 158, 255, 0.1);
-    border-color: rgba(64, 158, 255, 0.3);
+    background-color: rgba(176, 141, 74, 0.12);
+    border-color: rgba(176, 141, 74, 0.45);
     position: relative;
   }
-  
-  
+
   .is-here .entity-distance {
-    color: rgba(64, 158, 255, 0.9);
+    color: var(--color-gold-pale);
     font-weight: 500;
     font-size: 0.9em;
   }
 
-  
   .at-target.is-here .entity-distance {
-    color: rgba(64, 158, 255, 1.0);
+    color: var(--color-gold-pale);
     font-weight: 600;
   }
 
   .entity-distance {
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     margin-left: auto;
     white-space: nowrap;
     display: flex;
     align-items: center;
+    font-family: var(--font-mono);
   }
   
   
@@ -1497,7 +1498,7 @@
     line-height: 0;
     margin-right: 0.1em;
     vertical-align: middle;
-    color: rgba(64, 158, 255, 1.0);
+    color: rgba(212, 177, 112, 1);
   }
 
   .map-entities {
@@ -1520,8 +1521,8 @@
 
   .filter-tabs {
     display: flex;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.3);
+    background-color: rgba(14, 19, 32, 0.5);
     padding: 0 0.3em;
     width: 100%;
     overflow-x: auto;
@@ -1529,14 +1530,16 @@
 
   .filter-tab {
     padding: 0.6em 0.8em;
-    font-family: var(--font-heading);
-    font-size: 0.8em;
+    font-family: var(--font-display);
+    font-size: 0.7em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
     cursor: pointer;
-    color: rgba(0, 0, 0, 0.5);
-    transition: all 0.2s ease;
+    color: rgba(232, 228, 210, 0.55);
+    transition: color 0.15s ease, border-color 0.15s ease;
     flex: 1;
     text-align: center;
     display: flex;
@@ -1547,73 +1550,75 @@
   }
 
   .filter-tab:hover:not(:disabled) {
-    background-color: rgba(0, 0, 0, 0.03);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-100);
   }
 
   .filter-tab.active {
-    border-bottom: 2px solid #4285f4;
-    color: rgba(0, 0, 0, 0.9);
-    font-weight: 500;
+    border-bottom: 2px solid var(--color-aged-gold);
+    color: var(--color-gold-pale);
+    font-weight: 600;
   }
 
   .filter-tab:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
   }
 
   .filter-tab.has-content:not(.active) {
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.75);
   }
 
   .filter-count {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    width: 1.2em;
+    border-radius: 0;
+    width: 1.4em;
     height: 1.2em;
-    font-size: 0.7em;
-    font-weight: bold;
+    font-family: var(--font-mono);
+    font-size: 0.72em;
+    font-weight: 500;
     margin-left: 0.4em;
     line-height: 1;
-    background: rgba(0, 0, 0, 0.2);
-    color: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 0 0.15em rgba(255, 255, 255, 0.2);
+    background: rgba(176, 141, 74, 0.2);
+    color: var(--color-gold-pale);
+    border: 1px solid rgba(176, 141, 74, 0.35);
+    box-shadow: none;
   }
 
   
   .filter-count-structures {
-    background: rgba(0, 0, 0, 0.9);
-    box-shadow: 0 0 0.15em rgba(0, 0, 0, 0.6);
-    color: rgba(255, 255, 255, 0.9); 
+    background: rgba(110, 99, 83, 0.35);
+    color: var(--color-parchment-100);
   }
-  
+
   .filter-count-groups {
-    background: rgba(255, 100, 100, 0.9);
-    box-shadow: 0 0 0.15em rgba(255, 100, 100, 0.6);
+    background: rgba(154, 51, 32, 0.35);
+    color: #f8d4cc;
+    border-color: rgba(193, 74, 47, 0.5);
   }
-  
+
   .filter-count-players {
-    background: rgba(100, 100, 255, 0.9);
-    box-shadow: 0 0 0.15em rgba(100, 100, 255, 0.6);
+    background: rgba(22, 57, 63, 0.45);
+    color: #aed3dc;
+    border-color: rgba(22, 57, 63, 0.7);
   }
-  
+
   .filter-count-items {
-    background: rgba(255, 215, 0, 0.9);
-    box-shadow: 0 0 0.15em rgba(255, 215, 0, 0.6);
+    background: rgba(176, 141, 74, 0.3);
+    color: var(--color-gold-pale);
   }
-  
+
   .filter-count-battles {
-    background: rgba(139, 0, 0, 0.8);
-    box-shadow: 0 0 0.15em rgba(139, 0, 0, 0.6);
+    background: rgba(91, 26, 31, 0.55);
+    color: #f1c0bb;
+    border-color: rgba(154, 51, 32, 0.65);
   }
 
   .filter-tab.active .filter-count {
-    background: rgba(255, 255, 255, 0.9);
-    color: rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 0.2em rgba(0, 0, 0, 0.2);
+    background: var(--color-aged-gold);
+    color: var(--color-ink-900);
+    border-color: var(--color-aged-gold);
   }
 
   .title {
@@ -1622,7 +1627,7 @@
     font-size: 1.1em;
     font-weight: 600;
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     font-family: var(--font-heading);
     display: flex;
@@ -1645,7 +1650,7 @@
   }
 
   .close-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
     color: rgba(0, 0, 0, 0.9);
   }
 
@@ -1697,13 +1702,13 @@
   }
 
   .entity:focus {
-    outline: 2px solid rgba(66, 133, 244, 0.6);
-    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
+    outline: 2px solid rgba(176, 141, 74, 0.6);
+    box-shadow: 0 0 0 2px rgba(176, 141, 74, 0.45);
   }
 
   .entity.player.current {
-    background-color: rgba(66, 133, 244, 0.05);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.08);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .entity-icon {
@@ -1799,13 +1804,13 @@
     user-select: none;
     position: relative;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(176, 141, 74, 0.06);
     border-radius: 0.3em 0.3em 0 0;
     transition: background-color 0.2s ease;
   }
   
   .section-header:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
   }
   
   .section-controls {
@@ -1844,7 +1849,7 @@
   
   .collapse-button:hover {
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-radius: 50%;
   }
 
@@ -1870,13 +1875,13 @@
   }
   
   .sort-option:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     color: rgba(0, 0, 0, 0.8);
   }
   
   .sort-option.active {
-    background-color: rgba(66, 133, 244, 0.1);
-    color: rgba(66, 133, 244, 0.9);
+    background-color: rgba(176, 141, 74, 0.14);
+    color: rgba(212, 177, 112, 0.95);
   }
   
   .sort-direction {
@@ -1900,7 +1905,7 @@
   }
 
   .owner-badge {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
     color: #2e7d32;
     border: 1px solid rgba(76, 175, 80, 0.4);
   }
@@ -1995,7 +2000,7 @@
   
   .progress-bar {
     height: 0.4em;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
     border-radius: 0.25em;
     overflow: hidden;
     margin-bottom: 0.2em;
@@ -2142,7 +2147,7 @@
   }
   
   .unit-race-tag {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     padding: 0.1em 0.4em;
     border-radius: 0.2em;
     font-size: 0.8em;

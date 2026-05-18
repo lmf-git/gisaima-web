@@ -8,9 +8,20 @@
     import DiscordIcon from '../components/icons/DiscordIcon.svelte';
     import GitHubIcon from '../components/icons/GitHubIcon.svelte'; 
     import MobileMenu from '../components/MobileMenu.svelte';
-    import { isAuthReady } from '../lib/stores/game.js';
+    import { isAuthReady, game } from '../lib/stores/game.js';
     import HamburgerIcon from '../components/icons/HamburgerIcon.svelte';
     import GuestWarning from '../components/features/GuestWarning.svelte';
+    import WorldContextBar from '../components/features/WorldContextBar.svelte';
+
+    // Routes that read from / write to a specific world. The world-context
+    // strip surfaces under the layout header on each of these so the player
+    // never loses track of which realm they're acting inside.
+    const WORLD_SCOPED_PREFIXES = [
+        '/rankings', '/trade', '/bounties', '/politics', '/morality',
+        '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
+        '/wealth', '/deaths', '/scouting', '/chronicle', '/profile',
+        '/settlement', '/pending', '/characters', '/items'
+    ];
 
     const { children } = $props();
 
@@ -28,6 +39,9 @@
     const isLoginPage = $derived($page.url?.pathname === '/login');
     const isSignupPage = $derived($page.url?.pathname === '/signup');
     const isGuidePage = $derived($page.url?.pathname === '/guide');
+    const isWorldScopedPage = $derived(
+        WORLD_SCOPED_PREFIXES.some((p) => $page.url?.pathname?.startsWith(p))
+    );
     
     function toggleMobileMenu() {
         if (mobileMenuOpen) {
@@ -101,30 +115,27 @@
     }
 </script>
 
-<div class={`app ${isMapPage ? 'map' : ''}`}>
+<div class={`app ${isMapPage ? 'map' : ''} ${isHomePage ? 'home' : ''} ${isWorldScopedPage ? 'world-scoped' : ''}`}>
+    <!-- The website chrome (logo / nav / auth) is hidden on:
+           - the map page itself (it has its own HUD)
+           - world-scoped routes (the WorldContextBar provides realm nav and the
+             player is "inside" the world there, not browsing the marketing site). -->
+    {#if !isMapPage && !isWorldScopedPage}
     <header class="header">
-        <!-- Simplified logo visibility - never show on home page -->
-        {#if !isHomePage}
-            <div class="logo">
-                <a href="/" aria-label="Gisaima Home">
-                    <Logo extraClass="nav-logo" />
-                </a>
-            </div>
-        {/if}
-        
-        <!-- Modified condition: Show hamburger menu on all pages except map page -->
-        {#if !isMapPage}
-            <button class="mobile-menu-toggle" aria-label="Toggle Menu" onclick={toggleMobileMenu}>
-                <HamburgerIcon 
-                    size="2em"
-                    extraClass="hamburger-icon" 
-                    active={mobileMenuOpen} 
-                />
-            </button>
-        {/if}
-        
-        <!-- Show nav and auth everywhere except map page -->
-        {#if !isMapPage}
+        <div class="logo">
+            <a href="/" aria-label="Gisaima Home">
+                <Logo extraClass="nav-logo" />
+            </a>
+        </div>
+
+        <button class="mobile-menu-toggle" aria-label="Toggle Menu" onclick={toggleMobileMenu}>
+            <HamburgerIcon
+                size="2em"
+                extraClass="hamburger-icon"
+                active={mobileMenuOpen}
+            />
+        </button>
+
             <nav class="nav">
                 <div class="links">
                     {#if !isGuidePage}
@@ -135,6 +146,13 @@
                     {/if}
                 </div>
             </nav>
+
+            {#if $user && $game?.worldKey && !headerLoading && !isWorldScopedPage}
+                <a class="return-map-pill" href="/map" title={`Return to ${$game.worldKey}`}>
+                    <span class="arrow" aria-hidden="true">‹</span>
+                    <span class="text">Map · <em>{$game.worldKey}</em></span>
+                </a>
+            {/if}
             
             <div class="auth" class:loading={headerLoading}>
                 {#if !headerLoading}
@@ -154,12 +172,11 @@
                     {/if}
                 {/if}
             </div>
-        {/if}
 
-        {#if (mobileMenuOpen || menuAnimatingOut) && !isMapPage}
-            <MobileMenu 
-                onClose={closeMobileMenu} 
-                currentPath={$page.url.pathname} 
+        {#if (mobileMenuOpen || menuAnimatingOut)}
+            <MobileMenu
+                onClose={closeMobileMenu}
+                currentPath={$page.url.pathname}
                 user={$user}
                 signOut={signOut}
                 animatingOut={menuAnimatingOut}
@@ -167,13 +184,17 @@
             />
         {/if}
     </header>
+    {/if}
 
     <main class="main-content">
+        {#if isWorldScopedPage}
+            <WorldContextBar />
+        {/if}
         {@render children?.()}
     </main>
     
-    <!-- Add footer if not on map page -->
-    {#if !isMapPage}
+    <!-- Add footer if not on map or home page (home has its own footer) -->
+    {#if !isMapPage && !isHomePage}
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-section branding">
@@ -181,7 +202,7 @@
                         <a href="/" class="footer-logo">
                             <Logo extraClass="footer-logo-icon" />
                         </a>
-                        <h2 class="footer-title">isaima Realm</h2>
+                        <h2 class="footer-title">Gisaima Realm</h2>
                     </div>
                     <p class="footer-tagline">Explore and create worlds together</p>
                 </div>
@@ -335,35 +356,38 @@
         --color-gold-pale: #d4b170;
         --color-teal-deep: #16393f;
 
-        /* Semantic mappings */
-        --color-background: var(--color-ink-1000);
-        --color-background-gradient-start: var(--color-ink-1000);
-        --color-background-gradient-end: var(--color-ink-900);
-        --color-text-primary: var(--color-parchment-200);
-        --color-text-secondary: var(--color-parchment-400);
-        --color-text: var(--color-parchment-200);
-        --color-heading: var(--color-aged-gold);
-        --color-subheading: var(--color-parchment-400);
-        --color-panel-bg: rgba(26, 32, 48, 0.85);
-        --color-panel-border: rgba(176, 141, 74, 0.3);
-        --color-card-bg: var(--color-panel-bg);
-        --color-card-border: var(--color-panel-border);
-        --color-link: var(--color-aged-gold);
-        --color-link-hover: var(--color-gold-pale);
-        --color-shadow: rgba(0, 0, 0, 0.5);
-        --color-button: var(--color-ink-700);
-        --color-button-hover: var(--color-ink-500);
-        --color-button-primary: var(--color-sage-deep);
-        --color-button-primary-hover: var(--color-sage);
-        --color-button-secondary: var(--color-ink-500);
-        --color-button-secondary-hover: var(--color-ink-300);
-        --color-pale-green: var(--color-sage-pale);
-        --color-muted-teal: var(--color-sage-deep);
+        /* Semantic mappings — default to parchment (light) context.
+           Routes that use dark backgrounds (`.app.map`, `.app.home`) override
+           these below so old components still read correctly on dark. */
+        --color-background: var(--color-parchment-200);
+        --color-background-gradient-start: var(--color-parchment-100);
+        --color-background-gradient-end: var(--color-parchment-300);
+        --color-text-primary: var(--color-ink-900);
+        --color-text-secondary: var(--color-ink-500);
+        --color-text: var(--color-ink-900);
+        --color-heading: var(--color-ink-900);
+        --color-subheading: var(--color-ink-500);
+        --color-panel-bg: var(--color-parchment-100);
+        --color-panel-border: rgba(26, 32, 48, 0.2);
+        --color-card-bg: var(--color-parchment-100);
+        --color-card-border: rgba(26, 32, 48, 0.2);
+        --color-link: var(--color-wax-red);
+        --color-link-hover: var(--color-vermilion-2);
+        --color-shadow: rgba(0, 0, 0, 0.15);
+        --color-button: var(--color-ink-900);
+        --color-button-hover: var(--color-ink-700);
+        --color-button-primary: var(--color-ink-900);
+        --color-button-primary-hover: var(--color-ink-700);
+        --color-button-secondary: var(--color-parchment-200);
+        --color-button-secondary-hover: var(--color-parchment-300);
+        --color-pale-green: var(--color-sage-deep);
+        --color-muted-teal: var(--color-ink-700);
 
-        /* Legacy aliases — old variable names still referenced across components */
+        /* Legacy aliases — old variable names still referenced across components.
+           Kept pointing at sensible palette colors so the visual remains coherent. */
         --color-dark-navy: var(--color-ink-1000);
         --color-dark-blue: var(--color-ink-900);
-        --color-bright-accent: var(--color-aged-gold);
+        --color-bright-accent: var(--color-wax-red);
         --color-accent-dark: var(--color-sage-deep);
         --color-muted-accent: var(--color-ink-300);
 
@@ -451,15 +475,74 @@
         --color-biome-lava-flow: #FF6600;
         --color-biome-volcanic-rock: #783C28;
         --color-biome-volcanic-soil: #9A5D42;
-        
+
+        /* Terrain — extras from reference */
+        --color-terrain-mountain: #6e6353;
+        --color-terrain-snow: #e8e4d2;
+        --color-parchment-shadow: #b9a576;
+
+        /* Paper grain — reference token */
+        --paper-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+
+    /* ── Reference utility classes ───────────────────────────── */
+    :global(.parchment) {
+        background:
+            radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.45), transparent 55%),
+            radial-gradient(ellipse at 70% 90%, rgba(120,80,30,.18), transparent 60%),
+            radial-gradient(ellipse at 50% 50%, var(--color-parchment-200), var(--color-parchment-300) 80%, var(--color-parchment-400));
+        position: relative;
+        color: var(--color-ink-900);
+    }
+    :global(.parchment::after) {
+        content: "";
+        position: absolute; inset: 0;
+        background-image: var(--paper-noise);
+        opacity: .55;
+        pointer-events: none;
+        mix-blend-mode: multiply;
+    }
+    :global(.parchment-dark) {
+        background:
+            radial-gradient(ellipse at 30% 20%, rgba(80,110,90,.18), transparent 55%),
+            radial-gradient(ellipse at 70% 90%, rgba(0,0,0,.4), transparent 65%),
+            linear-gradient(180deg, #11151f 0%, #0c1019 100%);
+        color: #d8d4c0;
+    }
+    :global(.rule-deco) {
+        height: 0.9em;
+        background:
+            linear-gradient(to right, transparent, var(--color-ink-900) 20%, var(--color-ink-900) 80%, transparent) center / 100% 0.075em no-repeat,
+            radial-gradient(circle at 50% 50%, var(--color-ink-900) 0.15em, transparent 0.18em) center / 0.55em 0.55em no-repeat;
+    }
+    :global(.eyebrow) {
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        font-size: 0.7em;
+        color: var(--color-ink-700);
     }
     
     :global(body) {
-        background: var(--color-background);
-        color: var(--color-text);
+        background: var(--color-parchment-200);
+        color: var(--color-ink-900);
         font-family: var(--font-body);
         font-weight: 400;
         line-height: 1.5;
+    }
+
+    :global(h1), :global(h2), :global(h3), :global(h4), :global(h5), :global(h6) {
+        font-family: var(--font-display);
+        color: var(--color-ink-900);
+        letter-spacing: .04em;
+    }
+
+    :global(a) {
+        color: var(--color-wax-red);
+    }
+    :global(a:hover) {
+        color: var(--color-vermilion-2);
     }
 
     /* IM Fell English — lore, descriptions, flavour text */
@@ -491,6 +574,7 @@
 
     :global(html) {
         height: 100%;
+        background: var(--color-parchment-200);
     }
 
     :global(body) {
@@ -501,9 +585,447 @@
         display: flex;
         flex-direction: column;
         min-height: 100%;
+        position: relative;
+        background:
+            radial-gradient(ellipse at 30% 15%, rgba(255,255,255,.4), transparent 55%),
+            radial-gradient(ellipse at 70% 95%, rgba(120,80,30,.15), transparent 60%),
+            radial-gradient(ellipse at 50% 50%, var(--color-parchment-200), var(--color-parchment-300) 80%, var(--color-parchment-400));
+        color: var(--color-ink-900);
+    }
+
+    .app::after {
+        content: "";
+        position: fixed; inset: 0;
+        background-image: var(--paper-noise);
+        opacity: .35;
+        pointer-events: none;
+        mix-blend-mode: multiply;
+        z-index: 1;
+    }
+
+    .app.map {
         background: linear-gradient(to bottom,
                    var(--color-background-gradient-start),
                    var(--color-background-gradient-end));
+        color: var(--color-text);
+    }
+
+    .app.map::after,
+    .app.home::after {
+        display: none;
+    }
+
+    .app.home {
+        background: #0c1019;
+        color: #e8e4d2;
+    }
+
+    /* Map HUD chrome — applies the reference aesthetic to the dark map shell.
+       Targets generic panel/button/badge patterns used by existing map components
+       so they pick up parchment-edged ink panels, aged-gold accents, and Cinzel
+       eyebrows without each component being rewritten. */
+    :global(.app.map.app.map .action-menu),
+    :global(.app.map.app.map .actions-menu),
+    :global(.app.map.app.map .details-panel),
+    :global(.app.map.app.map .overview-panel),
+    :global(.app.map.app.map .build-menu),
+    :global(.app.map.app.map .build-modal),
+    :global(.app.map.app.map .build-status),
+    :global(.app.map.app.map .details-modal),
+    :global(.app.map.app.map .crafting-menu),
+    :global(.app.map.app.map .crafting-modal),
+    :global(.app.map.app.map .recruitment-menu),
+    :global(.app.map.app.map .recruitment-modal),
+    :global(.app.map.app.map .mobilise-menu),
+    :global(.app.map.app.map .mobilise-modal),
+    :global(.app.map.app.map .demobilise-menu),
+    :global(.app.map.app.map .demobilise-modal),
+    :global(.app.map.app.map .attack-menu),
+    :global(.app.map.app.map .attack-modal),
+    :global(.app.map.app.map .join-battle-menu),
+    :global(.app.map.app.map .join-battle-modal),
+    :global(.app.map.app.map .move-menu),
+    :global(.app.map.app.map .move-modal),
+    :global(.app.map.app.map .gather-menu),
+    :global(.app.map.app.map .gather-modal),
+    :global(.app.map.app.map .spawn-menu),
+    :global(.app.map.app.map .group-status-menu),
+    :global(.app.map.app.map .unit-details-menu),
+    :global(.app.map.app.map .structure-overview-menu),
+    :global(.app.map.app.map .structure-overview),
+    :global(.app.map.app.map .tutorial-menu),
+    :global(.app.map.app.map .modal),
+    :global(.app.map.app.map .panel) {
+        background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
+        border: 0.075em solid rgba(176, 141, 74, 0.35);
+        border-radius: 0;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(176, 141, 74, 0.15);
+        color: var(--color-parchment-200);
+        backdrop-filter: blur(0.4em);
+    }
+    :global(.app.map.app.map h1),
+    :global(.app.map.app.map h2),
+    :global(.app.map.app.map h3),
+    :global(.app.map.app.map h4) {
+        font-family: var(--font-display);
+        color: var(--color-parchment-100);
+        letter-spacing: 0.06em;
+    }
+    :global(.app.map.app.map .eyebrow),
+    :global(.app.map.app.map .label),
+    :global(.app.map.app.map .section-label) {
+        font-family: var(--font-display);
+        font-size: 0.7em;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-gold-pale);
+    }
+    :global(.app.map.app.map button.primary) {
+        background: var(--color-aged-gold);
+        color: var(--color-ink-900);
+        border: 0.075em solid var(--color-aged-gold);
+        font-family: var(--font-display);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        border-radius: 0;
+    }
+    :global(.app.map.app.map button.primary:hover) {
+        background: var(--color-gold-pale);
+    }
+    :global(.app.map.app.map button.secondary) {
+        background: transparent;
+        color: var(--color-parchment-100);
+        border: 0.075em solid rgba(176, 141, 74, 0.5);
+        font-family: var(--font-display);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        border-radius: 0;
+    }
+    :global(.app.map.app.map button.secondary:hover) {
+        border-color: var(--color-gold-pale);
+        background: rgba(176, 141, 74, 0.1);
+    }
+    :global(.app.map.app.map .coordinates),
+    :global(.app.map.app.map .coord),
+    :global(.app.map.app.map .timer),
+    :global(.app.map.app.map .tick-value) {
+        color: var(--color-gold-pale);
+    }
+
+    /* Common modal chrome — headers, close, content, button rows, errors. */
+    :global(.app.map.app.map .modal-header) {
+        background: rgba(176, 141, 74, 0.08);
+        border-bottom: 0.075em solid rgba(176, 141, 74, 0.3);
+        padding: 0.85em 1.1em;
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .modal-header h2),
+    :global(.app.map.app.map h2),
+    :global(.app.map.app.map h3) {
+        color: var(--color-parchment-100);
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .content) {
+        color: var(--color-parchment-200);
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .close-btn),
+    :global(.app.map.app.map .cancel-btn) {
+        color: var(--color-parchment-200);
+        background: transparent;
+        border: 0.075em solid rgba(176, 141, 74, 0.4);
+        border-radius: 0;
+    }
+    :global(.app.map.app.map .close-btn:hover),
+    :global(.app.map.app.map .cancel-btn:hover) {
+        background: rgba(176, 141, 74, 0.1);
+        border-color: var(--color-gold-pale);
+        color: var(--color-gold-pale);
+    }
+    :global(.app.map.app.map .button-row),
+    :global(.app.map.app.map .modal-actions),
+    :global(.app.map.app.map .action-buttons) {
+        border-top: 0.075em solid rgba(176, 141, 74, 0.2);
+        padding-top: 0.8em;
+    }
+    :global(.app.map.app.map .mobilise-btn),
+    :global(.app.map.app.map .build-btn),
+    :global(.app.map.app.map .recruit-btn),
+    :global(.app.map.app.map .craft-btn),
+    :global(.app.map.app.map .move-btn),
+    :global(.app.map.app.map .attack-btn),
+    :global(.app.map.app.map .gather-btn),
+    :global(.app.map.app.map .join-battle-btn),
+    :global(.app.map.app.map .confirm-btn),
+    :global(.app.map.app.map .submit-btn) {
+        background: var(--color-aged-gold);
+        color: var(--color-ink-900);
+        border: 0.075em solid var(--color-aged-gold);
+        border-radius: 0;
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .mobilise-btn:hover),
+    :global(.app.map.app.map .build-btn:hover),
+    :global(.app.map.app.map .recruit-btn:hover),
+    :global(.app.map.app.map .craft-btn:hover),
+    :global(.app.map.app.map .move-btn:hover),
+    :global(.app.map.app.map .attack-btn:hover),
+    :global(.app.map.app.map .gather-btn:hover),
+    :global(.app.map.app.map .join-battle-btn:hover),
+    :global(.app.map.app.map .confirm-btn:hover),
+    :global(.app.map.app.map .submit-btn:hover) {
+        background: var(--color-gold-pale);
+        border-color: var(--color-gold-pale);
+    }
+    :global(.app.map.app.map .mobilise-error),
+    :global(.app.map.app.map .error-message),
+    :global(.app.map.app.map .form-error) {
+        background: rgba(154, 51, 32, 0.15);
+        border-left: 0.22em solid var(--color-vermilion);
+        color: #f8d4cc;
+        text-shadow: none;
+        border-radius: 0;
+    }
+    :global(.app.map.app.map .mobilise-success),
+    :global(.app.map.app.map .success-message) {
+        background: rgba(63, 90, 78, 0.18);
+        border-left: 0.22em solid var(--color-sage);
+        color: #cfe4d4;
+        text-shadow: none;
+        border-radius: 0;
+    }
+    :global(.app.map.app.map .next-tick-time),
+    :global(.app.map.app.map .tick-info) {
+        color: var(--color-gold-pale);
+        font-family: var(--font-mono);
+    }
+    :global(.app.map.app.map input),
+    :global(.app.map.app.map select),
+    :global(.app.map.app.map textarea) {
+        background: rgba(14, 19, 32, 0.6);
+        border: 0.075em solid rgba(176, 141, 74, 0.35);
+        color: var(--color-parchment-100);
+        border-radius: 0;
+        font-family: var(--font-body);
+    }
+    :global(.app.map.app.map input:focus),
+    :global(.app.map.app.map select:focus),
+    :global(.app.map.app.map textarea:focus) {
+        outline: none;
+        border-color: var(--color-gold-pale);
+        background: rgba(14, 19, 32, 0.8);
+    }
+    /* Section dividers + sub-headers commonly used inside action panels. */
+    :global(.app.map.app.map .section-title),
+    :global(.app.map.app.map .panel-title),
+    :global(.app.map.app.map .group-title),
+    :global(.app.map.app.map .row-header) {
+        font-family: var(--font-display);
+        font-size: 0.72em;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-gold-pale);
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .divider),
+    :global(.app.map.app.map hr) {
+        border: none;
+        height: 1px;
+        background: rgba(176, 141, 74, 0.2);
+        margin: 0.7em 0;
+    }
+
+    /* Generic list rows and table cells. */
+    :global(.app.map.app.map .row),
+    :global(.app.map.app.map .list-row),
+    :global(.app.map.app.map tr) {
+        border-color: rgba(176, 141, 74, 0.14);
+    }
+    :global(.app.map.app.map table) { width: 100%; border-collapse: collapse; }
+    :global(.app.map.app.map th) {
+        font-family: var(--font-display);
+        font-size: 0.65em;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-gold-pale);
+        border-bottom: 0.075em solid rgba(176, 141, 74, 0.35);
+        padding: 0.45em 0.6em;
+        text-align: left;
+        background: transparent;
+        text-shadow: none;
+    }
+    :global(.app.map.app.map td) {
+        padding: 0.4em 0.6em;
+        border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
+        color: var(--color-parchment-200);
+        text-shadow: none;
+    }
+
+    /* Badges that show counts (recruit queues, gather progress, etc.). */
+    :global(.app.map.app.map .badge),
+    :global(.app.map.app.map .pill),
+    :global(.app.map.app.map .count-tag),
+    :global(.app.map.app.map .tag) {
+        font-family: var(--font-mono);
+        font-size: 0.72em;
+        background: rgba(176, 141, 74, 0.18);
+        color: var(--color-gold-pale);
+        border: 0.075em solid rgba(176, 141, 74, 0.35);
+        border-radius: 0;
+        padding: 0.15em 0.5em;
+        text-shadow: none;
+    }
+
+    /* Progress bars used across recruit / craft / build status displays. */
+    :global(.app.map.app.map .progress),
+    :global(.app.map.app.map .progress-bar) {
+        background: rgba(14, 19, 32, 0.6);
+        border: 0.075em solid rgba(176, 141, 74, 0.2);
+        border-radius: 0;
+        height: 6px;
+        overflow: hidden;
+    }
+    :global(.app.map.app.map .progress > div),
+    :global(.app.map.app.map .progress-fill) {
+        background: linear-gradient(90deg, var(--color-aged-gold), var(--color-gold-pale));
+        height: 100%;
+    }
+
+    /* Tabs commonly used by Overview-like multi-section panels. */
+    :global(.app.map.app.map .tabs),
+    :global(.app.map.app.map .tab-bar) {
+        display: flex;
+        gap: 0;
+        border-bottom: 0.075em solid rgba(176, 141, 74, 0.3);
+        background: transparent;
+    }
+    :global(.app.map.app.map .tab),
+    :global(.app.map.app.map .tab-bar button) {
+        font-family: var(--font-display);
+        font-size: 0.7em;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        background: transparent;
+        border: none;
+        color: rgba(232, 228, 210, 0.55);
+        padding: 0.7em 1em;
+        cursor: pointer;
+        border-bottom: 0.15em solid transparent;
+        margin-bottom: -1px;
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .tab:hover),
+    :global(.app.map.app.map .tab-bar button:hover) {
+        color: var(--color-parchment-100);
+    }
+    :global(.app.map.app.map .tab.active),
+    :global(.app.map.app.map .tab-bar button.active) {
+        color: var(--color-gold-pale);
+        border-bottom-color: var(--color-aged-gold);
+    }
+
+    :global(.app.map.app.map .unit-card),
+    :global(.app.map.app.map .recipe-card),
+    :global(.app.map.app.map .build-option),
+    :global(.app.map.app.map .structure-card) {
+        background: rgba(26, 32, 48, 0.7);
+        border: 0.075em solid rgba(176, 141, 74, 0.18);
+        border-radius: 0;
+        color: var(--color-parchment-200);
+        text-shadow: none;
+    }
+    :global(.app.map.app.map .unit-card.selected),
+    :global(.app.map.app.map .recipe-card.selected),
+    :global(.app.map.app.map .build-option.selected),
+    :global(.app.map.app.map .structure-card.selected) {
+        border-color: var(--color-gold-pale);
+        box-shadow: inset 0 0 0 1px var(--color-aged-gold);
+    }
+
+    /* Mobile pass — taken from the reference mobile.jsx layout. At narrow
+       widths every action menu becomes a thumb-reachable bottom sheet,
+       primary action buttons stretch to full width, and the top header
+       collapses so the map gets the most pixels. */
+    @media (max-width: 700px) {
+        :global(.app.map.app.map .game-header-nav) {
+            top: 0.35em;
+            font-size: 0.82em;
+        }
+        :global(.app.map.app.map .game-header-nav .header-link) {
+            padding: 0.55em 0.65em;
+            letter-spacing: 0.13em;
+        }
+        /* Generic bottom-sheet dock: every action panel hosted in
+           `.map-action-host` (a stable wrapper around action menus,
+           irrespective of inner modal class) is pinned to the bottom edge.
+           This avoids per-class enumeration and catches future panels for
+           free. */
+        :global(.app.map.app.map .map-action-host > *),
+        :global(.app.map.app.map .map-action-host > * > .modal-container),
+        :global(.app.map.app.map .map-action-host > * > [class$="-modal"]),
+        :global(.app.map.app.map .map-action-host > * > [class$="-menu"]) {
+            position: fixed;
+            top: auto;
+            left: 0;
+            right: 0;
+            bottom: 3.5em;
+            transform: none;
+            width: 100%;
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 1em 1em 0 0;
+            border-bottom: none;
+            box-shadow: 0 -1em 3em rgba(0, 0, 0, 0.55);
+            animation: mobileSheetUp 0.25s ease-out;
+        }
+        @keyframes mobileSheetUp {
+            from { transform: translateY(100%); opacity: 0.5; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+        :global(.app.map.app.map .mobilise-btn),
+        :global(.app.map.app.map .build-btn),
+        :global(.app.map.app.map .recruit-btn),
+        :global(.app.map.app.map .craft-btn),
+        :global(.app.map.app.map .move-btn),
+        :global(.app.map.app.map .attack-btn),
+        :global(.app.map.app.map .gather-btn),
+        :global(.app.map.app.map .join-battle-btn),
+        :global(.app.map.app.map .confirm-btn),
+        :global(.app.map.app.map .submit-btn) {
+            width: 100%;
+            padding: 1em 1.2em;
+        }
+    }
+
+    .app.map, .app.home {
+        --color-background: var(--color-ink-1000);
+        --color-background-gradient-start: var(--color-ink-1000);
+        --color-background-gradient-end: var(--color-ink-900);
+        --color-text-primary: var(--color-parchment-200);
+        --color-text-secondary: var(--color-parchment-400);
+        --color-text: var(--color-parchment-200);
+        --color-heading: var(--color-gold-pale);
+        --color-subheading: var(--color-parchment-400);
+        --color-panel-bg: rgba(26, 32, 48, 0.85);
+        --color-panel-border: rgba(176, 141, 74, 0.3);
+        --color-card-bg: rgba(26, 32, 48, 0.85);
+        --color-card-border: rgba(176, 141, 74, 0.3);
+        --color-link: var(--color-gold-pale);
+        --color-link-hover: var(--color-aged-gold);
+        --color-shadow: rgba(0, 0, 0, 0.5);
+        --color-button: var(--color-ink-700);
+        --color-button-hover: var(--color-ink-500);
+        --color-button-primary: var(--color-aged-gold);
+        --color-button-primary-hover: var(--color-gold-pale);
+        --color-button-secondary: var(--color-ink-500);
+        --color-button-secondary-hover: var(--color-ink-300);
+        --color-pale-green: var(--color-gold-pale);
+        --color-muted-teal: var(--color-aged-gold);
+        --color-bright-accent: var(--color-aged-gold);
     }
 
     .app.map {
@@ -591,18 +1113,101 @@
         gap: 2.5em; /* Increased from 1.5em to 2.5em */
     }
 
-    .links a {
-        color: var(--color-text-secondary);
+    /* World-scoped routes: the layout header is hidden, the WorldContextBar
+       sits fixed at top:0 (~3em tall). Most page heroes reserve 7em+ of top
+       padding which is plenty of clearance; nothing more needed here. */
+
+    /* "Return to map" pill — surfaces the active world id on every page so
+       the player always has a one-click route back to the active realm.
+       Lives outside .nav so it stays visible on mobile too (the .nav block
+       is display:none under 769px). */
+    .return-map-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        padding: 0.45em 0.85em 0.45em 0.65em;
+        margin-right: 0.6em;
+        background: var(--color-ink-900);
+        color: var(--color-parchment-100);
+        border: 0.075em solid var(--color-ink-900);
+        border-radius: 0.15em;
+        font-family: var(--font-display);
+        font-size: 0.78em;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
         text-decoration: none;
-        font-size: 1.1em;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        white-space: nowrap;
+        order: 2;
+    }
+    .return-map-pill:hover {
+        background: var(--color-wax-red);
+        border-color: var(--color-wax-red);
+        color: var(--color-parchment-100);
+    }
+    .return-map-pill .arrow {
+        font-family: var(--font-display);
+        font-size: 1.3em;
+        line-height: 1;
+        opacity: 0.85;
+    }
+    .return-map-pill .text em {
+        font-family: var(--font-mono);
+        font-style: normal;
+        font-size: 0.85em;
+        letter-spacing: 0.04em;
+        opacity: 0.85;
+        margin-left: 0.25em;
+        text-transform: none;
+    }
+    .home .return-map-pill, .map .return-map-pill {
+        background: var(--color-aged-gold);
+        color: var(--color-ink-900);
+        border-color: var(--color-aged-gold);
+    }
+    .home .return-map-pill:hover, .map .return-map-pill:hover {
+        background: var(--color-gold-pale);
+        border-color: var(--color-gold-pale);
+        color: var(--color-ink-900);
+    }
+    @media (max-width: 700px) {
+        .return-map-pill {
+            padding: 0.35em 0.55em;
+            font-size: 0.7em;
+            margin-right: 0.4em;
+        }
+        .return-map-pill .text em { display: none; }
+    }
+
+    .links a {
+        color: var(--color-ink-700);
+        text-decoration: none;
+        font-family: var(--font-display);
+        font-size: 0.85em;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
         transition: color 0.2s ease;
         position: relative;
         padding: 0.3em 0;
     }
 
+    .map .links a,
+    .home .links a {
+        color: rgba(232, 228, 210, 0.75);
+    }
+
     .links a:hover,
     .links a.active {
-        color: var(--color-bright-accent);
+        color: var(--color-wax-red);
+    }
+
+    .map .links a:hover,
+    .map .links a.active,
+    .home .links a:hover,
+    .home .links a.active {
+        color: var(--color-gold-pale);
     }
 
     .links a::after {
@@ -611,9 +1216,14 @@
         bottom: 0;
         left: 0;
         width: 0;
-        height: 2px;
-        background-color: var(--color-bright-accent);
+        height: 1px;
+        background-color: var(--color-wax-red);
         transition: width 0.3s ease;
+    }
+
+    .map .links a::after,
+    .home .links a::after {
+        background-color: var(--color-gold-pale);
     }
 
     .links a:hover::after,
@@ -639,45 +1249,81 @@
     }
 
     .greeting {
-        font-size: 0.9em;
-        color: var (--color-pale-green);
+        font-family: var(--font-mono);
+        font-size: 0.8em;
+        color: var(--color-ink-700);
+        letter-spacing: 0.05em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 150px;
         order: -1;
     }
-    
+
+    .map .greeting,
+    .home .greeting {
+        color: var(--color-gold-pale);
+    }
+
     .login, .signup {
-        padding: 0.4em 0.8em;
-        font-size: 0.9em;
+        padding: 0.55em 1em;
+        font-family: var(--font-display);
+        font-size: 0.78em;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
         text-decoration: none;
-        border-radius: 0.25em;
+        border-radius: 2px;
         transition: all 0.2s ease;
     }
-    
+
     .login {
-        color: var(--color-pale-green);
-        border: 1px solid var(--color-muted-teal);
+        color: var(--color-ink-900);
+        border: 0.075em solid var(--color-ink-900);
+        background: transparent;
     }
-    
+
     .signup {
-        /* Update background color for better contrast */
-        background-color: var(--color-pale-green);
-        color: var(--color-dark-navy);
-        font-weight: 500;
-        border: 1px solid var(--color-pale-green);
+        background-color: var(--color-ink-900);
+        color: var(--color-parchment-100);
+        border: 0.075em solid var(--color-ink-900);
+    }
+
+    .map .login,
+    .home .login {
+        color: var(--color-parchment-100);
+        border: 0.075em solid rgba(251, 246, 231, 0.5);
+        background: transparent;
+    }
+
+    .map .signup,
+    .home .signup {
+        background-color: var(--color-aged-gold);
+        color: var(--color-ink-900);
+        border: 0.075em solid var(--color-aged-gold);
     }
     
-    .login:hover, .signup:hover {
-        transform: translateY(-0.125em);
-        box-shadow: 0 0.125em 0.3125em var(--color-shadow);
+    .login:hover {
+        background: rgba(26, 32, 48, 0.06);
     }
-    
-    /* Add specific hover effect for signup */
+
     .signup:hover {
-        background-color: #7AFFDF; /* Brighter version of pale green */
-        border-color: #7AFFDF;
+        background-color: var(--color-ink-700);
+        border-color: var(--color-ink-700);
+        color: var(--color-parchment-100);
+    }
+
+    /* Dark-context hovers (map / home) */
+    .map .login:hover, .home .login:hover {
+        background: rgba(251, 246, 231, 0.08);
+        border-color: var(--color-gold-pale);
+        color: var(--color-gold-pale);
+    }
+
+    .map .signup:hover, .home .signup:hover {
+        background-color: var(--color-gold-pale);
+        border-color: var(--color-gold-pale);
+        color: var(--color-ink-900);
     }
 
     /* Common button styles - make more specific with child selector */
@@ -828,12 +1474,15 @@
         }
     }
 
-    /* Footer styles */
+    /* Footer styles — parchment, ink-on-paper */
     .footer {
-        margin-top: auto; /* Push footer to the bottom of flex container */
+        margin-top: auto;
         padding: 2em 0 1em;
-        background-color: var(--color-dark-blue);
-        border-top: 1px solid var(--color-panel-border);
+        background-color: var(--color-parchment-300);
+        border-top: 0.075em solid var(--color-ink-900);
+        position: relative;
+        z-index: 2;
+        color: var(--color-ink-900);
     }
     
     .footer-content {
@@ -865,12 +1514,13 @@
     }
     
     .footer-section h3 {
-        color: var(--color-pale-green);
-        font-family: var(--font-heading);
-        font-weight: 400;
+        color: var(--color-wax-red);
+        font-family: var(--font-display);
+        font-weight: 600;
         margin-bottom: 1em;
-        font-size: 1.2em;
-        letter-spacing: 0.05em;
+        font-size: 0.7em;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
         text-align: left;
     }
     
@@ -894,17 +1544,17 @@
     }
     
     .footer-title {
-        font-size: 2em; /* Updated from 1.5em to 2em */
-        letter-spacing: 0.2em;
-        color: #e24144;
-        text-shadow: 0 0 0.625em rgba(193, 19, 22, 0.5);
-        font-weight: 400;
-        font-family: var(--font-heading);
-        margin: 0; /* Removed all margins */
+        font-size: 1.6em;
+        letter-spacing: 0.12em;
+        color: var(--color-ink-900);
+        font-weight: 600;
+        font-family: var(--font-display);
+        margin: 0;
     }
-    
+
     .footer-tagline {
-        color: rgba(255, 255, 255, 0.6); /* Reduced from full white to 60% opacity */
+        color: var(--color-ink-500);
+        font-family: var(--font-editorial);
         font-style: italic;
         margin-bottom: 1em;
     }
@@ -923,20 +1573,21 @@
     }
     
     .social-icon {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--color-ink-700);
         transition: color 0.2s ease;
     }
-    
+
     .footer-links a, .footer-signout {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--color-ink-700);
         text-decoration: none;
         transition: color 0.2s ease;
+        font-family: var(--font-body);
         font-size: 1em;
         display: inline-block;
     }
-    
+
     .footer-links a:hover, .footer-signout:hover {
-        color: var(--color-pale-green);
+        color: var(--color-wax-red);
     }
     
     .footer-signout {
@@ -949,22 +1600,23 @@
         width: 100%;
     }
     
-    /* Make sure SignOut icon styling is consistent */
     :global(.footer-signout .social-icon) {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--color-ink-700);
         transition: color 0.2s ease;
     }
-    
+
     .footer-signout:hover :global(.social-icon) {
-        color: var(--color-pale-green);
+        color: var(--color-wax-red);
     }
-    
+
     .footer-bottom {
         padding-top: 1em;
         text-align: center;
-        font-size: 0.8em;
-        color: var(--color-text-secondary);
-        border-top: 1px solid rgba(100, 255, 218, 0.1);
+        font-family: var(--font-mono);
+        font-size: 0.7em;
+        letter-spacing: 0.1em;
+        color: var(--color-ink-500);
+        border-top: 0.075em solid rgba(26, 32, 48, 0.18);
     }
     
     @media (max-width: 768px) {

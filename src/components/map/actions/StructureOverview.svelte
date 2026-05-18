@@ -1202,18 +1202,19 @@
     width: 90%;
     max-width: 34em;
     max-height: 85vh;
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.3em;
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
+    border: 1px solid rgba(176, 141, 74, 0.35);
+    border-radius: 0;
+    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(176, 141, 74, 0.15);
+    text-shadow: none;
+    color: var(--color-parchment-200);
     z-index: 1000;
     font-size: 1.4em;
     font-family: var(--font-body);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    /* Use transform animation for better performance */
+    backdrop-filter: blur(8px);
     transform: scale(0.95);
     opacity: 0;
     animation: modalAppear 0.3s ease-out forwards;
@@ -1235,7 +1236,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     font-family: var(--font-heading);
   }
@@ -1261,7 +1262,7 @@
   }
 
   .close-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
     color: rgba(0, 0, 0, 0.9);
   }
 
@@ -1326,13 +1327,13 @@
   }
 
   .owner-badge {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
     color: #2e7d32;
     border: 1px solid rgba(76, 175, 80, 0.4);
   }
   
   .race-badge {
-    background-color: rgba(33, 150, 243, 0.2);
+    background-color: rgba(176, 141, 74, 0.22);
     color: #0277bd;
     border: 1px solid rgba(33, 150, 243, 0.4);
   }
@@ -1356,7 +1357,7 @@
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
   }
   
   .section-header {
@@ -1364,13 +1365,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5em 1em;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(176, 141, 74, 0.06);
     cursor: pointer;
     user-select: none;
   }
   
   .section-header:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
   }
 
   .collapse-button {
@@ -1390,7 +1391,7 @@
 
   .collapse-button:hover {
     color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-radius: 50%;
   }
 
@@ -1443,7 +1444,7 @@
   }
   
   .features-list, .upgrade-requirements, .new-features {
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(26, 32, 48, 0.4);
     border-radius: 0.3em;
     padding: 0.6em;
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -1466,7 +1467,7 @@
   
   .feature-icon {
     font-size: 1.2em;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     width: 1.8em;
     height: 1.8em;
     border-radius: 50%;
@@ -1515,12 +1516,12 @@
     font-size: 0.85em;
     padding: 0.3em 0.6em;
     border-radius: 0.3em;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(176, 141, 74, 0.06);
   }
   
   .requirement-item.sufficient {
     color: #2e7d32;
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
   }
   
   .requirement-item.insufficient {
@@ -1569,17 +1570,17 @@
   }
   
   .tab-button.active {
-    background: rgba(66, 133, 244, 0.1);
+    background: rgba(176, 141, 74, 0.14);
     color: rgba(0, 0, 0, 0.85);
     font-weight: 600;
   }
   
   .tab-button:hover:not(.active) {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(176, 141, 74, 0.06);
   }
   
   .tab-count {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.12);
     border-radius: 1em;
     padding: 0.1em 0.5em;
     font-size: 0.85em;
@@ -1603,7 +1604,7 @@
     margin-bottom: 0.6em;
     padding: 0.5em 0.7em;
     border-radius: 0.3em;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border: 1px solid rgba(0, 0, 0, 0.1);
     transition: background-color 0.2s ease;
   }
@@ -1613,7 +1614,7 @@
   }
 
   .entity:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(26, 32, 48, 0.75);
   }
 
   .item-info {
@@ -1689,12 +1690,12 @@
   }
 
   .item-rarity.uncommon {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
     color: #2e7d32;
   }
 
   .item-rarity.rare {
-    background-color: rgba(33, 150, 243, 0.2);
+    background-color: rgba(176, 141, 74, 0.22);
     color: #0277bd;
   }
 
@@ -1791,7 +1792,7 @@
   .building-card {
     display: flex;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.3em;
     padding: 0.8em;
@@ -1799,7 +1800,7 @@
   }
   
   .building-card:hover {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(26, 32, 48, 0.65);
     box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.1);
   }
   
@@ -1814,7 +1815,7 @@
   }
   
   .building-card.available-building {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(26, 32, 48, 0.65);
     border: 1px dashed rgba(76, 175, 80, 0.7);
   }
   
@@ -1834,7 +1835,7 @@
   
   .building-icon {
     font-size: 1.8em;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     width: 1.8em;
     height: 1.8em;
     border-radius: 0.3em;
@@ -1869,7 +1870,7 @@
   
   .building-requirements {
     margin: 0.2em 0 0.8em 0;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border-radius: 0.3em;
     padding: 0.6em;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -1900,7 +1901,7 @@
   
   .requirement-item.sufficient {
     color: #2e7d32;
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
   }
   
   .requirement-item.insufficient {
@@ -1998,7 +1999,7 @@
     font-size: 0.85em;
     margin-top: 0.5em;
     padding: 0.4em;
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
     border-radius: 0.3em;
   }
   

@@ -314,11 +314,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(10, 25, 47, 0.85);
+    background-color: rgba(14, 19, 32, 0.55);
     z-index: 999;
     cursor: pointer;
+    backdrop-filter: blur(2px);
   }
-  
+
   .join-confirmation {
     position: fixed;
     top: 50%;
@@ -327,23 +328,23 @@
     width: 90%;
     max-width: 40em;
     max-height: 90vh;
-    background: rgba(21, 38, 60, 0.95);
-    border: 2px solid var(--color-muted-teal);
-    border-radius: 0.5em;
-    box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.5);
-    padding: 1.5em;
+    background: var(--color-parchment-100);
+    border: 1px solid var(--color-ink-900);
+    border-radius: 0;
+    box-shadow: 0 2em 5em rgba(0, 0, 0, 0.35);
+    padding: 1.8em 2em;
     overflow-y: auto;
     z-index: 1000;
-    color: var(--color-text);
+    color: var(--color-ink-900);
     font-family: var(--font-body);
   }
-  
+
   .step-title {
-    color: var(--color-pale-green);
+    color: var(--color-ink-900);
     margin: 0 0 1em 0;
-    font-family: var(--font-heading);
-    font-weight: 400;
-    letter-spacing: 0.05em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.04em;
     font-size: 1.6em;
     text-align: center;
     display: flex;
@@ -391,28 +392,27 @@
   
   .race-option {
     background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--color-panel-border);
-    border-radius: 0.5em;
+    border: 1px solid rgba(26, 32, 48, 0.18);
+    border-radius: 0;
     padding: 1em 0.8em;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100%;
-    color: var(--color-text);
+    color: var(--color-ink-900);
+    background: var(--color-parchment-200);
   }
-  
+
   .race-option:hover {
-    background-color: rgba(0, 0, 0, 0.3);
-    transform: translateY(-0.125em);
-    box-shadow: 0 0.25em 0.5em var(--color-shadow);
+    background-color: var(--color-parchment-300);
   }
-  
+
   .race-option.selected {
-    border: 2px solid var(--color-bright-accent);
-    background-color: rgba(100, 255, 218, 0.05);
+    border: 2px solid var(--color-wax-red);
+    background-color: var(--color-parchment-100);
   }
   
   .race-icon-container {
@@ -428,38 +428,40 @@
   :global(.confirmation-race-icon) {
     width: 2.5em;
     height: 2.5em;
-    fill: #64FFDA;
-    transition: all 0.2s ease;
+    fill: var(--color-ink-700);
+    transition: fill 0.15s ease, transform 0.15s ease;
   }
 
   :global(.confirmation-race-icon.large) {
     width: 4em;
     height: 4em;
   }
-  
+
   .race-option.selected :global(.confirmation-race-icon) {
-    fill: #9EFFEA;
+    fill: var(--color-wax-red);
     transform: scale(1.05);
   }
-  
+
   .race-option:hover :global(.confirmation-race-icon) {
-    fill: #9EFFEA;
+    fill: var(--color-ink-900);
   }
-  
+
   .race-option h3 {
-    font-family: var(--font-heading);
+    font-family: var(--font-display);
     font-weight: 600;
     margin: 0 0 0.5em 0;
-    color: var(--color-muted-teal);
-    font-size: 1em;
+    color: var(--color-ink-700);
+    font-size: 0.85em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
-  
+
   .race-option.selected h3 {
-    color: var(--color-pale-green);
+    color: var(--color-wax-red);
   }
-  
+
   .race-description {
-    font-size: 0.8em;
+    font-size: 0.85em;
     max-height: 5em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -467,16 +469,18 @@
     -webkit-line-clamp: 3;
     line-clamp: 3;
     -webkit-box-orient: vertical;
+    font-family: var(--font-editorial);
+    font-style: italic;
   }
-  
+
   .race-option p {
     margin: 0;
     text-align: center;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-ink-500);
   }
-  
+
   .race-option:focus {
-    outline: 2px solid var(--color-bright-accent);
+    outline: 2px solid var(--color-wax-red);
     outline-offset: 2px;
   }
   
@@ -491,46 +495,47 @@
   .cancel-button,
   .back-button {
     background: transparent;
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-panel-border);
-    padding: 0.8em 1.5em;
-    border-radius: 0.25em;
+    color: var(--color-ink-900);
+    border: 1px solid var(--color-ink-900);
+    padding: 0.75em 1.5em;
+    border-radius: 2px;
     cursor: pointer;
-    font-family: var(--font-heading);
+    font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1em;
-    transition: all 0.2s ease;
+    font-size: 0.78em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: background 0.15s ease;
   }
-  
+
   .next-button,
   .confirm-button {
-    background-color: #64FFDA;
-    color: #0A192F;
-    border: none;
+    background-color: var(--color-ink-900);
+    color: var(--color-parchment-100);
+    border: 1px solid var(--color-ink-900);
     min-width: 10em;
-    font-weight: 500;
-    padding: 0.8em 1.5em;
-    border-radius: 0.25em;
+    padding: 0.75em 1.5em;
+    border-radius: 2px;
     cursor: pointer;
-    font-family: var(--font-heading);
+    font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1em;
-    transition: all 0.2s ease;
+    font-size: 0.78em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: background 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  
+
   .cancel-button:hover:not(:disabled),
   .back-button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(26, 32, 48, 0.06);
   }
-  
+
   .next-button:hover:not(:disabled),
   .confirm-button:hover:not(:disabled) {
-    background-color: #9EFFEA;
-    transform: translateY(-0.125em);
-    box-shadow: 0 0.2em 0.5em rgba(100, 255, 218, 0.3);
+    background-color: var(--color-ink-700);
   }
   
   .next-button:disabled,
@@ -563,45 +568,48 @@
   }
   
   .selected-race-display h3 {
-    color: var(--color-pale-green);
-    font-family: var(--font-heading);
-    font-size: 1.4em;
+    color: var(--color-ink-900);
+    font-family: var(--font-display);
+    font-size: 1.3em;
+    letter-spacing: 0.04em;
     margin: 0.2em 0 0 0;
   }
-  
+
   .name-input-container {
     margin: 1em 0;
     text-align: center;
     padding: 0 1em;
   }
-  
+
   .name-input-container input {
     width: 100%;
     max-width: 400px;
-    padding: 0.8em;
+    padding: 0.75em 0.9em;
     font-size: 1em;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--color-panel-border);
-    border-radius: 0.3em;
-    color: var(--color-text);
+    background: var(--color-parchment-200);
+    border: 1px solid var(--color-parchment-shadow);
+    border-radius: 2px;
+    color: var(--color-ink-900);
     font-family: var(--font-body);
-    transition: all 0.2s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
-  
+
   .name-input-container input:focus {
     outline: none;
-    border-color: var(--color-bright-accent);
-    box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.3);
+    border-color: var(--color-ink-900);
+    background: var(--color-parchment-100);
   }
-  
+
   .name-input-container input.error {
-    border-color: #e24144;
-    box-shadow: 0 0 0 2px rgba(226, 65, 68, 0.3);
+    border-color: var(--color-wax-red);
+    background: rgba(154, 51, 32, 0.06);
   }
-  
+
   .input-error {
-    color: #e24144;
-    font-size: 0.8em;
+    color: var(--color-wax-red);
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 0.85em;
     margin-top: 0.5em;
   }
   

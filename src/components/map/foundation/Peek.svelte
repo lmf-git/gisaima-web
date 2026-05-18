@@ -336,263 +336,167 @@
 </script>
 
 {#if isVisible}
-  <div 
-    class="peek-container"
-    role="dialog"
-    aria-label="Quick actions menu"
-  >
-    <div class="action-circle">
-      <!-- Render only visible buttons -->
-      {#each allItems as item}
-        <!-- Remove the conditional rendering but add a class based on visibility -->
-        {#if item.type === 'action'}
-          <button
-            class="action-button {item.action.id}-button {(!isFullyOpen && !visibleButtons.includes(item.index)) ? 'hidden' : ''}"
-            style="--x:{item.position.x}em; --y:{item.position.y}em; --index:{item.index}; --total:{totalItems};"
-            onclick={(e) => handleActionClick(item.action.id, e)}
-          >
-            {#if item.action.icon}
-              <item.action.icon extraClass="action-icon" />
-            {/if}
-            <span class="action-label">{item.action.label}</span>
-          </button>
-        {:else if item.type === 'close'}
-          <button
-            class="action-button close-button {(!isFullyOpen && !visibleButtons.includes(item.index)) ? 'hidden' : ''}"
-            style="--x:{item.position.x}em; --y:{item.position.y}em; --index:{item.index}; --total:{totalItems};"
-            onclick={handleClose}
-          >
-            {#if isExiting}
-              <Logo extraClass="logo-icon" />
-            {:else}
-              <Close extraClass="close-icon" />
-            {/if}
-          </button>
-        {/if}
+  {@const R = 110}
+  {@const r = 50}
+  {@const N = availableActions.length || 1}
+  {@const size = (R + 12) * 2}
+  {@const center = R + 12}
+  <div class="peek-container" class:exiting={isExiting} role="dialog" aria-label="Quick actions">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 {size} {size}"
+      class="wheel"
+      aria-hidden="false"
+    >
+      <!-- Outer ink ring -->
+      <circle cx={center} cy={center} r={R + 1} fill="rgba(14,19,32,.65)" stroke="rgba(251,246,231,.6)" stroke-width="0.6" />
+
+      <!-- Sectors -->
+      {#each availableActions as action, i}
+        {@const sectorVisible = visibleButtons.includes(i)}
+        {@const a1 = (i / N) * Math.PI * 2 - Math.PI / 2 - Math.PI / N}
+        {@const a2 = a1 + (Math.PI * 2) / N}
+        {@const inset = 0.018}
+        {@const p1x = center + Math.cos(a1 + inset) * R}
+        {@const p1y = center + Math.sin(a1 + inset) * R}
+        {@const p2x = center + Math.cos(a2 - inset) * R}
+        {@const p2y = center + Math.sin(a2 - inset) * R}
+        {@const p3x = center + Math.cos(a2 - inset) * r}
+        {@const p3y = center + Math.sin(a2 - inset) * r}
+        {@const p4x = center + Math.cos(a1 + inset) * r}
+        {@const p4y = center + Math.sin(a1 + inset) * r}
+        {@const largeArc = (a2 - a1) > Math.PI ? 1 : 0}
+        {@const sectorPath = `M${p1x} ${p1y} A${R} ${R} 0 ${largeArc} 1 ${p2x} ${p2y} L${p3x} ${p3y} A${r} ${r} 0 ${largeArc} 0 ${p4x} ${p4y} Z`}
+        {@const mid = (a1 + a2) / 2}
+        {@const ix = center + Math.cos(mid) * ((R + r) / 2)}
+        {@const iy = center + Math.sin(mid) * ((R + r) / 2)}
+        <g class="sector" class:visible={sectorVisible} style="--i: {i}">
+          <path
+            d={sectorPath}
+            class="sector-fill"
+            onclick={(e) => handleActionClick(action.id, e)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleActionClick(action.id, e); } }}
+            role="button"
+            aria-label={action.label}
+            tabindex="0"
+          />
+          <foreignObject x={ix - 12} y={iy - 22} width="24" height="24" pointer-events="none">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="sector-icon">
+              {#if action.icon}
+                <action.icon extraClass="wheel-icon" />
+              {/if}
+            </div>
+          </foreignObject>
+          <text x={ix} y={iy + 16} text-anchor="middle" class="sector-label" pointer-events="none">{action.label.toUpperCase()}</text>
+        </g>
       {/each}
-    </div>
+
+      <!-- Center hub: close button on parchment fill -->
+      <circle cx={center} cy={center} r={r - 2} fill="#cac281" stroke="rgba(14,19,32,.55)" stroke-width="0.9" />
+      <circle
+        cx={center}
+        cy={center}
+        r={r - 4}
+        class="center-hub"
+        onclick={handleClose}
+        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); handleClose(); } }}
+        role="button"
+        aria-label="Close action wheel"
+        tabindex="0"
+      />
+      <text x={center} y={center - 4} text-anchor="middle" class="center-tag" pointer-events="none">CLOSE</text>
+      <text x={center} y={center + 12} text-anchor="middle" class="center-coord" pointer-events="none">
+        {currentTileData ? `${currentTileData.x} | ${currentTileData.y}` : ''}
+      </text>
+    </svg>
   </div>
 {/if}
 
 <style>
+  /* Radial action wheel — six-segment ink-on-parchment pie, replaces the
+     floating-button cluster. Sectors are SVG paths; icons live in
+     foreignObject and inherit the per-action accent colour. */
   .peek-container {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20em;
-    height: 20em;
+    transform: translate(-50%, -50%) scale(1);
     z-index: 800;
     pointer-events: none;
+    filter: drop-shadow(0 1em 2em rgba(0, 0, 0, 0.45));
+    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  
-  .action-circle {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    pointer-events: none;
+  .peek-container.exiting {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0.4;
   }
-  
-  .action-button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+
+  .wheel { display: block; pointer-events: none; overflow: visible; }
+
+  .sector { opacity: 0; transition: opacity 0.18s ease; pointer-events: none; }
+  .sector.visible { opacity: 1; pointer-events: auto; }
+
+  .sector-fill {
+    fill: rgba(251, 246, 231, 0.92);
+    stroke: rgba(14, 19, 32, 0.6);
+    stroke-width: 0.8;
+    cursor: pointer;
+    transition: fill 0.15s ease, stroke 0.15s ease;
+  }
+  .sector-fill:hover {
+    fill: rgba(176, 141, 74, 0.9);
+    stroke: var(--color-ink-900, #1a2030);
+  }
+  .sector-fill:focus-visible {
+    outline: none;
+    fill: rgba(176, 141, 74, 0.85);
+  }
+
+  .sector-icon {
+    width: 24px;
+    height: 24px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0.4em;
-    border-radius: 50%;
-    width: 4.6em;
-    height: 4.6em;
-    background-color: rgba(255, 255, 255, 0.97);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    color: var(--color-ink-900);
+  }
+  .peek-container :global(.wheel-icon) {
+    width: 22px;
+    height: 22px;
+    fill: var(--color-ink-900, #1a2030);
+    stroke: var(--color-ink-900, #1a2030);
+  }
+  .sector-fill:hover ~ foreignObject .sector-icon,
+  .sector-fill:hover ~ foreignObject :global(.wheel-icon) {
+    color: var(--color-parchment-100, #fbf6e7);
+    fill: var(--color-parchment-100, #fbf6e7);
+    stroke: var(--color-parchment-100, #fbf6e7);
+  }
+
+  .sector-label {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    fill: var(--color-ink-900, #1a2030);
+  }
+
+  .center-hub {
+    fill: transparent;
     cursor: pointer;
-    border: 3px solid rgba(255, 255, 255, 0.9);
     pointer-events: auto;
-    font-family: var(--font-body);
-    transform: translate(calc(-50% + var(--x, 0em)), calc(-50% + var(--y, 0em)));
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                box-shadow 0.3s ease;
-    will-change: transform;
   }
-  
-  .action-button:hover {
-    /* No scale transform, just enhanced shadow */
-    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45);
-    border-color: currentColor; /* Uses the color of the button */
+  .center-tag {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    fill: var(--color-ink-900, #1a2030);
   }
-  
-  .action-button:active {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-  }
-  
-  .action-label {
-    font-size: 0.9em; /* Base size */
-    margin-top: 0.25em;
-    color: white; /* Changed to white */
-    font-weight: 700;
-    white-space: nowrap;
-    transition: font-size 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  .action-button:hover .action-label {
-    font-size: 1.05em; /* Grow text on hover */
-  }
-  
-  .peek-container :global(.action-icon) {
-    width: 1.8em;
-    height: 1.8em;
-    fill: white; /* Changed to white */
-    stroke: white; /* For outlined icons */
-    transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .action-button:hover :global(.action-icon) {
-    width: 2.2em; /* Grow icon width on hover */
-    height: 2.2em; /* Grow icon height on hover */
-  }
-
-  :global(.close-icon) {
-    width: 2em;
-    height: 2em;
-  }
-  
-  :global(.logo-icon) {
-    width: 2.2em;
-    height: 2.2em;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  .action-button:hover :global(.close-icon),
-  .action-button:hover :global(.logo-icon) {
-    width: 2.4em;
-    height: 2.4em;
-  }
-  
-  /* Style different action types with better contrast colors */
-  .inspect-button {
-    background-color: rgba(33, 150, 243, 0.65);
-    border-color: rgba(33, 150, 243, 0.85);
-    color: white;
-  }
-  
-  .mobilise-button {
-    background-color: rgba(63, 81, 181, 0.65);
-    border-color: rgba(63, 81, 181, 0.85);
-    color: white;
-  }
-  
-  .move-button {
-    background-color: rgba(76, 175, 80, 0.65);
-    border-color: rgba(76, 175, 80, 0.85);
-    color: white;
-  }
-  
-  .attack-button {
-    background-color: rgba(244, 67, 54, 0.65);
-    border-color: rgba(244, 67, 54, 0.85);
-    color: white;
-  }
-  
-  .build-button {
-    background-color: rgba(121, 85, 72, 0.65);
-    border-color: rgba(121, 85, 72, 0.85);
-    color: white;
-  }
-  
-  /* Add craft button styling with pinkish color */
-  .craft-button {
-    background-color: rgba(233, 30, 99, 0.65);
-    border-color: rgba(233, 30, 99, 0.85);
-    color: white;
-  }
-
-  /* Add recruitment button styling */
-  .recruitment-button {
-    background-color: rgba(156, 39, 176, 0.65);
-    border-color: rgba(156, 39, 176, 0.85);
-    color: white;
-  }
-  
-  .gather-button {
-    background-color: rgba(255, 193, 7, 0.65);
-    border-color: rgba(255, 193, 7, 0.85);
-    color: white;
-  }
-  
-  .demobilise-button {
-    background-color: rgba(0, 150, 136, 0.65);
-    border-color: rgba(0, 150, 136, 0.85);
-    color: white;
-  }
-  
-  .close-button {
-    background-color: rgba(117, 117, 117, 0.65);
-    border-color: rgba(117, 117, 117, 0.85);
-    color: white;
-  }
-  
-  .details-button {
-    background-color: rgba(90, 200, 250, 0.65);
-    border-color: rgba(90, 200, 250, 0.85);
-    color: white;
-  }
-  
-  /* Specific hover effects for each button type */
-  .inspect-button:hover {
-    background-color: rgba(33, 150, 243, 0.8);
-  }
-  
-  .mobilise-button:hover {
-    background-color: rgba(63, 81, 181, 0.8);
-  }
-  
-  .move-button:hover {
-    background-color: rgba(76, 175, 80, 0.8);
-  }
-  
-  .attack-button:hover {
-    background-color: rgba(244, 67, 54, 0.8);
-  }
-  
-  .build-button:hover {
-    background-color: rgba(121, 85, 72, 0.8);
-  }
-  
-  /* Add hover effect for craft button */
-  .craft-button:hover {
-    background-color: rgba(233, 30, 99, 0.8);
-  }
-
-  /* Add hover effect for recruitment button */
-  .recruitment-button:hover {
-    background-color: rgba(156, 39, 176, 0.8);
-  }
-  
-  .gather-button:hover {
-    background-color: rgba(255, 193, 7, 0.8);
-  }
-  
-  .demobilise-button:hover {
-    background-color: rgba(0, 150, 136, 0.8);
-  }
-  
-  .close-button:hover {
-    background-color: rgba(117, 117, 117, 0.8);
-  }
-  
-  .details-button:hover {
-    background-color: rgba(90, 200, 250, 0.8);
-  }
-
-  /* Add this new class for hidden buttons */
-  .action-button.hidden {
-    opacity: 0;
-    transform: translate(calc(-50% + var(--x, 0em)), calc(-50% + var(--y, 0em))) scale(0.5);
-    pointer-events: none;
+  .center-coord {
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    fill: var(--color-wax-red, #5b1a1f);
   }
 </style>

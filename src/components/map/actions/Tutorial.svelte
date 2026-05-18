@@ -292,11 +292,11 @@
   
   .box {
     position: relative;
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(14, 19, 32, 0.85);
+    border: 1px solid rgba(176, 141, 74, 0.3);
     border-radius: 0.3em;
     box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    text-shadow: none;
     backdrop-filter: blur(0.5em);
     -webkit-backdrop-filter: blur(0.5em);
     padding: 2em;
@@ -306,7 +306,7 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     pointer-events: auto;
     animation: appear 0.3s ease-out;
   }
@@ -334,7 +334,7 @@
   }
   
   h2 {
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     text-align: center;
     font-size: 2em;
     margin: 0 0 0.8em 0;
@@ -343,7 +343,7 @@
   }
   
   h3 {
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     margin: 0 0 0.5em 0;
     font-family: var(--font-heading);
     font-weight: 600;
@@ -362,7 +362,7 @@
     text-align: center;
     margin: 0;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .close-btn {
@@ -373,25 +373,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     border: none;
     border-radius: 50%;
     cursor: pointer;
     opacity: 0.7;
     transition: all 0.2s ease;
     padding: 0;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
   
   .close-btn:hover {
     opacity: 1;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
     transform: scale(1.05);
   }
   
   .start-button {
     align-self: center;
-    background-color: var(--color-button-primary, #4285f4);
+    background-color: var(--color-button-primary, #b08d4a);
     color: white;
     border: none;
     border-radius: 0.3em;
@@ -416,7 +416,7 @@
   
   .collapsible {
     margin-bottom: 0.8em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.4em;
     overflow: hidden;
   }
@@ -425,7 +425,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     border: none;
     color: inherit;
     padding: 0.8em 1em;
@@ -441,7 +441,7 @@
   }
   
   .section-header:focus {
-    outline: 2px solid rgba(66, 133, 244, 0.6);
+    outline: 2px solid rgba(176, 141, 74, 0.6);
     outline-offset: -2px;
   }
   
@@ -453,7 +453,7 @@
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     font-size: 0.8em;
     cursor: pointer;
     padding: 0.2em 0.5em;
@@ -467,8 +467,8 @@
   }
   
   .section-header:hover .collapse-button {
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--color-parchment-200);
+    background-color: rgba(176, 141, 74, 0.08);
   }
   
   .section-content {
@@ -481,7 +481,7 @@
     padding: 0em 0em 0em 1.5em;
     line-height: 1.4;
     font-weight: 400;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .controls-grid {
@@ -495,9 +495,9 @@
   .achievements-section {
     margin-top: 1em;
     padding: 1em;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border-radius: 0.5em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
   }
   
   .achievements-button {

@@ -2209,155 +2209,164 @@
 </div>
 
 <style>
-  /* Base container styling similar to Overview and Details */
+  /* Parchment + sidebar layout */
   .guide-container {
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2em;
     max-width: 1200px;
-    margin: 7em auto 2em;
-    padding: 0 1em;
-    color: var(--color-text);
+    margin: 0 auto;
+    padding: 7em 1.5em 4em;
+    color: var(--color-ink-900);
   }
-  
-  /* Sidebar styling - make it match Details panel */
+
+  @media (min-width: 900px) {
+    .guide-container {
+      grid-template-columns: 220px 1fr;
+      gap: 3em;
+    }
+  }
+
   .sidebar {
     width: 100%;
-    margin-bottom: 2em;
     position: relative;
   }
-  
+
+  @media (min-width: 900px) {
+    .sidebar {
+      position: sticky;
+      top: 7em;
+      align-self: start;
+      max-height: calc(100vh - 8em);
+    }
+  }
+
   .toc {
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 1.5em;
-    border-radius: 0.5em;
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    background: var(--color-parchment-100);
+    padding: 1.4em 1.2em;
+    border: 1px solid var(--color-ink-900);
+    border-radius: 0;
+    box-shadow: 0 0.5em 1.6em rgba(0, 0, 0, 0.08);
+    text-shadow: none;
     max-height: calc(100vh - 8em);
     overflow: auto;
-
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-    
-    ::-webkit-scrollbar {
-      display: none;
-    }
-
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  
+  .toc::-webkit-scrollbar { display: none; }
+
   .toc h2 {
-    color: rgba(0, 0, 0, 0.8);
-    margin-bottom: 1em;
-    font-family: var(--font-heading);
+    color: var(--color-wax-red);
+    margin: 0 0 1em;
+    font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1.5em;
+    font-size: 0.7em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
   }
-  
-  .toc ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .toc li {
-    margin-bottom: 0.5em;
-  }
-  
+
+  .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 0 0 0.1em; }
+
   .toc button {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.7);
-    font-size: 1em;
+    border-left: 2px solid transparent;
+    color: var(--color-ink-700);
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    padding: 0.5em;
+    padding: 0.45em 0.6em;
     width: 100%;
     text-align: left;
-    border-radius: 0.25em;
-    transition: all 0.2s ease;
-    font-family: var(--font-body);
+    border-radius: 0;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
   }
-  
+
   .toc button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.9);
+    color: var(--color-ink-900);
+    background: var(--color-parchment-200);
   }
-  
+
   .toc button.active {
-    background-color: rgba(66, 133, 244, 0.1);
-    color: rgba(66, 133, 244, 0.9);
+    background: transparent;
+    border-left-color: var(--color-wax-red);
+    color: var(--color-wax-red);
+    font-weight: 600;
   }
-  
-  /* Guide content styling - match Details panel */
-  .guide-content {
-    flex: 1;
-  }
-  
+
+  .guide-content { flex: 1; min-width: 0; }
+
   .guide-content h1 {
-    font-size: 2.5em;
-    color: #fffc;
-    margin-bottom: 1em;
-    text-align: center;
-    font-family: var(--font-heading);
+    font-size: 2.6em;
+    color: var(--color-ink-900);
+    margin: 0 0 1em;
+    text-align: left;
+    font-family: var(--font-display);
     font-weight: 600;
-    text-shadow: 0 0 0.1em rgba(255, 255, 255, 0.8); /* Added shadow for better legibility */
+    letter-spacing: 0.04em;
+    text-shadow: none;
   }
-  
-  /* Section styling similar to Details panel */
+
   .guide-section {
-    margin-bottom: 3em;
-    padding: 1em;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 0.5em;
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
-    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 2em;
+    padding: 1.6em 1.8em;
+    background: var(--color-parchment-100);
+    border: 1px solid var(--color-ink-900);
+    border-radius: 0;
+    box-shadow: 0 0.4em 1.5em rgba(0, 0, 0, 0.08);
+    text-shadow: none;
+    color: var(--color-ink-900);
   }
-  
+
   .guide-section h2 {
-    font-size: 1.8em;
-    color: rgba(0, 0, 0, 0.8);
-    margin-bottom: 0.8em;
-    font-family: var(--font-heading);
+    font-size: 1.6em;
+    color: var(--color-ink-900);
+    margin: 0 0 0.7em;
+    font-family: var(--font-display);
     font-weight: 600;
+    letter-spacing: 0.04em;
   }
-  
+
   .guide-section h3 {
-    font-size: 1.4em;
-    color: rgba(0, 0, 0, 0.7);
-    margin-top: 1.5em;
-    margin-bottom: 0.8em;
-    font-family: var(--font-heading);
+    font-size: 1.15em;
+    color: var(--color-wax-red);
+    margin: 1.4em 0 0.6em;
+    font-family: var(--font-display);
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .guide-section h4 {
-    font-size: 1.2em;
-    color: rgba(0, 0, 0, 0.7);
-    margin-top: 1.2em;
-    margin-bottom: 0.6em;
-    font-family: var(--font-heading);
+    font-size: 1em;
+    color: var(--color-ink-700);
+    margin: 1em 0 0.5em;
+    font-family: var(--font-display);
     font-weight: 500;
+    letter-spacing: 0.04em;
   }
-  
+
   .guide-section p {
-    margin-bottom: 1.2em;
-    line-height: 1.6;
+    margin: 0 0 1em;
+    line-height: 1.55;
     font-family: var(--font-body);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-ink-900);
   }
-  
-  /* List styling to match Details */
+
   .guide-section ul {
-    list-style-position: inside;
-    padding-left: 0;
-    margin: 1em 0;
+    list-style-position: outside;
+    padding-left: 1.2em;
+    margin: 0.8em 0;
   }
 
   .guide-section li {
-    margin-bottom: 0.5em;
-    line-height: 1.6;
-    color: rgba(0, 0, 0, 0.8);
+    margin-bottom: 0.4em;
+    line-height: 1.55;
+    color: var(--color-ink-700);
   }
 
   .strategy-list, .controls-list {

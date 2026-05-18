@@ -176,105 +176,111 @@
         max-width: 26em;
         width: 100%;
         padding: 2.5em;
-        background-color: var(--color-panel-bg);
-        border: 1px solid var(--color-panel-border);
-        border-radius: 0.5em;
-        box-shadow: 0 0.3em 1em var(--color-shadow);
-        color: var(--color-text);
-        margin: 6em auto 2em; /* Add top margin to account for header */
+        background-color: var(--color-parchment-100);
+        border: 1px solid var(--color-ink-900);
+        box-shadow: 0 1em 3em rgba(0, 0, 0, 0.15);
+        color: var(--color-ink-900);
+        margin: 7em auto 2em;
+        position: relative;
+        z-index: 2;
     }
-    
+
     h1 {
-        margin-bottom: 1.5em;
+        margin: 0 0 1.5em;
         text-align: center;
-        color: var(--color-pale-green);
+        color: var(--color-ink-900);
         font-size: 1.8em;
-        text-shadow: 0 0 0.3em rgba(0, 0, 0, 0.4);
-        font-family: var(--font-heading); /* Added heading font */
-        font-weight: 400; /* Reduced font weight */
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: 0.06em;
     }
-    
-    .form-group {
-        margin-bottom: 1.5em;
-    }
-    
+
+    .form-group { margin-bottom: 1.4em; }
+
     label {
         display: block;
-        margin-bottom: 0.5em;
-        font-weight: 400; /* Reduced from 600 to 400 */
-        color: var(--color-muted-teal);
+        margin-bottom: 0.4em;
+        font-family: var(--font-display);
+        font-size: 0.7em;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-ink-700);
     }
-    
+
     input {
         width: 100%;
-        padding: 0.75em;
-        background: rgba(0, 0, 0, 0.2);
-        color: var(--color-text);
-        border: 1px solid var(--color-panel-border);
-        border-radius: 0.25em;
+        padding: 0.7em 0.85em;
+        background: var(--color-parchment-200);
+        color: var(--color-ink-900);
+        border: 1px solid var(--color-parchment-shadow);
+        border-radius: 2px;
         font-size: 1em;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        font-family: var(--font-body);
+        transition: border-color 0.2s ease;
     }
-    
+
     input:focus {
         outline: none;
-        border-color: var(--color-muted-teal);
-        box-shadow: 0 0 0 0.1em var(--color-muted-teal);
+        border-color: var(--color-ink-900);
+        background: var(--color-parchment-100);
     }
-    
+
     .help-text {
         display: block;
-        margin-top: 0.5em;
-        color: var(--color-text-secondary);
+        margin-top: 0.4em;
+        color: var(--color-ink-500);
+        font-family: var(--font-editorial);
+        font-style: italic;
         font-size: 0.85em;
-        font-weight: 300; /* Added light font weight */
     }
-    
+
     button {
         width: 100%;
-        padding: 0.75em;
-        background-color: var(--color-button-primary);
-        color: var(--color-text);
-        border: 1px solid var(--color-muted-teal);
-        border-radius: 0.25em;
-        font-size: 1.1em;
-        font-weight: 500; /* Reduced from bold/700 to 500 */
+        padding: 0.8em;
+        background-color: var(--color-ink-900);
+        color: var(--color-parchment-100);
+        border: 1px solid var(--color-ink-900);
+        border-radius: 2px;
+        font-size: 0.85em;
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
         cursor: pointer;
         margin-top: 1em;
-        transition: all 0.2s ease;
-        font-family: var(--font-heading);
+        transition: background 0.2s ease;
     }
-    
-    button:hover {
-        background-color: var(--color-button-primary-hover);
-        transform: translateY(-0.1em);
-        box-shadow: 0 0.2em 0.5em var(--color-shadow);
-    }
-    
+
+    button:hover { background-color: var(--color-ink-700); }
+
     .login-link {
         text-align: center;
         margin-top: 1.5em;
+        font-family: var(--font-editorial);
+        font-style: italic;
+        color: var(--color-ink-500);
     }
-    
+
     a {
-        color: var(--color-pale-green);
+        color: var(--color-wax-red);
         text-decoration: none;
-        font-weight: 400; /* Reduced from 600 to 400 */
-        transition: color 0.2s ease;
+        font-family: var(--font-display);
+        font-size: 0.85em;
+        letter-spacing: 0.06em;
+        font-style: normal;
     }
-    
-    a:hover {
-        text-decoration: underline;
-        color: var(--color-muted-teal);
-    }
-    
+
+    a:hover { color: var(--color-vermilion-2); }
+
     .error {
-        background-color: rgba(198, 40, 40, 0.2);
-        color: #ff5757;
+        background-color: rgba(154, 51, 32, 0.12);
+        color: var(--color-wax-red);
         padding: 0.75em;
-        border-radius: 0.25em;
-        margin-bottom: 1.5em;
-        border: 1px solid rgba(198, 40, 40, 0.4);
+        margin-bottom: 1.4em;
+        border-left: 3px solid var(--color-wax-red);
+        font-family: var(--font-editorial);
+        font-style: italic;
     }
 
     @media (max-width: 480px) {
@@ -314,103 +320,92 @@
         text-align: center;
         margin: 1.5em 0;
     }
-    
+
     .separator::before,
     .separator::after {
         content: '';
         flex: 1;
-        border-bottom: 1px solid var(--color-panel-border);
-    }
-    
-    .separator span {
-        padding: 0 0.75em;
-        color: var(--color-text-secondary);
-        font-size: 0.9em;
-    }
-    
-    button.secondary {
-        background-color: transparent;
-        border: 1px solid var(--color-muted-teal);
-        color: var(--color-text);
-        margin-top: 0;
-    }
-    
-    button.secondary:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    button:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
+        border-bottom: 1px solid rgba(26, 32, 48, 0.18);
     }
 
-    .auth-toggle {
-        margin-bottom: 1.5em;
+    .separator span {
+        padding: 0 0.9em;
+        font-family: var(--font-display);
+        font-size: 0.7em;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-ink-500);
     }
-    
+
+    button.secondary {
+        background-color: transparent;
+        border: 1px solid var(--color-ink-900);
+        color: var(--color-ink-900);
+        margin-top: 0;
+    }
+    button.secondary:hover { background: var(--color-parchment-200); }
+
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .auth-toggle { margin-bottom: 1.5em; }
+
     .toggle-buttons {
         display: flex;
-        border: 1px solid var(--color-panel-border);
-        border-radius: 0.25em;
+        border: 1px solid var(--color-ink-900);
+        border-radius: 2px;
         overflow: hidden;
         margin-bottom: 0.5em;
     }
-    
+
     .toggle-button {
         flex: 1;
-        padding: 0.5em;
-        background: none;
+        padding: 0.6em;
+        background: transparent;
         border: none;
-        border-right: 1px solid var(--color-panel-border);
-        color: var(--color-text-secondary);
-        font-size: 0.9em;
+        border-right: 1px solid var(--color-ink-900);
+        color: var(--color-ink-700);
+        font-family: var(--font-display);
+        font-size: 0.7em;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
         margin: 0;
-        transition: all 0.2s ease;
         cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
     }
-    
-    .toggle-button:last-child {
-        border-right: none;
-    }
-    
+
+    .toggle-button:last-child { border-right: none; }
+
     .toggle-button.active {
-        background-color: rgba(100, 255, 218, 0.1);
-        color: var(--color-pale-green);
-        font-weight: 500;
+        background-color: var(--color-ink-900);
+        color: var(--color-parchment-100);
     }
-    
+
     .toggle-button:hover:not(.active):not(:disabled) {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--color-parchment-200);
     }
-    
+
     .success {
-        background-color: rgba(42, 199, 105, 0.1);
-        color: var(--color-pale-green);
+        background-color: rgba(63, 90, 78, 0.12);
+        color: var(--color-sage-deep);
         padding: 1em;
-        border-radius: 0.25em;
         margin-bottom: 1.5em;
-        border: 1px solid rgba(42, 199, 105, 0.4);
+        border-left: 3px solid var(--color-sage-deep);
         text-align: center;
+        font-family: var(--font-editorial);
+        font-style: italic;
     }
-    
-    .success p {
-        margin: 0;
-    }
-    
-    .success .sub-message {
-        font-size: 0.9em;
-        margin-top: 0.5em;
-        opacity: 0.8;
-    }
-    
+
+    .success p { margin: 0; }
+    .success .sub-message { font-size: 0.9em; margin-top: 0.5em; opacity: 0.8; }
+
     .redirecting-message {
         max-width: 26em;
         width: 100%;
         padding: 2.5em;
         text-align: center;
-        color: var(--color-text);
+        color: var(--color-ink-700);
+        font-family: var(--font-editorial);
+        font-style: italic;
         margin: 8em auto 0;
     }
 </style>

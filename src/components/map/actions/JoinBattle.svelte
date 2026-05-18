@@ -342,7 +342,7 @@
   }
 
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .content {
@@ -392,8 +392,8 @@
   }
 
   .group-item.selected, .battle-item.selected {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.14);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .group-name, .battle-name {
@@ -457,8 +457,8 @@
   }
   
   .side-button.selected {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.14);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .actions {
@@ -487,7 +487,7 @@
   }
 
   .join-btn {
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
   }

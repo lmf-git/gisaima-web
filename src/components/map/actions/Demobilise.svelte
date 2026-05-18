@@ -314,7 +314,7 @@
 
   .description {
     margin-bottom: 1.5em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   .group-selection {
@@ -325,7 +325,7 @@
     font-size: 1.1em;
     margin: 0 0 0.8em 0;
     font-family: var(--font-heading);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   .groups-list {
@@ -354,7 +354,7 @@
   }
 
   .group-item.selected {
-    background: rgba(66, 133, 244, 0.1);
+    background: rgba(176, 141, 74, 0.14);
     border-color: rgba(66, 133, 244, 0.4);
   }
 
@@ -370,7 +370,7 @@
   .group-name {
     font-weight: 500;
     margin-bottom: 0.2em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
 
   .group-units {
@@ -388,7 +388,7 @@
   .structure-name {
     font-weight: 500;
     margin-bottom: 0.2em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
 
   .coordinates {
@@ -432,7 +432,7 @@
   .radio-text {
     font-weight: 500;
     margin-bottom: 0.3em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
 
   .radio-description {
@@ -465,7 +465,7 @@
   .status {
     padding: 0.8em;
     margin-bottom: 1em;
-    background-color: rgba(33, 150, 243, 0.1);
+    background-color: rgba(176, 141, 74, 0.14);
     border-left: 3px solid #2196f3;
     border-radius: 0.3em;
     color: #0277bd;
@@ -488,7 +488,7 @@
   }
 
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .close-btn-secondary {
@@ -526,7 +526,7 @@
   }
 
   .demobilise-btn {
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
   }
@@ -549,12 +549,12 @@
 
   .empty-state p {
     margin-bottom: 1em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   .no-tile {
     padding: 2em 1em;
     text-align: center;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 </style>

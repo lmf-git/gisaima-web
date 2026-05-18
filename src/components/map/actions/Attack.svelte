@@ -576,7 +576,7 @@
   }
 
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .content {
@@ -682,8 +682,8 @@
   }
 
   .group-item.selected {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.14);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .group-item.enemy-group {

@@ -457,15 +457,15 @@
   .world-card-container {
     width: 100%;
     height: 100%;
-    background-color: var(--color-dark-blue);
-    border-radius: 4px;
+    background-color: #88b7c4;
+    border-radius: 0;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(26, 32, 48, 0.18);
     will-change: transform;
-    touch-action: none; /* Prevent browser handling of touch gestures */
+    touch-action: none;
   }
 
   .world-card-container.dragging {
@@ -482,11 +482,11 @@
   }
 
   .loading-indicator {
-    width: 30px;
-    height: 30px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(251, 246, 231, 0.25);
     border-radius: 50%;
-    border-top-color: var(--color-pale-green);
+    border-top-color: var(--color-gold-pale);
     animation: spin 1s linear infinite;
   }
 

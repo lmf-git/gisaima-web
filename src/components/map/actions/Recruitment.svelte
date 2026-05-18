@@ -975,15 +975,15 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: rgba(0, 0, 0, 0.05);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: rgba(176, 141, 74, 0.08);
+        border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     }
 
     h3 {
         margin: 0;
         font-size: 1.1rem;
         font-weight: 600;
-        color: rgba(0, 0, 0, 0.8);
+        color: var(--color-parchment-200);
         font-family: var(--font-heading);
     }
 
@@ -1000,7 +1000,7 @@
     }
 
     .close-button:hover:not(:disabled) {
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: rgba(176, 141, 74, 0.12);
     }
 
     .modal-content {
@@ -1012,16 +1012,16 @@
     .section {
         margin-bottom: 1.5rem;
         padding: 1rem;
-        background-color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(26, 32, 48, 0.7);
         border-radius: 0.3rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
     }
 
     h4 {
         margin: 0 0 1rem 0;
         font-size: 1rem;
         font-weight: 600;
-        color: rgba(0, 0, 0, 0.8);
+        color: var(--color-parchment-200);
         display: flex;
         align-items: center;
         font-family: var(--font-heading);
@@ -1045,7 +1045,7 @@
     .empty-state {
         padding: 2rem 0;
         text-align: center;
-        color: rgba(0, 0, 0, 0.7); /* Improved from 0.6 to 0.7 for better contrast */
+        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 for better contrast */
         font-style: italic;
     }
 
@@ -1057,9 +1057,9 @@
 
     .queue-item {
         padding: 0.8rem;
-        background-color: rgba(255, 255, 255, 0.6);
+        background-color: rgba(26, 32, 48, 0.6);
         border-radius: 0.3rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
     }
 
     .queue-item-header {
@@ -1072,7 +1072,7 @@
     .queue-item-icon {
         width: 2.5rem;
         height: 2.5rem;
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(176, 141, 74, 0.08);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1093,12 +1093,12 @@
     .queue-item-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: rgba(0, 0, 0, 0.9); /* Improved contrast */
+        color: var(--color-parchment-100); /* Improved contrast */
     }
 
     .queue-item-time {
         font-size: 0.85rem;
-        color: rgba(0, 0, 0, 0.7); /* Improved from 0.6 to 0.7 */
+        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 */
     }
 
     .cancel-button {
@@ -1122,7 +1122,7 @@
 
     .progress-bar {
         height: 0.5rem;
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: rgba(176, 141, 74, 0.12);
         border-radius: 0.25rem;
         overflow: hidden;
     }
@@ -1139,9 +1139,9 @@
         max-height: 16rem;
         overflow-y: auto;
         padding: 0.5rem;
-        background-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(26, 32, 48, 0.55);
         border-radius: 0.3rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
     }
 
     .unit-option {
@@ -1149,9 +1149,9 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem;
-        background-color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(26, 32, 48, 0.7);
         border-radius: 0.3rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
         cursor: pointer;
         transition: all 0.2s;
         width: calc(50% - 0.25rem);
@@ -1160,7 +1160,7 @@
 
     .unit-option:hover {
         background-color: rgba(255, 255, 255, 0.9);
-        border-color: rgba(0, 0, 0, 0.2);
+        border-color: rgba(176, 141, 74, 0.3);
     }
 
     .unit-option.selected {
@@ -1172,7 +1172,7 @@
     .unit-option-icon {
         width: 2rem;
         height: 2rem;
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(176, 141, 74, 0.08);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1188,32 +1188,32 @@
     .unit-option-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: rgba(0, 0, 0, 0.9); /* Improved contrast */
+        color: var(--color-parchment-100); /* Improved contrast */
     }
 
     .unit-option-power {
         font-size: 0.75rem;
-        color: rgba(0, 0, 0, 0.8); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
     }
 
     .unit-details {
         padding: 1rem;
-        background-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(26, 32, 48, 0.55);
         border-radius: 0.3rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
     }
 
     h5 {
         margin: 0 0 0.5rem 0;
         font-size: 1rem;
         font-weight: 600;
-        color: rgba(0, 0, 0, 0.9);
+        color: var(--color-parchment-100);
     }
 
     .unit-description {
         margin: 0 0 1rem 0;
         font-size: 0.9rem;
-        color: rgba(0, 0, 0, 0.8); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
     }
 
     .unit-stats {
@@ -1228,11 +1228,11 @@
 
     .stat-label {
         font-weight: 500;
-        color: rgba(0, 0, 0, 0.8); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
     }
     
     .stat-value {
-        color: rgba(0, 0, 0, 0.9); /* Improved contrast */
+        color: var(--color-parchment-100); /* Improved contrast */
     }
 
     .unit-cost h6,
@@ -1240,7 +1240,7 @@
         margin: 0 0 0.5rem 0;
         font-size: 0.9rem;
         font-weight: 600;
-        color: rgba(0, 0, 0, 0.8); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
     }
 
     .cost-items,
@@ -1256,10 +1256,10 @@
         justify-content: space-between;
         font-size: 0.85rem;
         padding: 0.3rem 0.6rem;
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(176, 141, 74, 0.08);
         border-radius: 0.2rem;
         width: calc(50% - 0.25rem);
-        color: rgba(0, 0, 0, 0.8); /* Added explicit text color */
+        color: var(--color-parchment-200); /* Added explicit text color */
     }
 
     .total-item.sufficient {
@@ -1299,8 +1299,8 @@
 
     .unit-option.unavailable {
         opacity: 0.8; /* Improved from 0.7 to 0.8 for better visibility */
-        background-color: rgba(0, 0, 0, 0.05);
-        border-color: rgba(0, 0, 0, 0.1);
+        background-color: rgba(176, 141, 74, 0.08);
+        border-color: rgba(176, 141, 74, 0.2);
         cursor: help;
     }
 
@@ -1312,11 +1312,11 @@
         display: inline-block;
         font-size: 0.7em;
         margin-left: 0.3rem;
-        color: rgba(0, 0, 0, 0.7); /* Improved from 0.6 to 0.7 */
+        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 */
     }
 
     .unit-details.unavailable {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(176, 141, 74, 0.08);
         border-color: rgba(0, 0, 0, 0.15);
     }
 
@@ -1354,7 +1354,7 @@
         gap: 0.5rem;
         font-size: 0.85rem;
         padding: 0.5rem;
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(176, 141, 74, 0.08);
         border-radius: 0.3rem;
     }
 
@@ -1387,7 +1387,7 @@
         margin: 0.8rem 0 0.5rem 0;
         font-size: 0.9rem;
         font-weight: 600;
-        color: rgba(0, 0, 0, 0.8); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
     }
 
     /* Add styles for quantity control and input */
@@ -1399,7 +1399,7 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: rgba(0, 0, 0, 0.8); /* Added explicit color */
+        color: var(--color-parchment-200); /* Added explicit color */
     }
 
     .quantity-control {
@@ -1412,9 +1412,9 @@
         width: 2.5rem;
         height: 2.5rem;
         border-radius: 0.3rem;
-        background-color: rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        color: rgba(0, 0, 0, 0.8); /* Improved text contrast */
+        background-color: rgba(176, 141, 74, 0.08);
+        border: 1px solid rgba(176, 141, 74, 0.15);
+        color: var(--color-parchment-200); /* Improved text contrast */
         font-size: 1.2rem;
         display: flex;
         align-items: center;
@@ -1424,8 +1424,8 @@
     }
 
     .quantity-button:hover:not(:disabled) {
-        background-color: rgba(0, 0, 0, 0.1);
-        border-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(176, 141, 74, 0.12);
+        border-color: rgba(176, 141, 74, 0.3);
     }
 
     .quantity-button:disabled {
@@ -1438,11 +1438,11 @@
         height: 2.5rem;
         text-align: center;
         padding: 0 0.5rem;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(176, 141, 74, 0.15);
         border-radius: 0.3rem;
         font-size: 1rem;
-        color: rgba(0, 0, 0, 0.9); /* Improved text contrast */
-        background-color: rgba(255, 255, 255, 0.8);
+        color: var(--color-parchment-100); /* Improved text contrast */
+        background-color: rgba(26, 32, 48, 0.78);
     }
 
     input[type="number"]:focus {
@@ -1454,7 +1454,7 @@
     /* Add styles for time info */
     .time-info {
         font-size: 0.85rem;
-        color: rgba(0, 0, 0, 0.8); /* Improved text contrast */
+        color: var(--color-parchment-200); /* Improved text contrast */
     }
 
     .completion-estimate {
@@ -1508,7 +1508,7 @@
     }
 
     .recruit-button:disabled {
-        background-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(14, 19, 32, 0.45);
         color: rgba(255, 255, 255, 0.7);
         cursor: not-allowed;
     }
@@ -1547,7 +1547,7 @@
         margin-top: 0.5rem;
         font-size: 0.8rem;
         font-style: italic;
-        color: rgba(0, 0, 0, 0.7);
+        color: rgba(232, 228, 210, 0.78);
         display: flex;
         align-items: center;
         gap: 0.3rem;

@@ -68,9 +68,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 0.75em;
-    color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    font-size: 0.7em;
+    letter-spacing: 0.05em;
+    color: rgba(212, 177, 112, 0.65);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.85);
     font-family: var(--font-mono, monospace);
   }
   
@@ -81,18 +82,18 @@
   }
   
   .tick.center {
-    color: rgba(255, 255, 255, 1);
-    font-weight: bold;
+    color: var(--color-gold-pale, #d4b170);
+    font-weight: 600;
   }
 
   .tick.center .tick-mark {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--color-gold-pale, #d4b170);
   }
 
   .tick-mark {
     width: 6px;
     height: 1px;
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(212, 177, 112, 0.45);
   }
 
   .x-axis .tick-mark {

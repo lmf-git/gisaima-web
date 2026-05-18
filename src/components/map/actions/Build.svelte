@@ -526,7 +526,7 @@
     display: flex;
     flex-direction: column;
     font-family: var(--font-body);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(176, 141, 74, 0.3);
     transition: z-index 0s;
   }
   
@@ -539,15 +539,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
-    background: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
   
   h2 {
     margin: 0;
     font-size: 1.3em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
   }
   
@@ -562,16 +562,16 @@
   }
   
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .location-info {
     padding-bottom: 1em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     margin-bottom: 1em;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border-radius: 0.3em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     padding: 0.8em;
   }
 
@@ -584,7 +584,7 @@
   }
 
   .attribute-label {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     font-weight: 500;
     min-width: 40px;
     flex-shrink: 0;
@@ -592,7 +592,7 @@
 
   .attribute-value {
     flex-grow: 1;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     display: flex;
     align-items: center;
   }
@@ -615,14 +615,14 @@
     border-radius: 0.3em;
     background: rgba(30, 144, 255, 0.15);
     border: 1px solid rgba(30, 144, 255, 0.3);
-    color: #1e90ff;
+    color: #d4b170;
   }
 
   .content {
     padding: 1em 1.5em 1.5em;
     overflow-y: auto;
     max-height: calc(90vh - 4em);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   .build-content {
@@ -633,7 +633,7 @@
     margin: 0 0 0.8em 0;
     font-size: 1em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .group-selection-section,
@@ -643,7 +643,7 @@
     padding: 1em;
     background: white;
     border-radius: 0.3em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
   }
   
   .groups-list {
@@ -657,7 +657,7 @@
     align-items: center;
     padding: 0.7em;
     background: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.3em;
     cursor: pointer;
     transition: all 0.2s;
@@ -671,9 +671,9 @@
   }
   
   .group-item.selected {
-    border-color: #4285f4;
-    background: rgba(66, 133, 244, 0.1);
-    box-shadow: 0 0 0 1px #4285f4;
+    border-color: #b08d4a;
+    background: rgba(176, 141, 74, 0.14);
+    box-shadow: 0 0 0 1px #b08d4a;
   }
   
   .group-info {
@@ -727,7 +727,7 @@
   .structure-item {
     padding: 0.8em;
     background: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.3em;
     cursor: pointer;
     transition: all 0.2s;
@@ -740,9 +740,9 @@
   }
   
   .structure-item.selected {
-    border-color: #4285f4;
-    background: rgba(66, 133, 244, 0.1);
-    box-shadow: 0 0 0 1px #4285f4;
+    border-color: #b08d4a;
+    background: rgba(176, 141, 74, 0.14);
+    box-shadow: 0 0 0 1px #b08d4a;
   }
   
   .structure-item.missing-resources.selected {
@@ -849,8 +849,8 @@
   
   .text-input:focus {
     outline: none;
-    border-color: #4285f4;
-    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
+    border-color: #b08d4a;
+    box-shadow: 0 0 0 2px rgba(176, 141, 74, 0.45);
   }
   
   .next-tick-info {
@@ -911,7 +911,7 @@
   }
   
   .build-btn {
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
   }
@@ -938,12 +938,12 @@
     padding: 0.8em;
     background: #f5f5f5;
     border-radius: 0.3em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
   }
   
   .progress-bar {
     height: 0.4em;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.12);
     border-radius: 0.2em;
     overflow: hidden;
     margin-bottom: 0.5em;
@@ -951,7 +951,7 @@
   
   .progress {
     height: 100%;
-    background: linear-gradient(to right, #4285f4, #34a853);
+    background: linear-gradient(to right, #b08d4a, #34a853);
     border-radius: 0.2em;
     transition: width 0.2s;
   }

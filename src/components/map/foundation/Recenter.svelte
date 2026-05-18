@@ -180,51 +180,50 @@
     top: 35%;
     right: 1em;
     transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.3em;
-    color: rgba(0, 0, 0, 0.8);
-    padding: 0.6em 1em;
-    font-size: 0.9em;
-    font-weight: 500;
+    background: rgba(14, 19, 32, 0.85);
+    border: 1px solid rgba(176, 141, 74, 0.4);
+    border-radius: 0;
+    color: var(--color-gold-pale);
+    padding: 0.55em 0.9em;
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5em;
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
-    transition: all 0.2s ease;
-    backdrop-filter: blur(0.5em);
-    -webkit-backdrop-filter: blur(0.5em);
+    gap: 0.6em;
+    text-shadow: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 998;
-    box-shadow: 0 0.1em 0.5em rgba(0, 0, 0, 0.2);
-    animation: pulseButton 2s infinite alternate;
+    box-shadow: 0 0.6em 1.6em rgba(0, 0, 0, 0.3);
+    animation: pulseButton 2.4s infinite alternate;
   }
-  
+
   .recenter-button:hover {
-    background-color: rgba(255, 255, 255, 0.95);
-    transform: translateY(-50%) translateY(-0.1em);
+    background: rgba(176, 141, 74, 0.18);
+    border-color: var(--color-gold-pale);
   }
-  
+
   @keyframes pulseButton {
-    0% {
-      transform: translateY(-50%) scale(1);
-    }
-    100% {
-      transform: translateY(-50%) scale(1.05);
-    }
+    0% { transform: translateY(-50%) scale(1); }
+    100% { transform: translateY(-50%) scale(1.04); }
   }
-  
+
   :global(.torch-icon-button) {
-    width: 1.2em;
-    height: 1.2em;
-    fill: rgba(0, 0, 0, 0.8);
-    filter: drop-shadow(0 0 2px rgba(255, 140, 0, 0.4));
+    width: 1.1em;
+    height: 1.1em;
+    fill: var(--color-aged-gold);
+    filter: drop-shadow(0 0 4px rgba(212, 177, 112, 0.5));
   }
-  
+
   :global(.race-icon-button) {
-    width: 1.2em;
-    height: 1.2em;
-    fill: rgba(0, 0, 0, 0.8);
-    filter: drop-shadow(0 0 2px rgba(100, 100, 255, 0.4));
+    width: 1.1em;
+    height: 1.1em;
+    fill: var(--color-gold-pale);
+    filter: none;
   }
 </style>

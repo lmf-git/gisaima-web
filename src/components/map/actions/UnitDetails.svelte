@@ -369,7 +369,7 @@
     justify-content: space-between;
     padding: 0.7em 0.9em;
     background: rgba(0, 0, 0, 0.04);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     gap: 0.5em;
   }
 
@@ -398,7 +398,7 @@
   .unit-header-name {
     font-weight: 600;
     font-size: 1em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
     display: flex;
     align-items: center;
     gap: 0.4em;
@@ -421,7 +421,7 @@
   }
   .you-badge   { background: rgba(76, 175, 80, 0.2); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.4); }
   .race-badge  { background: rgba(33, 150, 243, 0.15); color: #0277bd; border: 1px solid rgba(33, 150, 243, 0.3); }
-  .type-badge  { background: rgba(0, 0, 0, 0.07); color: rgba(0, 0, 0, 0.6); }
+  .type-badge  { background: rgba(0, 0, 0, 0.07); color: rgba(232, 228, 210, 0.65); }
   .lv-badge    { background: rgba(156, 39, 176, 0.15); color: #7b1fa2; border: 1px solid rgba(156, 39, 176, 0.3); }
 
   .close-btn {
@@ -479,7 +479,7 @@
   .stat-value {
     font-size: 0.95em;
     font-weight: 700;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   .atk-val { color: rgba(198, 40, 40, 0.85); }
@@ -534,7 +534,7 @@
     padding: 0.5em 0.3em;
     min-height: 4.5em;
     width: 100%;
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(176, 141, 74, 0.06);
     border: 1px dashed rgba(0, 0, 0, 0.18);
     border-radius: 0.3em;
     cursor: pointer;
@@ -607,7 +607,7 @@
 
   /* Picker panel */
   .picker-panel {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(176, 141, 74, 0.18);
     background: rgba(248, 250, 255, 1);
     max-height: 40vh;
     overflow: hidden;
@@ -625,7 +625,7 @@
     font-size: 0.9em;
     color: rgba(0, 0, 0, 0.75);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(176, 141, 74, 0.06);
   }
 
   .source-tabs, .storage-tabs {
@@ -640,15 +640,15 @@
     padding: 0.35em 0.5em;
     font-size: 0.78em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
     border-bottom: 2px solid transparent;
   }
-  .src-tab:hover, .stor-tab:hover { color: rgba(0, 0, 0, 0.8); }
+  .src-tab:hover, .stor-tab:hover { color: var(--color-parchment-200); }
   .src-tab.active, .stor-tab.active {
-    color: rgba(66, 133, 244, 0.9);
+    color: rgba(212, 177, 112, 0.95);
     border-bottom-color: rgba(66, 133, 244, 0.7);
   }
 
@@ -675,7 +675,7 @@
     gap: 0.2em;
     padding: 0.55em 0.7em;
     background: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.3em;
     cursor: pointer;
     font-family: inherit;
@@ -684,14 +684,14 @@
   }
   .picker-item:hover:not(:disabled) {
     background: rgba(66, 133, 244, 0.06);
-    border-color: rgba(66, 133, 244, 0.3);
+    border-color: rgba(176, 141, 74, 0.45);
   }
   .picker-item:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .pi-name {
     font-weight: 600;
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
 
   .pi-meta {

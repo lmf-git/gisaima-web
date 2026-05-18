@@ -54,10 +54,10 @@
   .control-button {
     min-width: 2em;
     height: 2em;
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(14, 19, 32, 0.85);
     border: 0.05em solid rgba(255, 255, 255, 0.2);
     border-radius: 0.3em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     padding: 0.3em 0.8em;
     font-size: 1em;
     font-weight: bold;
@@ -65,7 +65,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    text-shadow: none;
     transition: all 0.2s ease;
     backdrop-filter: blur(0.5em);
     -webkit-backdrop-filter: blur(0.5em);

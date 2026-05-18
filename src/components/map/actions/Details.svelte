@@ -1627,11 +1627,11 @@
     width: 90%;
     max-width: 34em;
     max-height: 85vh;
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(14, 19, 32, 0.85);
+    border: 1px solid rgba(176, 141, 74, 0.3);
     border-radius: 0.3em;
     box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    text-shadow: none;
     font-size: 1.4em;
     font-family: var(--font-body);
     overflow: hidden;
@@ -1658,15 +1658,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
-    background: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
 
   h3 {
     margin: 0;
     font-size: 1.3em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
   }
 
@@ -1680,28 +1680,28 @@
     justify-content: center;
     border-radius: 50%;
     transition: background-color 0.2s;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .close-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(176, 141, 74, 0.12);
+    color: var(--color-parchment-100);
   }
 
   .modal-content {
     padding: 1em 1.5em 1.5em;
     overflow-y: auto;
     max-height: calc(85vh - 4em);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
 
   .core-section {
     padding-bottom: 1em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     margin-bottom: 1em;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     border-radius: 0.3em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     padding: 0.8em;
   }
 
@@ -1718,7 +1718,7 @@
   }
 
   .attribute-label {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     font-weight: 500;
     min-width: 40px;
     flex-shrink: 0;
@@ -1726,7 +1726,7 @@
 
   .attribute-value {
     flex-grow: 1;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     display: flex;
     align-items: center;
   }
@@ -1761,20 +1761,20 @@
     user-select: none;
     position: relative;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(176, 141, 74, 0.06);
     border-radius: 0.3em 0.3em 0 0;
     transition: background-color 0.2s ease;
   }
   
   .section-header:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
   }
   
   .section-title {
     margin: 0;
     font-size: 0.9em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     display: flex;
@@ -1792,7 +1792,7 @@
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     font-size: 0.8em;
     cursor: pointer;
     padding: 0.2em 0.5em;
@@ -1805,8 +1805,8 @@
   }
   
   .collapse-button:hover {
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--color-parchment-200);
+    background-color: rgba(176, 141, 74, 0.08);
     border-radius: 50%;
   }
 
@@ -1821,7 +1821,7 @@
     padding: 0.1em 0.6em;
     margin-left: 0.3em;
     line-height: 1;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(14, 19, 32, 0.45);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 0.15em rgba(255, 255, 255, 0.2);
@@ -1829,27 +1829,27 @@
 
   /* Add specific entity count colors to match Overview.svelte */
   .entity-count.groups-count {
-    background: rgba(255, 100, 100, 0.9);
+    background: rgba(154, 51, 32, 0.55);
     box-shadow: 0 0 0.15em rgba(255, 100, 100, 0.6);
   }
 
   .entity-count.players-count {
-    background: rgba(100, 100, 255, 0.9);
+    background: rgba(22, 57, 63, 0.55);
     box-shadow: 0 0 0.15em rgba(100, 100, 255, 0.6);
   }
 
   .entity-count.items-count {
-    background: rgba(255, 215, 0, 0.9);
+    background: rgba(176, 141, 74, 0.55);
     box-shadow: 0 0 0.15em rgba(255, 215, 0, 0.6);
   }
 
   .entity-count.battles-count {
-    background: rgba(139, 0, 0, 0.8);
+    background: rgba(91, 26, 31, 0.65);
     box-shadow: 0 0 0.15em rgba(139, 0, 0, 0.6);
   }
 
   .entity-count.structures-count {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(110, 99, 83, 0.45);
     box-shadow: 0 0 0.15em rgba(0, 0, 0, 0.6);
     color: rgba(255, 255, 255, 0.9);
   }
@@ -1864,7 +1864,7 @@
     background: none;
     border: none;
     font-size: 0.7em;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
     cursor: pointer;
@@ -1875,13 +1875,13 @@
   }
   
   .sort-option:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(176, 141, 74, 0.08);
+    color: var(--color-parchment-200);
   }
   
   .sort-option.active {
-    background-color: rgba(66, 133, 244, 0.1);
-    color: rgba(66, 133, 244, 0.9);
+    background-color: rgba(176, 141, 74, 0.14);
+    color: rgba(212, 177, 112, 0.95);
   }
   
   .sort-direction {
@@ -1903,12 +1903,12 @@
   
   .action-button {
     padding: 0.6em;
-    background-color: rgba(200, 200, 200, 0.1); 
+    background-color: rgba(176, 141, 74, 0.12); 
     border: 1px solid rgba(200, 200, 200, 0.3);
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-body);
     transition: all 0.2s;
     display: flex;
@@ -1918,29 +1918,29 @@
   }
 
   .action-button:hover {
-    background-color: rgba(200, 200, 200, 0.2);
+    background-color: rgba(176, 141, 74, 0.22);
     transform: translateY(-1px);
   }
   
   
   .inspect-button {
-    background-color: rgba(33, 150, 243, 0.1);
+    background-color: rgba(176, 141, 74, 0.14);
     border-color: rgba(33, 150, 243, 0.3);
   }
   
   .inspect-button:hover {
-    background-color: rgba(33, 150, 243, 0.2);
+    background-color: rgba(176, 141, 74, 0.22);
   }
 
   
   .action-button:has(.compass-icon) {
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
     border-color: rgba(76, 175, 80, 0.3);
-    color: rgba(0, 0, 0, 0.8); 
+    color: var(--color-parchment-200); 
   }
   
   .action-button:has(.compass-icon):hover {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
   }
   
   
@@ -2007,12 +2007,12 @@
 
   
   .entity-action:has(.compass-icon) {
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
     border-color: rgba(76, 175, 80, 0.3);
   }
   
   .entity-action:has(.compass-icon):hover {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
   }
   
   .entity-action:has(.crop-icon) {
@@ -2060,7 +2060,7 @@
   }
 
   .unit-count {
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     font-weight: 500;
   }
   
@@ -2102,7 +2102,7 @@
 
   .item-quantity {
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     margin-left: 0.2em;
     margin-right: 0.5em;
   }
@@ -2176,7 +2176,7 @@
     padding: 0 0.5em;
     font-weight: bold;
     font-size: 1.1em;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .battle-timer {
@@ -2216,7 +2216,7 @@
   .entity-badge.idle {
     background: rgba(128, 128, 128, 0.15);
     border: 1px solid rgba(128, 128, 128, 0.3);
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .entity-badge.moving {
@@ -2273,7 +2273,7 @@
   }
 
   .entity-badge.owner-badge {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
     color: #2e7d32;
     border: 1px solid rgba(76, 175, 80, 0.4);
   }
@@ -2294,12 +2294,12 @@
   }
   
   .rarity-badge.uncommon {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
     color: #2e7d32;
   }
   
   .rarity-badge.rare {
-    background-color: rgba(33, 150, 243, 0.2);
+    background-color: rgba(176, 141, 74, 0.22);
     color: #0277bd;
   }
   
@@ -2419,8 +2419,8 @@
     margin-bottom: 0.6em;
     padding: 0.5em 0.7em;
     border-radius: 0.3em;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(26, 32, 48, 0.55);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     transition: background-color 0.2s ease;
     position: relative;
     cursor: pointer;
@@ -2463,7 +2463,7 @@
     display: flex;
     flex-wrap: wrap;
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   /* Add styling for cancel button */
@@ -2545,7 +2545,7 @@
   .toggle-units-btn {
     background: none;
     border: none;
-    color: rgba(66, 133, 244, 0.9);
+    color: rgba(212, 177, 112, 0.95);
     cursor: pointer;
     font-size: 0.9em;
     margin-left: 0.5em;
@@ -2555,7 +2555,7 @@
   }
   
   .toggle-units-btn:hover {
-    background-color: rgba(66, 133, 244, 0.1);
+    background-color: rgba(176, 141, 74, 0.14);
     text-decoration: underline;
   }
   
@@ -2563,7 +2563,7 @@
   .expanded-section-title {
     margin: 0.8em 0 0.4em 0;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     padding-bottom: 0.3em;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   }
@@ -2603,7 +2603,7 @@
     align-items: center;
     padding: 0.3em 0.5em;
     border-radius: 0.2em;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(26, 32, 48, 0.6);
     border: 1px solid rgba(0, 0, 0, 0.05);
     width: 48%;
     min-width: 120px;
@@ -2616,7 +2616,7 @@
   }
   .group-unit.clickable:hover {
     background-color: rgba(66, 133, 244, 0.08);
-    border-color: rgba(66, 133, 244, 0.3);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .unit-equip-hint {
@@ -2655,7 +2655,7 @@
     flex-direction: column;
     padding: 0.3em 0.5em;
     border-radius: 0.2em;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(26, 32, 48, 0.6);
     border: 1px solid rgba(0, 0, 0, 0.05);
     width: 48%;
     min-width: 120px;
@@ -2670,7 +2670,7 @@
   .unit-name {
     font-size: 0.85em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
     margin-bottom: 0.2em;
     white-space: nowrap;
     overflow: hidden;

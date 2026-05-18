@@ -214,12 +214,12 @@
     justify-content: center;
     border-radius: 50%;
     transition: background-color 0.2s;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .close-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(176, 141, 74, 0.12);
+    color: var(--color-parchment-100);
   }
 
   .modal-body {
@@ -238,7 +238,7 @@
     margin: 0 0 0.5em 0;
     font-size: 1em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
+    color: var(--color-parchment-200);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
   }
 
   .groups-list {
@@ -253,18 +253,18 @@
     padding: 0.5em;
     border-radius: 0.3em;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(26, 32, 48, 0.55);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     transition: all 0.2s ease;
   }
 
   .group-option:hover {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(26, 32, 48, 0.7);
   }
 
   .group-option.selected {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.14);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .group-option input {
@@ -279,7 +279,7 @@
 
   .group-name {
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.85);  /* Improved contrast */
+    color: var(--color-parchment-100);  /* Improved contrast */
   }
 
   .group-units {
@@ -289,10 +289,10 @@
 
   .info-box {
     padding: 0.6em;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(176, 141, 74, 0.08);
     border-radius: 0.3em;
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.8);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
+    color: var(--color-parchment-200);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
     text-align: center;
   }
 
@@ -301,7 +301,7 @@
     border-radius: 0.3em;
     font-size: 0.9em;
     text-align: center;
-    color: rgba(0, 0, 0, 0.85);  /* Added explicit color with good contrast */
+    color: var(--color-parchment-100);  /* Added explicit color with good contrast */
   }
 
   .message.error {
@@ -339,7 +339,7 @@
   }
 
   .action-button {
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
     flex-grow: 1;

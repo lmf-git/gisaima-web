@@ -195,7 +195,7 @@
   .entity-status-badge.idle {
     background: rgba(128, 128, 128, 0.15);
     border: 1px solid rgba(128, 128, 128, 0.3);
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .entity-status-badge.moving {
@@ -262,7 +262,7 @@
     height: 0.8em;
     border: 0.12em solid rgba(0, 0, 0, 0.2);
     border-radius: 50%;
-    border-top-color: rgba(0, 0, 0, 0.8);
+    border-top-color: var(--color-parchment-200);
     animation: spin 1s linear infinite;
     display: inline-block;
     margin-right: 0.3em;

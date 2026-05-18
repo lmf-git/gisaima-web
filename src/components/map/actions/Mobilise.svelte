@@ -30,10 +30,17 @@
 
   let availableUnits = $state([]);
   let selectedUnits = $state([]);
-  
+
   let mobilizeError = $state(null);
   let processing = $state(false);
-  let mobilizeSuccess = $state(false); // Add new state to track success
+  let mobilizeSuccess = $state(false);
+
+  // Reference: Captain / Rule-of-march settings — captured here so they
+  // attach to the new group on raise. The backend may not enforce them yet,
+  // but they round-trip with the action payload so the tick can read them.
+  let captain = $state("self");          // 'self' | 'eldest'
+  let fleeAtLosses = $state(40);          // 0..100 (%)
+  let joinBattlesInProgress = $state(true);
 
   // Set default group name when component loads, based on player's name
   $effect(() => {
@@ -184,6 +191,9 @@
         units: selectedUnits.map(u => u.id),
         includePlayer,
         name: groupName,
+        captain,
+        fleeAtLosses,
+        joinBattlesInProgress,
         race: $currentPlayer?.race
       });
       
@@ -194,6 +204,9 @@
         units: selectedUnits.map(u => u.id),
         includePlayer,
         name: groupName,
+        captain,
+        fleeAtLosses,
+        joinBattlesInProgress,
         race: $currentPlayer?.race
       });
 
@@ -278,10 +291,10 @@
         <div class="group-details">
           <div class="group-name-row">
             <label for="group-name">Group Name:</label>
-            <input 
-              type="text" 
-              id="group-name" 
-              bind:value={groupName} 
+            <input
+              type="text"
+              id="group-name"
+              bind:value={groupName}
               placeholder="Enter group name"
               class="text-input"
               onkeydown={(e) => {
@@ -291,6 +304,27 @@
               }}
             />
           </div>
+        </div>
+
+        <!-- Reference: Rule of march — captain choice + retreat threshold +
+             whether the new banner is allowed to join battles in progress. -->
+        <div class="rule-of-march">
+          <div class="row-of-march eyebrow">Rule of march</div>
+          <label class="march-row">
+            <span>Captain</span>
+            <select bind:value={captain}>
+              <option value="self">Self</option>
+              <option value="eldest">The eldest</option>
+            </select>
+          </label>
+          <label class="march-row">
+            <span>Flee at losses · <b>{fleeAtLosses}%</b></span>
+            <input type="range" min="0" max="100" bind:value={fleeAtLosses} />
+          </label>
+          <label class="march-row toggle">
+            <span>Join battles in progress</span>
+            <input type="checkbox" bind:checked={joinBattlesInProgress} />
+          </label>
         </div>
         
         <div class="options">
@@ -496,6 +530,46 @@
 </div>
 
 <style>
+  .rule-of-march {
+    margin: 0.6em 0 0.8em;
+    padding: 0.7em 0.9em;
+    background: rgba(176, 141, 74, 0.06);
+    border: 1px solid rgba(176, 141, 74, 0.3);
+  }
+  .row-of-march {
+    font-family: var(--font-display);
+    font-size: 0.65em;
+    letter-spacing: 0.22em;
+    color: var(--color-gold-pale);
+    margin-bottom: 0.5em;
+  }
+  .march-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6em;
+    padding: 0.3em 0;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--color-parchment-200);
+  }
+  .march-row.toggle {
+    font-family: var(--font-display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.75em;
+  }
+  .march-row select {
+    padding: 0.3em 0.6em;
+    font-family: var(--font-display);
+    font-size: 0.85em;
+    background: rgba(14, 19, 32, 0.6);
+    color: var(--color-parchment-100);
+    border: 1px solid rgba(176, 141, 74, 0.4);
+  }
+  .march-row input[type="range"] { flex: 1; }
+  .march-row b { color: var(--color-wax-red); }
+
   .mobilise-modal {
     position: fixed;
     top: 50%;
@@ -512,8 +586,8 @@
     display: flex;
     flex-direction: column;
     font-family: var(--font-body);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(176, 141, 74, 0.3);
+    text-shadow: none;
     transition: z-index 0s; /* Add transition for z-index */
   }
   
@@ -526,15 +600,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
-    background: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
   
   h2 {
     margin: 0;
     font-size: 1.3em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
   }
   
@@ -542,7 +616,7 @@
     padding: 1em;
     overflow-y: auto;
     max-height: calc(90vh - 4em);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   .close-btn {
@@ -556,12 +630,12 @@
   }
   
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
   
   .location-info {
     padding-bottom: 1em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
     margin-bottom: 1em;
   }
   
@@ -587,7 +661,7 @@
     border-radius: 0.3em;
     background: rgba(30, 144, 255, 0.15);
     border: 1px solid rgba(30, 144, 255, 0.3);
-    color: #1e90ff;
+    color: #d4b170;
   }
   
   .mobilise-content {
@@ -598,7 +672,7 @@
   
   .group-details {
     padding-bottom: 1em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
   
   .group-name-row {
@@ -611,7 +685,7 @@
   .group-name-row label {
     font-weight: 500;
     min-width: 6em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   .text-input {
@@ -621,15 +695,15 @@
     border-radius: 0.3em;
     font-family: var(--font-body);
     font-size: 0.95em;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(26, 32, 48, 0.7);
     transition: all 0.2s ease;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   .text-input:focus {
     outline: none;
-    border-color: #4285f4;
+    border-color: #b08d4a;
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
     background-color: #fff;
   }
@@ -662,7 +736,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
     position: relative;
     flex-shrink: 0;
     cursor: pointer;
@@ -674,8 +748,8 @@
   }
   
   .custom-checkbox.checked {
-    background-color: #4285f4;
-    border-color: #4285f4;
+    background-color: #b08d4a;
+    border-color: #b08d4a;
   }
   
   .checkbox-icon {
@@ -685,7 +759,7 @@
   }
   
   .checkbox-text {
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
     font-weight: 500;
   }
   
@@ -696,7 +770,7 @@
     max-height: 30vh;
     overflow-y: auto;
     padding: 0.5em 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
   
   .units-list {
@@ -709,20 +783,20 @@
     display: flex;
     align-items: center;
     padding: 0.6em 0.8em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.3em;
     cursor: pointer;
     transition: all 0.2s;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(26, 32, 48, 0.55);
   }
   
   .unit-item:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(26, 32, 48, 0.78);
   }
   
   .unit-item.selected {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-color: rgba(66, 133, 244, 0.3);
+    background-color: rgba(176, 141, 74, 0.14);
+    border-color: rgba(176, 141, 74, 0.45);
   }
   
   .unit-icon {
@@ -739,7 +813,7 @@
   .unit-name {
     font-weight: 500;
     margin-bottom: 0.2em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
   
   .unit-details {
@@ -753,7 +827,7 @@
     padding: 0.1em 0.4em;
     border-radius: 0.2em;
     background-color: rgba(0, 0, 0, 0.06);
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .strength-tag {
@@ -769,15 +843,15 @@
   .summary {
     margin-top: 1em;
     padding: 1em;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(176, 141, 74, 0.06);
     border-radius: 0.3em;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
   
   .summary h3 {
     margin: 0 0 0.5em 0;
     font-size: 1em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .summary p {
@@ -805,7 +879,7 @@
     background-color: rgba(66, 133, 244, 0.08);
     border-radius: 0.3em;
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     line-height: 1.4;
     margin: 0.5em 0;
     border-left: 3px solid rgba(66, 133, 244, 0.5);
@@ -832,7 +906,7 @@
   }
   
   .mobilise-success {
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: rgba(63, 90, 78, 0.22);
     border: 1px solid rgba(76, 175, 80, 0.3);
     color: #4caf50;
     padding: 0.8em;
@@ -856,7 +930,7 @@
   }
   
   .close-now-btn:hover {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(63, 90, 78, 0.35);
   }
   
   .button-row {
@@ -886,7 +960,7 @@
   }
   
   .mobilise-btn {
-    background-color: #4285f4;
+    background-color: #b08d4a;
     color: white;
     border: none;
   }
@@ -903,7 +977,7 @@
   .no-units, .no-tile {
     text-align: center;
     padding: 2em 0;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
     font-style: italic;
   }
   
@@ -911,7 +985,7 @@
     margin: 0 0 0.8em 0;
     font-size: 1.1em;
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
   }
   
   .boat-capacity-section {
@@ -924,7 +998,7 @@
   
   .capacity-bar {
     height: 0.6em;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
     border-radius: 1em;
     margin: 0.5em 0;
     overflow: hidden;
@@ -932,7 +1006,7 @@
   
   .capacity-fill {
     height: 100%;
-    background-color: #4285f4;
+    background-color: #b08d4a;
     border-radius: 1em;
     transition: width 0.3s ease;
   }
@@ -943,7 +1017,7 @@
   
   .capacity-text {
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -957,11 +1031,11 @@
   .capacity-info {
     margin-top: 0.5em;
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
   
   .boat-unit {
-    border-left: 3px solid #1e90ff;
+    border-left: 3px solid #d4b170;
   }
   
   .boat-capacity-tag {
@@ -969,14 +1043,14 @@
     padding: 0.1em 0.4em;
     border-radius: 0.2em;
     background-color: rgba(30, 144, 255, 0.1);
-    color: #1e90ff;
+    color: #d4b170;
     margin-left: 0.5em;
   }
   
   .transport-note {
     margin-top: 0.5em;
     font-size: 0.85em;
-    color: #1e90ff;
+    color: #d4b170;
     font-style: italic;
   }
   

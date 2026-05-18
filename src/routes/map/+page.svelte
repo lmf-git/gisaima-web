@@ -76,6 +76,11 @@
     import UnboundIcon from '../../components/icons/UnboundIcon.svelte';
     import Logo from '../../components/Logo.svelte';
     import GameHeader from '../../components/map/foundation/GameHeader.svelte';
+    import NextTickChip from '../../components/map/foundation/NextTickChip.svelte';
+    import CurrentLocationHud from '../../components/map/foundation/CurrentLocationHud.svelte';
+    import LeftRail from '../../components/map/foundation/LeftRail.svelte';
+    import TopResourceBar from '../../components/map/foundation/TopResourceBar.svelte';
+    import ItemDropsHud from '../../components/map/foundation/ItemDropsHud.svelte';
     import Reports from '../../components/map/foundation/Reports.svelte';
     import Diplomacy from '../../components/map/foundation/Diplomacy.svelte';
     import Rankings from '../../components/map/foundation/Rankings.svelte';
@@ -1353,6 +1358,11 @@
             onOpenDiplomacy={toggleDiplomacy}
             onOpenRankings={toggleRankings}
         />
+        <NextTickChip />
+        <TopResourceBar />
+        <CurrentLocationHud />
+        <ItemDropsHud />
+        <LeftRail />
 
         <Grid
             detailed={detailed}
@@ -1594,7 +1604,7 @@
         {/if}
         
         {#if showEntities}
-            <Overview 
+            <div class="map-action-host"><Overview
               isActive={lastActivePanel === 'overview'}
               onShowStructure={({ structure, x, y }) => {
                 modalState = {
@@ -1616,17 +1626,17 @@
               }}
               onClose={() => toggleEntities()}
               onMouseEnter={() => handlePanelHover('overview')}
-            />
+            /></div>
         {/if}
 
         {#if detailed && !isTutorialVisible && $game?.player?.alive && !selectedUnit}
-            <Details
+            <div class="map-action-host"><Details
                 onClose={() => toggleDetailsModal(false)}
                 onShowModal={showModal}
                 isActive={lastActivePanel === 'details'}
                 onMouseEnter={() => handlePanelHover('details')}
                 onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
-            />
+            /></div>
         {:else if $ready && !isPathDrawingMode && !isTutorialVisible && !modalState.visible}
             <Legend 
                 x={$targetStore.x}  
@@ -1639,17 +1649,22 @@
         {/if}
 
         {#if selectedUnit && detailed}
-          <UnitDetails
+          <div class="map-action-host"><UnitDetails
             unit={selectedUnit.unit}
             unitId={selectedUnit.unitId}
             group={selectedUnit.group}
             tileData={$targetStore}
             onClose={() => { selectedUnit = null; }}
             onEquipped={() => { selectedUnit = null; }}
-          />
+          /></div>
         {/if}
 
         {#if modalState.visible}
+          <!-- map-action-host: dedicated wrapper for action menus.
+               The global .map-action-host CSS in +layout.svelte targets this
+               class (single, high-specificity anchor) rather than fighting
+               component-internal scoped styles via !important. -->
+          <div class="map-action-host">
           {#if modalState.type === 'inspect' && modalState.data}
             <StructureOverview 
               x={modalState.data.x}
@@ -1744,6 +1759,7 @@
               onMouseEnter={() => handlePanelHover(modalState.type)}
             />
           {/if}
+          </div>
         {/if}
     {/if}
 </div>

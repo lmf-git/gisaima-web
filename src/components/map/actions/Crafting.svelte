@@ -478,8 +478,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
-    background: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
   }
   
   .header-content {
@@ -501,14 +501,14 @@
   }
   
   .back-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.12);
   }
   
   h2 {
     margin: 0;
     font-size: 1.3em;
     font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
     font-family: var(--font-heading);
   }
   
@@ -516,7 +516,7 @@
     padding: 1em;
     overflow-y: auto;
     max-height: calc(90vh - 4em);
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   /* Close button */
@@ -531,7 +531,7 @@
   }
   
   .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(176, 141, 74, 0.12);
   }
   
   /* Categories grid styles */
@@ -547,8 +547,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.5em;
     padding: 1.5em 1em;
     cursor: pointer;
@@ -581,8 +581,8 @@
   
   .recipe-item {
     padding: 0.75rem;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(176, 141, 74, 0.08);
+    border: 1px solid rgba(176, 141, 74, 0.15);
     border-radius: 0.25rem;
     margin-bottom: 0.75rem;
     cursor: pointer;
@@ -611,7 +611,7 @@
   .recipe-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-parchment-200);
   }
   
   /* Rarity badges */
@@ -650,7 +650,7 @@
   /* Recipe descriptions */
   .recipe-description {
     font-size: 0.85rem;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     margin-bottom: 0.5rem;
     line-height: 1.3;
   }
@@ -698,7 +698,7 @@
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 1.2rem;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--color-parchment-100);
   }
   
   .recipe-details h4 {
@@ -706,7 +706,7 @@
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .recipe-rarity-badge {
@@ -721,7 +721,7 @@
   /* Materials list */
   .materials-list {
     margin-bottom: 1rem;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     border-radius: 0.3rem;
     padding: 0.5rem;
   }
@@ -751,7 +751,7 @@
   /* Building requirements */
   .building-requirement {
     margin-bottom: 1rem;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     border-radius: 0.3rem;
     padding: 0.5rem;
   }
@@ -798,14 +798,14 @@
   
   .building-description {
     font-size: 0.85rem;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.78);
     font-style: italic;
   }
   
   /* Crafting time info */
   .crafting-time-info {
     margin-top: 1rem;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.08);
     border-radius: 0.3rem;
     padding: 0.5rem;
   }
@@ -839,7 +839,7 @@
   .empty-message {
     padding: 2rem 1rem;
     text-align: center;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(232, 228, 210, 0.55);
     font-style: italic;
   }
   
@@ -857,7 +857,7 @@
     width: 2rem;
     height: 2rem;
     border: 0.25rem solid rgba(0, 0, 0, 0.1);
-    border-top: 0.25rem solid #4285f4;
+    border-top: 0.25rem solid #b08d4a;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -905,7 +905,7 @@
     font-size: 1rem;
     font-weight: 500;
     color: white;
-    background-color: #4285f4;
+    background-color: #b08d4a;
     border: none;
     border-radius: 0.25rem;
     cursor: pointer;
