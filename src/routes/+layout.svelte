@@ -20,7 +20,7 @@
         '/rankings', '/trade', '/bounties', '/politics', '/morality',
         '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
         '/wealth', '/deaths', '/scouting', '/chronicle', '/profile',
-        '/settlement', '/pending', '/characters', '/items'
+        '/settlement', '/pending', '/characters', '/items', '/diplomacy'
     ];
 
     const { children } = $props();
@@ -42,6 +42,9 @@
     const isWorldScopedPage = $derived(
         WORLD_SCOPED_PREFIXES.some((p) => $page.url?.pathname?.startsWith(p))
     );
+    // The dossier (WorldContextBar) is the unified top chrome across the
+    // whole world-bound surface: every world-scoped route AND the map.
+    const showDossier = $derived(isMapPage || isWorldScopedPage);
     
     function toggleMobileMenu() {
         if (mobileMenuOpen) {
@@ -187,7 +190,7 @@
     {/if}
 
     <main class="main-content">
-        {#if isWorldScopedPage}
+        {#if showDossier}
             <WorldContextBar />
         {/if}
         {@render children?.()}

@@ -145,16 +145,16 @@
   .next-tick-container {
     display: flex;
     align-items: center;
-    gap: 0.4em;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 0.3em;
-    padding: 0.175em 0.6em;
-    color: rgba(0, 0, 0, 0.85);
-    font-family: var(--font-body);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    gap: 0.5em;
+    background-color: rgba(176, 141, 74, 0.12);
+    border-radius: 0;
+    padding: 0.3em 0.7em;
+    color: var(--color-gold-pale, #d4b170);
+    font-family: var(--font-mono);
+    backdrop-filter: blur(0.4em);
+    -webkit-backdrop-filter: blur(0.4em);
+    border: 0.075em solid rgba(176, 141, 74, 0.4);
+    box-shadow: 0 0.15em 0.5em rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, box-shadow 0.3s;
     min-width: 5em;
   }
@@ -183,47 +183,56 @@
   }
 
   .next-tick-container.pending {
-    background-color: rgba(255, 230, 190, 0.9);
+    background-color: rgba(176, 141, 74, 0.3);
+    border-color: var(--color-gold-pale, #d4b170);
     animation: pulse 1.5s infinite alternate;
   }
 
-  /* Ensure pulse animation doesn't conflict with fadeInButton */
   .next-tick-container.animated.pending {
     animation: fadeInButton 0.7s ease-out 0.5s forwards, pulse 1.5s 1.2s infinite alternate;
   }
 
   @keyframes pulse {
-    0% { box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-    100% { box-shadow: 0 2px 8px rgba(255, 160, 0, 0.4); }
+    0% { box-shadow: 0 0.15em 0.5em rgba(0, 0, 0, 0.2); }
+    100% { box-shadow: 0 0.2em 0.8em rgba(212, 177, 112, 0.5); }
   }
 
   .next-tick-label {
-    color: rgba(0, 0, 0, 0.7);
+    font-family: var(--font-display);
+    font-size: 0.62em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(232, 228, 210, 0.7);
     white-space: nowrap;
   }
 
   .next-tick-time {
+    font-family: var(--font-mono);
     font-weight: 600;
+    color: var(--color-gold-pale, #d4b170);
     display: flex;
     align-items: center;
     gap: 0.3em;
   }
 
   .speed-indicator {
-    font-size: 0.8em;
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 0.3em;
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    background-color: rgba(14, 19, 32, 0.6);
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    border-radius: 0;
     padding: 0.1em 0.4em;
     margin-left: 0.2em;
+    color: var(--color-parchment-100);
   }
 
   /* Spinner animation for pending state */
   .spinner {
     width: 1em;
     height: 1em;
-    border: 0.12em solid rgba(0, 0, 0, 0.2);
+    border: 0.12em solid rgba(212, 177, 112, 0.3);
     border-radius: 50%;
-    border-top-color: rgba(0, 0, 0, 0.8);
+    border-top-color: var(--color-gold-pale, #d4b170);
     animation: spin 1s linear infinite;
     display: inline-block;
   }

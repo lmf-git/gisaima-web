@@ -18,6 +18,7 @@
   
   import Peek from './Peek.svelte';
   import YouAreHere from './YouAreHere.svelte';
+  import BiomeScatter from './BiomeScatter.svelte';
 
   import Torch from '../../icons/Torch.svelte';
   import Hammer from '../../icons/Hammer.svelte';
@@ -1817,6 +1818,15 @@
             class:player-position={isCurrentPlayerHere}
             class:current-player={containsCurrentPlayer(cell)}
             class:from-world-data={playerPosition && cell.x === playerPosition.x && cell.y === playerPosition.y && !hasCurrentPlayerEntity(cell)}
+            data-biome={cell.biome?.name || ''}
+            data-biome-group={cell.biome?.water ? 'water'
+                : cell.biome?.name?.match(/forest|wood|jungle|tropical/i) ? 'forest'
+                : cell.biome?.name?.match(/mountain|hill|alpine|highland|mesa|rocky/i) ? 'mountain'
+                : cell.biome?.name?.match(/desert|dry|badland|savanna|scrub|dune/i) ? 'desert'
+                : cell.biome?.name?.match(/swamp|marsh|bog|wetland|riverbank|flood/i) ? 'wetland'
+                : cell.biome?.name?.match(/snow|glacier|tundra|frost/i) ? 'snow'
+                : cell.biome?.name?.match(/volcan|lava|magma/i) ? 'volcano'
+                : 'grass'}
             style="
               background-color: {cell.isCenter ? 'var(--center-tile-color)' : cell.color || 'var(--terrain-color)'};
               transition-delay: {cell.distance * 0.02 + 's'};
@@ -1827,6 +1837,24 @@
             aria-label={`Coordinates ${cell.x},${cell.y}`}
             role="gridcell"
           >
+            <!-- Animated SVG biome scatter — trees, peaks, ripples, etc.
+                 Skipped on centre + subdivided tiles where the structure
+                 decoration owns the visual space. -->
+            {#if !cell.isCenter && !cell.structure}
+              <BiomeScatter
+                biomeGroup={cell.biome?.water ? 'water'
+                  : cell.biome?.name?.match(/forest|wood|jungle|tropical/i) ? 'forest'
+                  : cell.biome?.name?.match(/mountain|hill|alpine|highland|mesa|rocky/i) ? 'mountain'
+                  : cell.biome?.name?.match(/desert|dry|badland|savanna|scrub|dune/i) ? 'desert'
+                  : cell.biome?.name?.match(/swamp|marsh|bog|wetland|riverbank|flood/i) ? 'wetland'
+                  : cell.biome?.name?.match(/snow|glacier|tundra|frost/i) ? 'snow'
+                  : cell.biome?.name?.match(/volcan|lava|magma/i) ? 'volcano'
+                  : 'grass'}
+                x={cell.x}
+                y={cell.y}
+              />
+            {/if}
+
             <!-- Only render additional elements when initial animations are complete, don't hide during movement -->
             {#if shouldRenderDetails}
               <!-- Wall: full-tile border overlay (no subgrid) -->
@@ -2106,13 +2134,17 @@
     height: 100%;
   }
   
+  /* Biome scatter is rendered as inline SVG (<BiomeScatter />) so glyphs
+     can animate per element. The component sits position:absolute behind
+     the tile content. */
+
   /* The tile cells must keep position: relative */
   .tile {
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    overflow: visible; 
+    overflow: visible;
     text-overflow: ellipsis;
     font-size: 1em;
     color: rgba(255, 255, 255, 0.7);

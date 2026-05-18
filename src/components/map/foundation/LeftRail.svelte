@@ -6,8 +6,9 @@
     const links = [
         { href: '/map',       glyph: 'compass', label: 'World' },
         { href: '/profile',   glyph: 'banner',  label: 'Realm' },
-        { href: '/bounties',  glyph: 'skull',   label: 'Bounty' },
+        { href: '/diplomacy', glyph: 'shield',  label: 'Diplomacy' },
         { href: '/rankings',  glyph: 'crown',   label: 'Roll' },
+        { href: '/bounties',  glyph: 'skull',   label: 'Bounty' },
         { href: '/trade',     glyph: 'coin',    label: 'Trade' },
         { href: '/politics',  glyph: 'scroll',  label: 'Council' },
         { href: '/morality',  glyph: 'star',    label: 'Deeds' },
@@ -34,18 +35,18 @@
 
 <style>
     .rail {
-        position: absolute;
+        position: fixed;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 56px;
-        z-index: 500;
+        width: 3.5em;            /* matches dossier --dossier-left offset */
+        z-index: 90;
         background: linear-gradient(180deg, rgba(14, 19, 32, 0.94) 0%, rgba(19, 25, 41, 0.94) 100%);
         border-right: 0.075em solid rgba(176, 141, 74, 0.18);
         display: flex;
         flex-direction: column;
-        padding: 0.8em 0 0.6em;
-        gap: 0.3em;
+        padding: 0.5em 0 0.5em;
+        gap: 0.25em;
         backdrop-filter: blur(0.5em);
     }
 
@@ -57,8 +58,8 @@
         color: var(--color-gold-pale);
     }
     .brand :global(.rail-logo) {
-        width: 1.9em;
-        height: 1.9em;
+        width: 4.9em;
+        height: auto;
         display: block;
     }
     .brand-rule {

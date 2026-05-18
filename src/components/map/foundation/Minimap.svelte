@@ -353,7 +353,7 @@
      so it reads as a brass-bordered map fragment. */
   .map-container {
     position: absolute;
-    top: 0.6em;
+    top: 4em;            /* slot under the fixed dossier (3.5em + a hairline) */
     right: 1em;
     z-index: 998;
     padding: 0.2em;
@@ -371,10 +371,8 @@
     border: 0.075em solid rgba(176, 141, 74, 0.35);
     box-shadow: inset 0 0 0.6em rgba(0, 0, 0, 0.4);
     cursor: grab;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     outline: none;
     opacity: 1;
-    animation: slideInFromRight 0.6s ease-out forwards;
   }
   .minimap:hover {
     border-color: var(--color-gold-pale, #d4b170);
@@ -383,37 +381,11 @@
     cursor: grabbing;
   }
 
-  .minimap.closing {
-    animation: slideOutToRight 0.8s ease-in forwards;
-  }
-  
   .minimap-grid {
     display: grid;
     grid-template-columns: repeat(var(--grid-cols), var(--mini-tile-size, 0.5em));
     grid-template-rows: repeat(var(--grid-rows), var(--mini-tile-size, 0.5em));
     --mini-tile-size: 0.5em;
-  }
-  
-  @keyframes slideInFromRight {
-    0% {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    100% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOutToRight {
-    0% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(100%);
-      opacity: 0;
-    }
   }
   
   .tile {

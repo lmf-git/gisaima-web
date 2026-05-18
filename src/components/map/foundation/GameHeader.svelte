@@ -1,29 +1,26 @@
 <script>
+  import { page } from '$app/stores';
   import { unreadReports } from '../../../lib/stores/reports.js';
 
-  const {
-    onOpenReports    = () => {},
-    onOpenDiplomacy  = () => {},
-    onOpenRankings   = () => {},
-    showReports      = false,
-    showDiplomacy    = false,
-    showRankings     = false,
-  } = $props();
+  // Reference: Diplomacy / Rankings / Reports are top-level world surfaces,
+  // not transient popups on the map. They route to dedicated pages
+  // (/diplomacy, /rankings, /chronicle) so they get the full WorldContextBar
+  // chrome and bookmarkable URLs.
 </script>
 
 <nav class="game-header-nav">
-  <button class="header-link" class:active={showDiplomacy} onclick={onOpenDiplomacy}>
+  <a class="header-link" class:active={$page.url?.pathname === '/diplomacy'} href="/diplomacy">
     Diplomacy
-  </button>
-  <button class="header-link" class:active={showRankings} onclick={onOpenRankings}>
+  </a>
+  <a class="header-link" class:active={$page.url?.pathname === '/rankings'} href="/rankings">
     Rankings
-  </button>
-  <button class="header-link" class:active={showReports} onclick={onOpenReports}>
+  </a>
+  <a class="header-link" class:active={$page.url?.pathname === '/chronicle'} href="/chronicle">
     Reports
     {#if $unreadReports > 0}
       <span class="header-badge">{$unreadReports}</span>
     {/if}
-  </button>
+  </a>
 </nav>
 
 <style>

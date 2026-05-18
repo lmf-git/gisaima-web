@@ -75,15 +75,12 @@
     import BoundIcon from '../../components/icons/BoundIcon.svelte';
     import UnboundIcon from '../../components/icons/UnboundIcon.svelte';
     import Logo from '../../components/Logo.svelte';
-    import GameHeader from '../../components/map/foundation/GameHeader.svelte';
-    import NextTickChip from '../../components/map/foundation/NextTickChip.svelte';
+    // GameHeader / NextTickChip / TopResourceBar all moved into the layout
+    // WorldContextBar (dossier). The LeftRail handles navigation cells and
+    // the on-tile HUDs stay here.
     import CurrentLocationHud from '../../components/map/foundation/CurrentLocationHud.svelte';
     import LeftRail from '../../components/map/foundation/LeftRail.svelte';
-    import TopResourceBar from '../../components/map/foundation/TopResourceBar.svelte';
     import ItemDropsHud from '../../components/map/foundation/ItemDropsHud.svelte';
-    import Reports from '../../components/map/foundation/Reports.svelte';
-    import Diplomacy from '../../components/map/foundation/Diplomacy.svelte';
-    import Rankings from '../../components/map/foundation/Rankings.svelte';
     import { reports, unreadReports } from '../../lib/stores/reports.js';
     import { diplomacy } from '../../lib/stores/diplomacy.js';
     
@@ -96,6 +93,9 @@
     let selectedUnit = $state(null); // { unit, unitId, group } — lifted from Details
     let loading = $state(true);
     let error = $state(null);
+    // Reports / Diplomacy / Rankings are dedicated routes — see GameHeader.
+    // Local toggle state kept (default false) only so any legacy references
+    // remain referenced; the panels themselves are gone.
     let showReports    = $state(false);
     let showDiplomacy  = $state(false);
     let showRankings   = $state(false);
@@ -790,20 +790,12 @@
         }
     }
     
-    function toggleReports() {
-      showReports = !showReports;
-      if (showReports) { showDiplomacy = false; showRankings = false; lastActivePanel = 'reports'; }
-    }
-
-    function toggleDiplomacy() {
-      showDiplomacy = !showDiplomacy;
-      if (showDiplomacy) { showReports = false; showRankings = false; lastActivePanel = 'diplomacy'; }
-    }
-
-    function toggleRankings() {
-      showRankings = !showRankings;
-      if (showRankings) { showReports = false; showDiplomacy = false; lastActivePanel = 'rankings'; }
-    }
+    // GameHeader now navigates to /chronicle, /diplomacy, /rankings instead
+    // of toggling on-map popups; these stubs remain so any older code path
+    // that still references them is a no-op rather than an error.
+    function toggleReports()    { showReports    = false; }
+    function toggleDiplomacy()  { showDiplomacy  = false; }
+    function toggleRankings()   { showRankings   = false; }
 
     function toggleMinimap() {
       if (!$game?.player?.alive || isTutorialVisible) {
@@ -1350,16 +1342,6 @@
             <button onclick={() => goto('/worlds')}>Go to Worlds</button>
         </div>
     {:else}
-        <GameHeader
-            showReports={showReports}
-            showDiplomacy={showDiplomacy}
-            showRankings={showRankings}
-            onOpenReports={toggleReports}
-            onOpenDiplomacy={toggleDiplomacy}
-            onOpenRankings={toggleRankings}
-        />
-        <NextTickChip />
-        <TopResourceBar />
         <CurrentLocationHud />
         <ItemDropsHud />
         <LeftRail />
@@ -1390,42 +1372,19 @@
         {/if}
         
 
-        <!-- Controls -->
-        <div class="map-controls">            
-            <!-- Show NextWorldTick in map-controls when Overview is open -->
+        <!-- Top map controls (next-tick + follow when overview is open).
+             Minimap/help toggles have moved into the right-side cluster
+             alongside chat + achievements. -->
+        <div class="map-controls">
             {#if showEntities && $game?.player?.alive && !isTutorialVisible}
                 <NextWorldTick extraClass="control-button-like" compact={window.innerWidth < 768} />
             {/if}
 
-            <!-- Show Follow button in map-controls when Overview is open -->
             {#if showEntities && $game?.player?.alive && !isTutorialVisible}
-                <FollowPlayer 
+                <FollowPlayer
                     disabled={!$game?.player?.alive || isTutorialVisible}
                     onFollowToggle={handleFollowToggle}
                 />
-            {/if}
-            
-            <button 
-                class="control-button minimap-button" 
-                onclick={toggleMinimap}
-                aria-label={showMinimap ? "Hide minimap" : "Show minimap"}
-                disabled={!$game?.player?.alive || isTutorialVisible}>
-                {#if showMinimap}
-                    <Close size="1.2em" extraClass="close-icon-dark" />
-                {:else}
-                    <Map extraClass="button-icon" />
-                {/if}
-
-            </button>
-
-            {#if !isTutorialVisible}
-                <button 
-                    class="control-button help-button" 
-                    onclick={toggleTutorial}
-                    aria-label="Show tutorial"
-                    disabled={!$game?.player?.alive}>
-                    ?
-                </button>
             {/if}
         </div>
         
@@ -1466,10 +1425,15 @@
             </div>
         {/if}
 
+        <!-- Right-side toggle cluster — chat, achievements, minimap, help.
+             All four sit together by default. When chat or achievements is
+             opened (which itself slides into the bottom-right pane), the
+             remaining toggles relocate to `.controls-middle-right` (just
+             above the open panel) so they don't conflict. -->
         <div class="controls-right">
             {#if !showChat && $game?.player?.alive && !isTutorialVisible}
-                <button 
-                    class="control-button chat-button" 
+                <button
+                    class="control-button chat-button"
                     onclick={toggleChat}
                     aria-label="Show chat">
                     {#if unreadCount > 0}
@@ -1482,22 +1446,64 @@
             {/if}
 
             {#if !showAchievements && $game?.player?.alive && !isTutorialVisible && !spawnMenuVisible}
-                <button 
-                    class="control-button achievements-button" 
+                <button
+                    class="control-button achievements-button"
                     onclick={toggleAchievements}
                     aria-label="Show achievements">
                     <AchievementIcon extraClass="button-icon" />
                 </button>
             {/if}
+
+            <button
+                class="control-button minimap-button"
+                onclick={toggleMinimap}
+                aria-label={showMinimap ? "Hide minimap" : "Show minimap"}
+                disabled={!$game?.player?.alive || isTutorialVisible}>
+                {#if showMinimap}
+                    <Close size="1.2em" extraClass="close-icon-dark" />
+                {:else}
+                    <Map extraClass="button-icon" />
+                {/if}
+            </button>
+
+            {#if !isTutorialVisible}
+                <button
+                    class="control-button help-button"
+                    onclick={toggleTutorial}
+                    aria-label="Show tutorial"
+                    disabled={!$game?.player?.alive}>
+                    ?
+                </button>
+            {/if}
         </div>
 
-        {#if showChat && !showAchievements && $game?.player?.alive && !isTutorialVisible}
+        {#if (showChat || showAchievements) && $game?.player?.alive && !isTutorialVisible}
             <div class="controls-middle-right">
-                <button 
-                    class="control-button achievements-button" 
-                    onclick={toggleAchievements}
-                    aria-label="Show achievements">
-                    <AchievementIcon extraClass="button-icon" />
+                {#if showChat && !showAchievements}
+                    <button
+                        class="control-button achievements-button"
+                        onclick={toggleAchievements}
+                        aria-label="Show achievements">
+                        <AchievementIcon extraClass="button-icon" />
+                    </button>
+                {/if}
+                <button
+                    class="control-button minimap-button"
+                    onclick={toggleMinimap}
+                    aria-label={showMinimap ? "Hide minimap" : "Show minimap"}
+                    disabled={!$game?.player?.alive || isTutorialVisible}>
+                    {#if showMinimap}
+                        <Close size="1.2em" extraClass="close-icon-dark" />
+                    {:else}
+                        <Map extraClass="button-icon" />
+                    {/if}
+                </button>
+                <button
+                    class="control-button help-button"
+                    onclick={toggleTutorial}
+                    aria-label="Show tutorial"
+                    disabled={!$game?.player?.alive}>
+                    ?
                 </button>
             </div>
         {/if}
@@ -1555,49 +1561,10 @@
                 </div>
             {/if}
 
-            {#if showReports && !isTutorialVisible}
-                <div class="reports-wrapper"
-                    class:active={lastActivePanel === 'reports'}
-                    onmouseenter={() => handlePanelHover('reports')}
-                    role="region"
-                    aria-label="Reports panel container"
-                >
-                    <Reports
-                        onClose={toggleReports}
-                        onMouseEnter={() => handlePanelHover('reports')}
-                    />
-                </div>
-            {/if}
+            <!-- Reports / Diplomacy / Rankings are dedicated routes now
+                 (/chronicle, /diplomacy, /rankings) — see GameHeader. The
+                 old in-map popups have been removed. -->
 
-            {#if showDiplomacy && !isTutorialVisible}
-                <div class="diplomacy-wrapper"
-                    class:active={lastActivePanel === 'diplomacy'}
-                    onmouseenter={() => handlePanelHover('diplomacy')}
-                    role="region"
-                    aria-label="Diplomacy panel container"
-                >
-                    <Diplomacy
-                        onClose={toggleDiplomacy}
-                        onMouseEnter={() => handlePanelHover('diplomacy')}
-                    />
-                </div>
-            {/if}
-
-            {#if showRankings && !isTutorialVisible}
-                <div class="rankings-wrapper"
-                    class:active={lastActivePanel === 'rankings'}
-                    onmouseenter={() => handlePanelHover('rankings')}
-                    role="region"
-                    aria-label="Rankings panel container"
-                >
-                    <Rankings
-                        onClose={toggleRankings}
-                        onMouseEnter={() => handlePanelHover('rankings')}
-                    />
-                </div>
-            {/if}
-            
-            <!-- Add Notices component -->
             {#if showNotices && !isTutorialVisible}
                 <Notices maxNotices={3} />
             {/if}
@@ -1896,39 +1863,44 @@
         gap: 0.5em;
     }
 
+    /* Reference HudA chrome — every map control button reads as an
+       ink-translucent pill with gold-pale icons and aged-gold hover. */
     .control-button {
         min-width: 2em;
         height: 2em;
-        background-color: rgba(255, 255, 255, 0.85);
-        border: 0.05em solid rgba(255, 255, 255, 0.2);
-        border-radius: 0.3em;
-        color: rgba(0, 0, 0, 0.8);
+        background-color: rgba(14, 19, 32, 0.85);
+        border: 0.075em solid rgba(176, 141, 74, 0.4);
+        border-radius: 0;
+        color: var(--color-gold-pale, #d4b170);
         padding: 0.3em 0.8em;
-        font-size: 1em;
-        font-weight: bold;
+        font-family: var(--font-display);
+        font-size: 0.9em;
+        font-weight: 600;
+        letter-spacing: 0.16em;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
-        transition: all 0.2s ease;
+        text-shadow: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
         backdrop-filter: blur(0.5em);
         -webkit-backdrop-filter: blur(0.5em);
         opacity: 0;
         transform: translateY(-1em);
         animation: fadeInButton 0.7s ease-out 0.5s forwards;
     }
-    
+
     .control-button:hover:not(:disabled) {
-        background-color: rgba(255, 255, 255, 0.95);
-        border-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(176, 141, 74, 0.16);
+        border-color: var(--color-gold-pale, #d4b170);
+        color: var(--color-parchment-100);
     }
-    
+
     .control-button:disabled {
-        opacity: 0.5;
+        opacity: 0.4;
         cursor: not-allowed;
     }
-    
+
     @keyframes fadeInButton {
         0% {
             opacity: 0;
@@ -1939,16 +1911,21 @@
             transform: translateY(0);
         }
     }
-    
+
     .control-button:focus-visible {
-        outline: 0.15em solid rgba(0, 0, 0, 0.6);
+        outline: 0.15em solid var(--color-aged-gold, #b08d4a);
         outline-offset: 0.1em;
     }
 
     :global(.button-icon) {
         height: 1.2em;
         width: 1.2em;
-        fill: rgba(0, 0, 0, 0.8);
+        fill: var(--color-gold-pale, #d4b170);
+        stroke: var(--color-gold-pale, #d4b170);
+    }
+    :global(.close-icon-dark) {
+        fill: var(--color-parchment-100, #fbf6e7);
+        stroke: var(--color-parchment-100, #fbf6e7);
     }
 
     .minimap-button {
@@ -1978,36 +1955,36 @@
         min-width: 2em;
         width: 2em;
         height: 2em;
-        border-radius: 50%;
+        border-radius: 0;          /* match reference square pills */
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    
+
     .message-badge {
         position: absolute;
         top: -0.5em;
         right: -0.5em;
-        background-color: #e74c3c;
-        color: white;
-        border-radius: 1em;
-        padding: 0.2em 0.5em;
+        background: var(--color-wax-red, #5b1a1f);
+        color: var(--color-parchment-100, #fbf6e7);
+        border-radius: 0;
+        padding: 0.1em 0.45em;
+        font-family: var(--font-mono);
         font-size: 0.7em;
         min-width: 1.4em;
         text-align: center;
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+        border: 0.075em solid var(--color-aged-gold, #b08d4a);
     }
 
-    /* Create a unified z-index system for all panels */
+    /* Unified z-index system for the remaining map panels (chat, achievements
+       and the action-menu host). Reports/Diplomacy/Rankings live on their own
+       routes and are no longer wrapped here. */
     .chat-wrapper,
     .achievements-wrapper,
-    .reports-wrapper,
-    .diplomacy-wrapper,
-    .rankings-wrapper,
     :global(.modal-container),
     :global(.overview-container) {
         position: fixed;
-        z-index: 1500; /* Base z-index for all panels above minimap */
+        z-index: 1500;
         transition: opacity 300ms ease, z-index 0s linear;
     }
 
@@ -2015,56 +1992,40 @@
     .achievements-wrapper.visible {
         opacity: 1;
         pointer-events: all;
-        /* Add display property to ensure the wrapper is visible */
         display: block;
     }
 
-    /* When not visible, hide completely after transition */
     .chat-wrapper:not(.visible),
     .achievements-wrapper:not(.visible) {
         opacity: 0;
         pointer-events: none;
-        /* Add a small delay before hiding completely to allow animations to complete */
         transition: opacity 300ms ease, z-index 0s linear 300ms;
     }
 
-    /* Active state for any panel will raise it to top */
     .chat-wrapper.active,
     .achievements-wrapper.active,
-    .reports-wrapper.active,
-    .diplomacy-wrapper.active,
-    .rankings-wrapper.active,
     :global(.modal-container.active),
     :global(.overview-container.active) {
-        z-index: 1600 !important; /* Force highest z-index when active */
+        z-index: 1600;
     }
 
-    /* Minimap should be below all panels */
     :global(.minimap-container) {
-        z-index: 1000 !important; /* Always below panels */
+        z-index: 1000;
     }
 
-    /* Original positioning for each panel */
     .chat-wrapper {
         bottom: calc(1em + env(safe-area-inset-bottom));
         right: 1em;
         opacity: 0;
-        /* Remove pointer-events: none so the component can be interacted with */
-        /* pointer-events: none; */
-    }
-
-    .reports-wrapper,
-    .diplomacy-wrapper,
-    .rankings-wrapper {
-        bottom: calc(6em + env(safe-area-inset-bottom));
-        right: 1em;
     }
 
     .help-button {
-        font-family: var(--font-heading);
-        font-weight: 700;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 1.05em;
         padding: 0;
         width: 2em;
         height: 2em;
+        color: var(--color-gold-pale, #d4b170);
     }
 </style>
