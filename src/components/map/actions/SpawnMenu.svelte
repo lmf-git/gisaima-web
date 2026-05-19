@@ -353,264 +353,260 @@
 <style>
   .spawn-menu-wrapper {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    inset: 0;
+    background: rgba(6, 9, 18, 0.82);
+    backdrop-filter: blur(0.25em);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1010; /* Increased from 1000 to 1010 to be above Legend's z-index of 1001 */
-    pointer-events: all; /* Ensure clicks are captured by this element */
+    z-index: 1200;
+    pointer-events: all;
   }
 
   .spawn-menu {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    background: white;
-    border-radius: 0.5em;
-    box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.3);
+    max-width: 480px;
+    max-height: 88vh;
+    background: linear-gradient(160deg, rgba(14,19,32,0.98) 0%, rgba(10,13,24,0.98) 100%);
+    border: 0.075em solid rgba(176, 141, 74, 0.4);
+    box-shadow: 0 0.5em 3em rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.03);
     overflow: hidden;
-    z-index: 1000;
     display: flex;
     flex-direction: column;
-    font-family: var(--font-body);
+    font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+    color: var(--color-parchment-100, #fbf6e7);
   }
 
   .modal-header {
     display: flex;
     align-items: center;
-    justify-content: center; /* Center the header text since there's no close button */
-    padding: 0.8em 1em;
-    background-color: rgba(176, 141, 74, 0.08);
-    border-bottom: 1px solid #e0e0e0;
+    justify-content: center;
+    padding: 0.85em 1.2em;
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.2);
+    background: rgba(176, 141, 74, 0.06);
   }
-  
+
   h2 {
     margin: 0;
-    font-size: 1.3em;
-    font-weight: 600;
-    color: #333;
-    font-family: var(--font-heading);
+    font-family: var(--font-display);
+    font-size: 0.82em;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
+
   .content {
-    padding: 1em;
+    padding: 1em 1.2em;
     overflow-y: auto;
-    max-height: calc(90vh - 4em);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(176,141,74,0.25) transparent;
+    max-height: calc(88vh - 3.5em);
   }
 
   .race-header {
     display: flex;
     align-items: center;
-    margin-bottom: 1.2em;
+    gap: 0.8em;
+    margin-bottom: 1em;
     padding-bottom: 0.8em;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
-  
+
   .death-message-container {
-    margin-bottom: 1.2em;
-    padding: 1em;
-    background-color: rgba(220, 53, 69, 0.1);
-    border: 1px solid rgba(220, 53, 69, 0.2);
-    border-radius: 0.5em;
+    margin-bottom: 1em;
+    padding: 0.9em 1em;
+    background: rgba(139, 32, 32, 0.12);
+    border: 0.075em solid rgba(139, 32, 32, 0.35);
     text-align: center;
-    animation: pulse 2s infinite alternate;
+    animation: deathPulse 2.4s ease-in-out infinite alternate;
   }
-  
-  @keyframes pulse {
-    from { background-color: rgba(220, 53, 69, 0.05); }
-    to { background-color: rgba(220, 53, 69, 0.15); }
+
+  @keyframes deathPulse {
+    from { background: rgba(139, 32, 32, 0.08); }
+    to   { background: rgba(139, 32, 32, 0.18); }
   }
-  
+
   .death-message {
-    font-size: 1.1em;
     margin: 0;
+    font-family: var(--font-editorial, serif);
     font-style: italic;
-    color: #dc3545;
+    font-size: 0.95em;
+    color: var(--color-wax-red, #a83232);
   }
-  
+
   .race-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 0.8em;
+    flex-shrink: 0;
   }
 
   .welcome-text {
-    font-size: 1.1em;
-    font-weight: 500;
-    color: var(--color-parchment-200);
+    font-family: var(--font-editorial, serif);
+    font-size: 0.95em;
+    color: rgba(232, 228, 210, 0.75);
   }
+  .welcome-text strong { color: var(--color-parchment-100); }
 
   :global(.spawn-race-icon) {
     width: 2em;
     height: 2em;
-    fill: rgba(0, 0, 0, 0.85);
-    opacity: 0.85;
+    fill: var(--color-gold-pale, #d4b170);
+    stroke: none;
   }
 
   .error-message {
-    background: rgba(255, 0, 0, 0.1);
-    color: darkred;
-    padding: 0.6em;
+    background: rgba(139, 32, 32, 0.12);
+    color: var(--color-wax-red, #a83232);
+    border: 0.075em solid rgba(139, 32, 32, 0.35);
+    padding: 0.55em 0.8em;
     margin: 0.6em 0;
-    border-radius: 0.3em;
-    border: 1px solid rgba(255, 0, 0, 0.3);
+    font-size: 0.85em;
     text-align: center;
-    font-size: 0.9em;
   }
 
   .spawn-list {
     display: flex;
     flex-direction: column;
-    gap: 0.6em;
+    gap: 0.4em;
     max-height: 18em;
     overflow-y: auto;
-    padding: 0.3em;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(176,141,74,0.2) transparent;
     margin-bottom: 1em;
   }
 
   .spawn-item {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(176, 141, 74, 0.15);
-    border-radius: 0.3em;
-    padding: 0.8em;
+    background: rgba(255,255,255,0.03);
+    border: 0.075em solid rgba(176, 141, 74, 0.2);
+    padding: 0.75em 0.9em;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, border-color 0.15s;
     text-align: left;
     width: 100%;
     display: flex;
     align-items: center;
-    font-family: inherit;
     gap: 0.8em;
-  }
-
-  .spawn-item-content {
-    flex: 1;
-  }
-
-  :global(.spawn-icon) {
-    color: var(--color-parchment-200);
-    margin-left: 0.3em;
-    margin-right: 0.3em;
+    font-family: inherit;
+    color: inherit;
   }
 
   .spawn-item:hover {
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0.1em 0.4em rgba(0, 0, 0, 0.1);
-    transform: translateY(-0.1em);
+    background: rgba(176, 141, 74, 0.08);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
-  .spawn-item:focus {
-    outline: 2px solid #4285F4;
-    outline-offset: 2px;
+  .spawn-item:focus-visible {
+    outline: 0.12em solid var(--color-aged-gold, #b08d4a);
+    outline-offset: 0.1em;
   }
 
   .spawn-item.selected {
-    background: rgba(176, 141, 74, 0.14);
-    border-color: #4285F4;
-    box-shadow: 0 0 0 1px #4285F4;
+    background: rgba(176, 141, 74, 0.12);
+    border-color: var(--color-aged-gold, #b08d4a);
+    box-shadow: inset 0.2em 0 0 var(--color-aged-gold, #b08d4a);
+  }
+
+  .spawn-item-content { flex: 1; min-width: 0; }
+
+  :global(.spawn-icon) {
+    color: var(--color-gold-pale, #d4b170);
+    flex-shrink: 0;
   }
 
   .spawn-item h3 {
-    margin: 0 0 0.4em;
-    font-size: 1.1em;
-    font-weight: 500;
+    margin: 0 0 0.3em;
+    font-family: var(--font-display);
+    font-size: 0.82em;
+    font-weight: 400;
+    letter-spacing: 0.1em;
     color: var(--color-parchment-100);
-    line-height: 1.2;
   }
 
   .spawn-description {
-    font-size: 0.9em;
-    margin: 0 0 0.5em;
-    color: rgba(232, 228, 210, 0.78);
+    font-family: var(--font-editorial, serif);
+    font-style: italic;
+    font-size: 0.82em;
+    margin: 0 0 0.4em;
+    color: rgba(232, 228, 210, 0.6);
   }
 
   .spawn-meta {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.78);
+    align-items: center;
+    gap: 0.5em;
   }
 
   .spawn-race {
-    background: rgba(176, 141, 74, 0.08);
-    padding: 0.2em 0.5em;
-    border-radius: 1em;
-    text-transform: capitalize;
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    letter-spacing: 0.1em;
+    color: var(--color-aged-gold, #b08d4a);
+    background: rgba(176, 141, 74, 0.1);
+    padding: 0.15em 0.5em;
+    text-transform: uppercase;
   }
 
   .spawn-coords {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    font-size: 0.85em;
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    color: rgba(232, 228, 210, 0.4);
+    letter-spacing: 0.06em;
   }
 
   .spawn-actions {
     display: flex;
-    justify-content: center; /* Center the spawn button without cancel button */
-    margin-top: 1.5em;
+    justify-content: center;
+    margin-top: 0.5em;
   }
 
   .spawn-button {
     position: relative;
-    background-color: #b08d4a;
-    color: white;
-    border: none;
-    padding: 0.7em 1.2em;
-    border-radius: 0.3em;
-    font-size: 1em;
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: 0.75em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: var(--color-aged-gold, #b08d4a);
+    color: var(--color-ink-900, #0e1320);
+    border: 0.075em solid var(--color-aged-gold, #b08d4a);
+    padding: 0.7em 2em;
     cursor: pointer;
-    transition: all 0.2s;
-    min-width: 10em; /* Give the button a minimum width for better appearance when centered */
+    transition: background 0.15s, color 0.15s;
+    min-width: 12em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
   }
 
   .spawn-button:hover:not(:disabled) {
-    background-color: #3367d6;
+    background: var(--color-gold-pale, #d4b170);
+    border-color: var(--color-gold-pale, #d4b170);
   }
 
   .spawn-button:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 
-  .spawn-menu-wrapper.loading {
-    cursor: wait;
-  }
+  .spawn-menu-wrapper.loading { cursor: wait; }
 
-  /* Spinner animation for loading state */
   .spinner {
-    width: 1em;
-    height: 1em;
-    border: 0.12em solid rgba(255, 255, 255, 0.3);
+    width: 0.9em;
+    height: 0.9em;
+    border: 0.12em solid rgba(14, 19, 32, 0.3);
+    border-top-color: var(--color-ink-900, #0e1320);
     border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s linear infinite;
+    animation: spin 0.85s linear infinite;
     display: inline-block;
-    margin-right: 0.5em;
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   @media (max-width: 480px) {
-    .spawn-menu {
-      width: 95%;
-      max-height: 80vh;
-    }
-    
-    h2 {
-      font-size: 1.1em;
-    }
+    .spawn-menu { width: 95%; max-height: 82vh; }
   }
 </style>

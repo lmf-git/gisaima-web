@@ -14,7 +14,6 @@
         transform: rotate(var(--rot, 0deg)) scale(var(--scale, 1));
         animation: leaf-sway var(--duration, 5.5s) ease-in-out infinite alternate;
         animation-delay: calc(var(--phase, 0s) * -1);
-        will-change: transform;
     }
     .canopy { fill: rgba(60, 95, 58, 0.88); stroke: rgba(20, 30, 22, 0.8); stroke-width: 0.3; stroke-linejoin: round; }
     .trunk  { fill: rgba(56, 38, 22, 0.92); stroke: rgba(26, 18, 10, 0.7); stroke-width: 0.22; }

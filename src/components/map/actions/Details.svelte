@@ -1272,7 +1272,6 @@
                         {#if player.race}
                           <div class="entity-race">{_fmt(player.race)}</div>
                         {/if}
-                        
                         {#if player.status}
                           <span class="entity-badge {getStatusClass(player.status)}">
                             {_fmt(player.status)}
@@ -1280,17 +1279,17 @@
                         {/if}
                       </div>
                     </div>
-                    
-                    <!-- Add mobilise action for idle current player -->
-                    {#if canMobilizePlayer(player)}
-                      <div class="entity-actions">
-                        <button class="entity-action" onclick={() => executeAction('mobilise')}>
-                          <Rally extraClass="action-icon-small rally-icon" />
-                          Mobilise
-                        </button>
-                      </div>
-                    {/if}
                   </div>
+
+                  <!-- Mobilise sits at entity level so it right-aligns correctly -->
+                  {#if canMobilizePlayer(player)}
+                    <div class="entity-actions">
+                      <button class="entity-action" onclick={() => executeAction('mobilise')}>
+                        <Rally extraClass="action-icon-small rally-icon" />
+                        Mobilise
+                      </button>
+                    </div>
+                  {/if}
                 </div>
               {/each}
             </div>
@@ -2365,7 +2364,7 @@
     width: 1.4em;
     height: 1.4em;
     opacity: 0.85;
-    fill: rgba(0, 0, 0, 0.7);
+    fill: rgba(212, 177, 112, 0.9);
   }
   
   

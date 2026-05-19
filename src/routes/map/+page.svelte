@@ -50,20 +50,8 @@
     import Recenter from '../../components/map/foundation/Recenter.svelte';
     import FollowPlayer from '../../components/map/foundation/FollowPlayer.svelte';
     
-    import Details from '../../components/map/actions/Details.svelte';
     import Overview from '../../components/map/actions/Overview.svelte';
-    import StructureOverview from '../../components/map/actions/StructureOverview.svelte';
     import SpawnMenu from '../../components/map/actions/SpawnMenu.svelte';
-    import Mobilise from '../../components/map/actions/Mobilise.svelte';
-    import Move from '../../components/map/actions/Move.svelte';
-    import Gather from '../../components/map/actions/Gather.svelte';
-    import Demobilise from '../../components/map/actions/Demobilise.svelte';
-    import Recruitment from '../../components/map/actions/Recruitment.svelte';
-    import Attack from '../../components/map/actions/Attack.svelte';
-    import Build from '../../components/map/actions/Build.svelte';
-    import UnitDetails from '../../components/map/actions/UnitDetails.svelte';
-    import JoinBattle from '../../components/map/actions/JoinBattle.svelte';
-    import Crafting from '../../components/map/actions/Crafting.svelte';
     import Tutorial from '../../components/map/actions/Tutorial.svelte';
     
     import Map from '../../components/icons/Map.svelte';
@@ -74,13 +62,12 @@
     import Bird from '../../components/icons/Bird.svelte';
     import BoundIcon from '../../components/icons/BoundIcon.svelte';
     import UnboundIcon from '../../components/icons/UnboundIcon.svelte';
+    import Info from '../../components/icons/Info.svelte';
     import Logo from '../../components/Logo.svelte';
     // GameHeader / NextTickChip / TopResourceBar all moved into the layout
     // WorldContextBar (dossier). The LeftRail handles navigation cells and
     // the on-tile HUDs stay here.
-    import CurrentLocationHud from '../../components/map/foundation/CurrentLocationHud.svelte';
-    import LeftRail from '../../components/map/foundation/LeftRail.svelte';
-    import ItemDropsHud from '../../components/map/foundation/ItemDropsHud.svelte';
+    import TileDossier from '../../components/map/foundation/TileDossier.svelte';
     import { reports, unreadReports } from '../../lib/stores/reports.js';
     import { diplomacy } from '../../lib/stores/diplomacy.js';
     
@@ -89,8 +76,9 @@
     const debugLog = (...args) => DEBUG_MODE && console.log(...args);
 
     let isTutorialVisible = $state(false);
-    let detailed = $state(false);
-    let selectedUnit = $state(null); // { unit, unitId, group } — lifted from Details
+    let dossierPanel = $state(null); // active action panel in TileDossier, null = closed
+    let detailed = $state(false);   // kept for legacy follow-player check
+    let selectedUnit = $state(null);
     let loading = $state(true);
     let error = $state(null);
     // Reports / Diplomacy / Rankings are dedicated routes — see GameHeader.
@@ -128,10 +116,9 @@
     let allowedSubCells = $state(null);
 
     const isAnyModalOpen = $derived(
-        modalState.visible ||
         buildingPlacementMode ||
         !$game?.player?.alive ||
-        detailed ||
+        dossierPanel !== null ||
         isTutorialVisible
     );
 
@@ -169,11 +156,11 @@
     function handleKeyDown(event) {
         if (event.key === 'Escape') {
             // Handle only one panel at a time, in order of priority
-            if (modalState.visible) {
-                closeModal();
+            if (dossierPanel !== null) {
+                dossierPanel = null;
                 event.preventDefault();
                 event.stopPropagation();
-                return; // Exit after handling one panel
+                return;
             } else if (lastActivePanel === 'chat' && showChat) {
                 showChat = false;
                 event.preventDefault();
@@ -437,7 +424,7 @@
                     
                     if (clickedTile && hasTileContent(clickedTile)) {
                         setHighlighted(x, y);
-                        toggleDetailsModal(true);
+                        dossierPanel = 'details';
                     }
                 }
             };
@@ -523,8 +510,8 @@
         // Update the stored position
         lastKnownPlayerPosition = { ...currentPosition };
 
-        // Only move the map if auto-follow is enabled AND the details panel is not open
-        if (followPlayerPosition && !detailed) {
+        // Only move the map if auto-follow is enabled AND no dossier panel is open
+        if (followPlayerPosition && dossierPanel === null) {
           moveTarget(currentPosition.x, currentPosition.y);
         }
       }
@@ -1057,124 +1044,29 @@
       return points;
     }
 
-    // Add a new function to handle Peek actions
+    // Route Peek wheel actions into the right-rail TileDossier
     function handlePeekAction(actionId, actionData) {
-      console.log(`Handling peek action: ${actionId}`, actionData);
-      
-      // If we have actionData containing coordinates and tile data, use it
-      if (actionData && actionData.x !== undefined && actionData.y !== undefined) {
-        // Set highlighted to the correct tile
-        setHighlighted(actionData.x, actionData.y);
-        
-        // Handle each action type
-        switch(actionId) {
-          case 'details':
-            // Toggle the details panel when "Details" is clicked from Peek
-            toggleDetailsModal(true);
-            break;
-              
-          case 'inspect':
-            showModal({
-              type: 'inspect',
-              data: {
-                x: actionData.x,
-                y: actionData.y,
-                tile: actionData.tile
-              }
-            });
-            break;
-              
-          case 'mobilise':
-            showModal({
-              type: 'mobilise',
-              data: actionData
-            });
-            break;
-              
-          case 'move': {
-            const tile = actionData.tile;
-            const playerId = get(currentPlayer)?.id;
-            const eligibleGroups = tile?.groups?.filter(g =>
-              g.owner === playerId && g.status === 'idle'
-            ) ?? [];
-            if (eligibleGroups.length === 1) {
-              // Skip the dialog — go straight to path drawing
-              startPathDrawing({
-                ...eligibleGroups[0],
-                startPoint: { x: actionData.x, y: actionData.y }
-              });
-            } else {
-              showModal({ type: 'move', data: actionData });
-            }
-            break;
-          }
-              
-          case 'attack':
-            showModal({
-              type: 'attack',
-              data: actionData
-            });
-            break;
-              
-          case 'build':
-            showModal({
-              type: 'build',
-              data: actionData
-            });
-            break;
-              
-          case 'gather':
-            showModal({
-              type: 'gather',
-              data: actionData
-            });
-            break;
-              
-          case 'joinBattle':
-            showModal({
-              type: 'joinBattle',
-              data: actionData
-            });
-            break;
-              
-          case 'demobilise':
-            showModal({
-              type: 'demobilise',
-              data: actionData
-            });
-            break;
-              
-          case 'craft':
-            showModal({
-              type: 'craft',
-              data: {
-                x: actionData.x,
-                y: actionData.y,
-                structure: actionData.tile.structure,
-                tile: actionData.tile
-              }
-            });
-            break;
-
-          case 'recruitment': // Handle recruitment action
-            showModal({
-              type: 'recruitment',
-              data: {
-                x: actionData.x,
-                y: actionData.y,
-                structure: actionData.tile.structure,
-                tile: actionData.tile
-              }
-            });
-            break;
-              
-          default:
-            console.warn(`Unknown action type: ${actionId}`);
-            break;
-        }
-      } else {
-        console.error("No valid action data for peek action");
+      if (!actionData || actionData.x === undefined) {
+        console.error('No valid action data for peek action');
+        return;
       }
+
+      setHighlighted(actionData.x, actionData.y);
+
+      // 'move' with a single eligible group skips the dialog entirely
+      if (actionId === 'move') {
+        const playerId = get(currentPlayer)?.id;
+        const eligible = (actionData.tile?.groups ?? []).filter(
+          g => g.owner === playerId && g.status === 'idle'
+        );
+        if (eligible.length === 1) {
+          startPathDrawing({ ...eligible[0], startPoint: { x: actionData.x, y: actionData.y } });
+          return;
+        }
+      }
+
+      // All other actions open the dossier with the matching panel
+      dossierPanel = actionId;
     }
 
     // Add a function to handle removing the last path point
@@ -1315,7 +1207,7 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive}>
+<div class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive} class:dossier-open={dossierPanel !== null}>
     {#if combinedLoading}
         <div class="loading-overlay">
             <div class="loading-logo">
@@ -1342,10 +1234,6 @@
             <button onclick={() => goto('/worlds')}>Go to Worlds</button>
         </div>
     {:else}
-        <CurrentLocationHud />
-        <ItemDropsHud />
-        <LeftRail />
-
         <Grid
             detailed={detailed}
             onClick={handleGridClick}
@@ -1408,10 +1296,6 @@
                     />
                 {/if}
 
-                <!-- Show NextWorldTick in left-controls when Overview is not open -->
-                {#if !showEntities}
-                    <NextWorldTick extraClass="control-button-like" compact={window.innerWidth < 768} />
-                {/if}
             </div>
         {:else if !showEntities}
             <div class="left-controls">
@@ -1472,7 +1356,7 @@
                     onclick={toggleTutorial}
                     aria-label="Show tutorial"
                     disabled={!$game?.player?.alive}>
-                    ?
+                    <Info extraClass="button-icon" />
                 </button>
             {/if}
         </div>
@@ -1503,7 +1387,7 @@
                     onclick={toggleTutorial}
                     aria-label="Show tutorial"
                     disabled={!$game?.player?.alive}>
-                    ?
+                    <Info extraClass="button-icon" />
                 </button>
             </div>
         {/if}
@@ -1573,160 +1457,36 @@
         {#if showEntities}
             <div class="map-action-host"><Overview
               isActive={lastActivePanel === 'overview'}
-              onShowStructure={({ structure, x, y }) => {
-                modalState = {
-                  type: 'inspect',
-                  data: {
-                    x,
-                    y,
-                    tile: {
-                      x,
-                      y,
-                      structure,
-                    }
-                  },
-                  visible: true
-                };
-                if (window.innerWidth < 768) {
-                  toggleEntities();
-                }
+              onShowStructure={({ x, y }) => {
+                setHighlighted(x, y);
+                moveTarget(x, y, false);
+                dossierPanel = 'inspect';
+                if (window.innerWidth < 768) toggleEntities();
               }}
               onClose={() => toggleEntities()}
               onMouseEnter={() => handlePanelHover('overview')}
             /></div>
         {/if}
 
-        {#if detailed && !isTutorialVisible && $game?.player?.alive && !selectedUnit}
-            <div class="map-action-host"><Details
-                onClose={() => toggleDetailsModal(false)}
-                onShowModal={showModal}
-                isActive={lastActivePanel === 'details'}
-                onMouseEnter={() => handlePanelHover('details')}
-                onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
-            /></div>
-        {:else if $ready && !isPathDrawingMode && !isTutorialVisible && !modalState.visible}
-            <Legend 
-                x={$targetStore.x}  
-                y={$targetStore.y}  
+        {#if $ready && !isPathDrawingMode && !isTutorialVisible && dossierPanel === null}
+            <Legend
+                x={$targetStore.x}
+                y={$targetStore.y}
                 openDetails={() => {
                     setHighlighted($targetStore.x, $targetStore.y);
-                    toggleDetailsModal(true);
-                }} 
+                    dossierPanel = 'details';
+                }}
             />
         {/if}
 
-        {#if selectedUnit && detailed}
-          <div class="map-action-host"><UnitDetails
-            unit={selectedUnit.unit}
-            unitId={selectedUnit.unitId}
-            group={selectedUnit.group}
-            tileData={$targetStore}
-            onClose={() => { selectedUnit = null; }}
-            onEquipped={() => { selectedUnit = null; }}
-          /></div>
-        {/if}
-
-        {#if modalState.visible}
-          <!-- map-action-host: dedicated wrapper for action menus.
-               The global .map-action-host CSS in +layout.svelte targets this
-               class (single, high-specificity anchor) rather than fighting
-               component-internal scoped styles via !important. -->
-          <div class="map-action-host">
-          {#if modalState.type === 'inspect' && modalState.data}
-            <StructureOverview 
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onClose={closeModal}
-              onAchievement={savePlayerAchievement}
-              onShowModal={showModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
+        <!-- Right-rail dossier — shows tile info + action panels, opens on Peek action selection -->
+        {#if $ready && $game?.player?.alive && !isTutorialVisible}
+            <TileDossier
+                panel={dossierPanel}
+                onClose={() => { dossierPanel = null; }}
+                onStartPathDrawing={startPathDrawing}
+                onBuildRequest={handleBuildRequest}
             />
-          {:else if modalState.type === 'mobilise'}
-            <Mobilise 
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'craft' && modalState.data}
-            <Crafting
-              structure={modalState.data.structure}
-              x={modalState.data.x}
-              y={modalState.data.y}
-              onClose={closeModal}
-              onCraftStart={savePlayerAchievement}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'build' && modalState.data}
-            <Build
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onBuild={handleBuildRequest}
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'move' && modalState.data}
-            <Move
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onStartPathDrawing={startPathDrawing}
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'attack' && modalState.data}
-            <Attack
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile} 
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'joinBattle' && modalState.data}
-            <JoinBattle
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'gather' && modalState.data}
-            <Gather
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'demobilise' && modalState.data}
-            <Demobilise
-              x={modalState.data.x}
-              y={modalState.data.y}
-              tile={modalState.data.tile}
-              onClose={closeModal}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {:else if modalState.type === 'recruitment' && modalState.data}
-            <Recruitment
-              structure={modalState.data.structure}
-              x={modalState.data.x}
-              y={modalState.data.y}
-              onClose={closeModal}
-              onRecruitStart={savePlayerAchievement}
-              isActive={lastActivePanel === modalState.type}
-              onMouseEnter={() => handlePanelHover(modalState.type)}
-            />
-          {/if}
-          </div>
         {/if}
     {/if}
 </div>
@@ -2020,12 +1780,14 @@
     }
 
     .help-button {
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 1.05em;
-        padding: 0;
+        padding: 0.3em;
         width: 2em;
         height: 2em;
-        color: var(--color-gold-pale, #d4b170);
+    }
+
+    /* On desktop shift controls to clear the 22em dossier when it's open */
+    @media (min-width: 900px) {
+        .map.dossier-open .controls-right { right: calc(22em + 0.75em); }
+        .map.dossier-open .controls-middle-right { right: calc(22em + 0.5em); }
     }
 </style>

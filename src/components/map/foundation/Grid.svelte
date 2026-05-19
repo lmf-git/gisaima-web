@@ -1852,6 +1852,9 @@
                   : 'grass'}
                 x={cell.x}
                 y={cell.y}
+                height={cell.terrain?.height ?? cell.height ?? 0.5}
+                moisture={cell.terrain?.moisture ?? cell.moisture ?? 0.5}
+                rarity={cell.terrain?.rarity || 'common'}
               />
             {/if}
 

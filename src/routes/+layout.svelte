@@ -12,6 +12,7 @@
     import HamburgerIcon from '../components/icons/HamburgerIcon.svelte';
     import GuestWarning from '../components/features/GuestWarning.svelte';
     import WorldContextBar from '../components/features/WorldContextBar.svelte';
+    import LeftRail from '../components/map/foundation/LeftRail.svelte';
 
     // Routes that read from / write to a specific world. The world-context
     // strip surfaces under the layout header on each of these so the player
@@ -191,6 +192,7 @@
 
     <main class="main-content">
         {#if showDossier}
+            <LeftRail />
             <WorldContextBar />
         {/if}
         {@render children?.()}
@@ -334,6 +336,13 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+        scrollbar-width: none;       /* Firefox */
+        -ms-overflow-style: none;    /* IE / old Edge */
+    }
+    :global(*::-webkit-scrollbar) {  /* WebKit / Blink */
+        width: 0;
+        height: 0;
+        display: none;
     }
     
     :global(:root) {
@@ -1116,9 +1125,19 @@
         gap: 2.5em; /* Increased from 1.5em to 2.5em */
     }
 
-    /* World-scoped routes: the layout header is hidden, the WorldContextBar
-       sits fixed at top:0 (~3em tall). Most page heroes reserve 7em+ of top
-       padding which is plenty of clearance; nothing more needed here. */
+    /* World-scoped routes: the layout header is hidden. WorldContextBar sits
+       fixed at top:0 (~3.5em). LeftRail occupies left:0 (3.5em wide).
+       Shift page content so it doesn't hide under either chrome element. */
+    .app.world-scoped .main-content {
+        padding-left: 3.5em;
+        padding-top: 3.5em;
+    }
+    @media (max-width: 700px) {
+        .app.world-scoped .main-content {
+            padding-left: 0;
+            padding-top: 3.5em;
+        }
+    }
 
     /* "Return to map" pill — surfaces the active world id on every page so
        the player always has a one-click route back to the active realm.

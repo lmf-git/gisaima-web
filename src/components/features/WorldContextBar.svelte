@@ -60,12 +60,20 @@
         return `${m}:${String(s % 60).padStart(2, '0')}`;
     });
 
-    // Tier — derived from in-realm tick count: every 240 ticks (~4 game days)
-    // promotes the realm a tier. Pure flavour text.
-    const tier = $derived.by(() => {
-        const t = Number($worldInfo?.tickCount) || 0;
-        const n = Math.min(8, Math.floor(t / 240) + 1);
-        return ['I','II','III','IV','V','VI','VII','VIII'][n - 1];
+    // Player points: shown in the house-sub line. Fetched once per world session.
+    let playerPoints = $state(null);
+    $effect(() => {
+        const uid = $user?.uid;
+        const wid = $game?.worldKey;
+        if (!uid || !wid) { playerPoints = null; return; }
+        import('$lib/api.js').then(({ apiGet }) =>
+            apiGet(`/worlds/${encodeURIComponent(wid)}/rankings`)
+                .then(r => {
+                    const me = r?.points?.find(p => p.uid === uid);
+                    playerPoints = me?.structurePoints ?? 0;
+                })
+                .catch(() => { playerPoints = 0; })
+        );
     });
 
     // Jump-to-coordinates search.
@@ -104,7 +112,7 @@
             <div class="house-text">
                 <div class="house-name">{houseName}</div>
                 <div class="house-sub">
-                    Realm of <em>{$game.worldKey}</em> · Tier {tier}
+                    Realm of <em>{$game.worldKey}</em>{playerPoints !== null ? ` · ${playerPoints.toLocaleString()} pts` : ''}
                 </div>
             </div>
         </a>
@@ -174,11 +182,6 @@
             <span class="tick-lbl">NEXT TICK</span>
             <span class="tick-val">{tickLabel}</span>
         </a>
-
-        <!-- Avatar -->
-        <a class="avatar" href="/profile" title="Open profile" aria-label="Profile">
-            {initial}
-        </a>
     </header>
 {/if}
 
@@ -206,11 +209,12 @@
         font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
         backdrop-filter: blur(0.5em);
     }
-    /* The map page owns the LeftRail and sets this offset; world-scoped
-       pages don't have the rail so the dossier sits flush left there. */
-    :global(.app.map) .dossier { --dossier-left: 3.5em; }
+    /* The LeftRail appears on map + all world-scoped pages; offset the dossier. */
+    :global(.app.map) .dossier,
+    :global(.app.world-scoped) .dossier { --dossier-left: 3.5em; }
     @media (max-width: 700px) {
-        :global(.app.map) .dossier { --dossier-left: 0; }
+        :global(.app.map) .dossier,
+        :global(.app.world-scoped) .dossier { --dossier-left: 0; }
     }
 
     /* House crest block */
@@ -300,19 +304,26 @@
     .search {
         display: inline-flex;
         align-items: center;
-        gap: 0.5em;
-        background: rgba(255, 255, 255, 0.04);
-        border: 0.075em solid rgba(255, 255, 255, 0.08);
-        padding: 0.45em 0.8em;
+        gap: 0.6em;
+        background: rgba(255, 255, 255, 0.06);
+        border: 0.075em solid rgba(255, 255, 255, 0.14);
+        padding: 0 1em;
+        height: 2.25em;
         width: 17.5em;
         font-family: var(--font-mono);
-        font-size: 0.75em;
+        font-size: 0.78em;
         color: rgba(251, 246, 231, 0.7);
         flex-shrink: 0;
+        transition: border-color 0.15s;
+    }
+    .search:focus-within {
+        border-color: rgba(176, 141, 74, 0.5);
+        background: rgba(255, 255, 255, 0.08);
     }
     .search input {
         flex: 1;
         min-width: 0;
+        height: 100%;
         background: transparent;
         border: none;
         outline: none;
@@ -320,18 +331,20 @@
         font-family: inherit;
         font-size: inherit;
         padding: 0;
+        line-height: 1;
     }
     .search input::placeholder {
-        color: rgba(251, 246, 231, 0.45);
+        color: rgba(251, 246, 231, 0.38);
     }
-    .search svg { color: rgba(251, 246, 231, 0.55); flex-shrink: 0; }
+    .search svg { color: rgba(251, 246, 231, 0.5); flex-shrink: 0; }
     .search kbd {
         margin-left: auto;
-        font-size: 0.85em;
-        opacity: 0.4;
-        padding: 0.05em 0.35em;
+        font-size: 0.8em;
+        opacity: 0.35;
+        padding: 0.1em 0.4em;
         border: 0.075em solid rgba(255, 255, 255, 0.15);
         font-family: inherit;
+        flex-shrink: 0;
     }
 
     /* Next tick pill */
@@ -370,24 +383,6 @@
         font-weight: 600;
         color: var(--color-gold-pale);
     }
-
-    /* Avatar circle */
-    .avatar {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.25em;
-        height: 2.25em;
-        border-radius: 50%;
-        border: 0.075em solid rgba(255, 255, 255, 0.15);
-        background: var(--color-ink-900);
-        color: var(--color-parchment-100);
-        font-family: var(--font-display);
-        font-weight: 600;
-        text-decoration: none;
-        flex-shrink: 0;
-    }
-    .avatar:hover { border-color: var(--color-gold-pale); color: var(--color-gold-pale); }
 
     @media (max-width: 1100px) {
         .res li:nth-child(n+3) { display: none; }   /* keep first 2 cells */
