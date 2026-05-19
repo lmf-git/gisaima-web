@@ -97,7 +97,7 @@
     <div class="eyebrow wax">The Marketplace</div>
     <h1>The Market</h1>
     <p class="lede">A coin moves further than a sword. Trade is recorded in the same ledger as battle.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <nav class="tabs">
         <button class:active={tab === 'offers'} onclick={() => (tab = 'offers')}>All Offers</button>

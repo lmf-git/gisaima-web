@@ -76,7 +76,7 @@
         <div class="eyebrow wax">The Black List</div>
         <h1>Bounties of the Realm</h1>
         <p class="lede">A coin upon a head. The realm keeps a long memory of those whose lives have been priced.</p>
-        <Flourish width={220} color="var(--color-ink-900)" />
+        <Flourish extraClass="page-flourish" />
 
         {#if $user && !$user.isAnonymous && worldId}
             <div class="actions">

@@ -45,7 +45,7 @@
     <div class="eyebrow wax">In Memoriam</div>
     <h1>The Fallen</h1>
     <p class="lede">No one walks the realm forever. Here lie the records of those who have.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if loading}
         <p class="empty italic">Turning the death roll…</p>

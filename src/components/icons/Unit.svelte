@@ -28,9 +28,10 @@
     import Skeleton from './units/Skeleton.svelte';
     import Troll from './units/Troll.svelte';
     import Elemental from './units/Elemental.svelte';
+    import Ship from './units/Ship.svelte';
 
     const { unitIconKey, extraClass = '' } = $props();
-    
+
     const icons = {
         human_warrior: HumanWarrior,
         human_scout: HumanScout,
@@ -60,7 +61,13 @@
         spider: Spider,
         skeleton: Skeleton,
         troll: Troll,
-        elemental: Elemental
+        elemental: Elemental,
+        large_boat: Ship,
+        combat_boat: Ship,
+        steamboat: Ship,
+        explorer_boat: Ship,
+        elven_swan_boat: Ship,
+        dwarf_ironclad: Ship,
     }
 
     const Icon = $derived(icons[unitIconKey?.toLowerCase()])

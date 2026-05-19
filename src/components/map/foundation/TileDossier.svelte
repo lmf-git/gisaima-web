@@ -21,16 +21,29 @@
 
   import Stamp from '../../ui/Stamp.svelte';
   import Close from '../../icons/Close.svelte';
+  import Achievements from '../../features/feedback/Achievements.svelte';
+  import Tutorial    from '../actions/Tutorial.svelte';
 
   const {
     panel = null,                  // active action panel id or null
     onClose = () => {},            // called when dossier should close
+    onSwitchPanel = () => {},      // called to switch to a different panel
     onStartPathDrawing = () => {},
     onBuildRequest = () => {},
   } = $props();
 
   // Unit details sub-panel state (lifted from Details)
   let selectedUnit = $state(null);
+
+  // Secondary sections collapsed when an action panel is active
+  let locationOpen = $state(true);
+  let dropsOpen = $state(true);
+
+  $effect(() => {
+    const isAction = panel !== null && panel !== 'details';
+    locationOpen = !isAction;
+    dropsOpen = !isAction;
+  });
 
   // ─── Target tile ───────────────────────────────────────────────
   const tile   = $derived($targetStore);
@@ -151,25 +164,28 @@
   aria-hidden={!visible}
 >
   {#if visible}
-    <!-- ── Persistent header with close ── -->
-    <div class="ds-topbar">
-      {#if tile}
+    <!-- ── Persistent header (coords/name only — close lives in each panel) ── -->
+    {#if tile && (panel === 'details' || panel === null)}
+      <div class="ds-topbar">
+        {#if struct?.name}
+          <span class="ds-topbar-name">{struct.name}</span>
+        {/if}
         <span class="ds-topbar-coords">{tile.x} | {tile.y}</span>
         <span class="ds-topbar-biome">{_fmt(tile.biome?.name)}</span>
-      {/if}
-      <button class="ds-close" onclick={onClose} aria-label="Close dossier">
-        <Close size="1em" />
-      </button>
-    </div>
+        <button class="ds-close" onclick={onClose} aria-label="Close dossier">
+          <Close size="1em" />
+        </button>
+      </div>
+    {/if}
 
     <div class="ds-body">
 
-      <!-- ── Action panel ── -->
+      <!-- ── Action panels (fill the body, body scrolls) ── -->
       {#if panel === 'mobilise'}
         <div class="ds-panel"><Mobilise onClose={onClose} /></div>
 
-      {:else if panel === 'move' && tile}
-        <div class="ds-panel"><Move x={tile.x} y={tile.y} tile={tile} onStartPathDrawing={handleMove} onClose={onClose} /></div>
+      {:else if panel === 'move'}
+        <div class="ds-panel"><Move onStartPathDrawing={handleMove} onClose={onClose} /></div>
 
       {:else if panel === 'gather'}
         <div class="ds-panel"><Gather onClose={onClose} /></div>
@@ -186,19 +202,26 @@
       {:else if panel === 'build' && tile}
         <div class="ds-panel"><Build x={tile.x} y={tile.y} tile={tile} onBuild={handleBuild} onClose={onClose} /></div>
 
-      {:else if panel === 'recruitment' && struct}
-        <div class="ds-panel"><Recruitment structure={struct} x={tile.x} y={tile.y} onClose={onClose} onRecruitStart={savePlayerAchievement} /></div>
+      {:else if panel === 'recruitment'}
+        <div class="ds-panel"><Recruitment structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} onRecruitStart={savePlayerAchievement} /></div>
 
-      {:else if panel === 'craft' && struct}
-        <div class="ds-panel"><Crafting structure={struct} x={tile.x} y={tile.y} onClose={onClose} onCraftStart={savePlayerAchievement} /></div>
+      {:else if panel === 'craft'}
+        <div class="ds-panel"><Crafting structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} onCraftStart={savePlayerAchievement} /></div>
+
+      {:else if panel === 'achievements'}
+        <div class="ds-panel"><Achievements onClose={onClose} /></div>
+
+      {:else if panel === 'help'}
+        <div class="ds-panel"><Tutorial onClose={onClose} onOpenAchievements={() => onSwitchPanel('achievements')} /></div>
 
       {:else if panel === 'inspect' && tile}
-        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onAchievement={savePlayerAchievement} onShowModal={opts => {}} /></div>
+        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onAchievement={savePlayerAchievement} onShowModal={() => {}} /></div>
 
       {:else if panel === 'details' && !selectedUnit}
         <div class="ds-panel"><Details
+          inDossier={true}
           onClose={onClose}
-          onShowModal={opts => {}}
+          onShowModal={() => {}}
           onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
         /></div>
 
@@ -212,8 +235,8 @@
           onEquipped={() => { selectedUnit = null; }}
         /></div>
 
-      {:else if tile}
-        <!-- ── Default tile overview (no specific action) ── -->
+      {:else if panel === null && tile}
+        <!-- ── Default tile overview (only when no action selected) ── -->
         {#if struct?.name}
           <div class="ds-settlement">{struct.name}</div>
         {/if}
@@ -251,63 +274,68 @@
             </ul>
           </section>
         {/if}
-      {/if}
 
-      <!-- ── Player's current location (former CurrentLocationHud) ── -->
-      {#if $place}
-        <section class="ds-section ds-location">
-          <div class="ds-section-hd">
-            <Stamp kind={$place.kind === 'structure' ? 'tower' : 'banner'} size={12} />
-            <span class="ds-label" style="margin-left:0.4em">{$place.name}</span>
-            <span class="ds-meta-tag">{$place.kind === 'structure' ? 'STRUCTURE' : 'GROUP'}</span>
-            {#if !$place.owned}<span class="ds-meta-tag ro">read-only</span>{/if}
-          </div>
-          {#if itemEntries($place.items).length === 0}
-            <div class="ds-empty">— empty —</div>
-          {:else}
-            <ul class="ds-items-list">
-              {#each itemEntries($place.items) as [k, q]}
-                <li>
-                  <Stamp kind={glyphFor(k)} size={12} />
-                  <span class="ds-qty">{q.toLocaleString()}</span>
-                  <span class="ds-item-name">{k.replace(/_/g, ' ').toLowerCase()}</span>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </section>
-      {/if}
+        <!-- Location + drops only on default overview -->
+        {#if $place}
+          <section class="ds-section ds-location">
+            <button class="ds-section-hd ds-toggle" onclick={() => (locationOpen = !locationOpen)} aria-expanded={locationOpen}>
+              <Stamp kind={$place.kind === 'structure' ? 'tower' : 'banner'} size={12} />
+              <span class="ds-label" style="margin-left:0.4em">{$place.name}</span>
+              <span class="ds-meta-tag">{$place.kind === 'structure' ? 'STRUCTURE' : 'GROUP'}</span>
+              {#if !$place.owned}<span class="ds-meta-tag ro">read-only</span>{/if}
+              <span class="ds-chevron" class:open={locationOpen}>▸</span>
+            </button>
+            {#if locationOpen}
+              {#if itemEntries($place.items).length === 0}
+                <div class="ds-empty">— empty —</div>
+              {:else}
+                <ul class="ds-items-list">
+                  {#each itemEntries($place.items) as [k, q]}
+                    <li>
+                      <Stamp kind={glyphFor(k)} size={12} />
+                      <span class="ds-qty">{q.toLocaleString()}</span>
+                      <span class="ds-item-name">{k.replace(/_/g, ' ').toLowerCase()}</span>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+            {/if}
+          </section>
+        {/if}
 
-      <!-- ── Items on this tile (former ItemDropsHud) ── -->
-      {#if Object.keys($tileItems).length > 0}
-        <section class="ds-section ds-drops">
-          <div class="ds-section-hd">
-            <Stamp kind="scroll" size={12} />
-            <span class="ds-label" style="margin-left:0.4em">ON THIS TILE</span>
-            <span class="ds-count wax">{Object.keys($tileItems).length}</span>
-          </div>
-          <ul class="ds-items-list">
-            {#each Object.entries($tileItems) as [k, q]}
-              <li>
-                <Stamp kind={glyphFor(k)} size={12} />
-                <span class="ds-qty">×{q}</span>
-                <span class="ds-item-name">{k.replace(/_/g, ' ').toLowerCase()}</span>
-                <button class="ds-pick" onclick={() => pickup(k, q)} disabled={dropBusy || !$sinkItems}>pick up</button>
-              </li>
-            {/each}
-          </ul>
-          {#if $sinkItems && Object.keys($sinkItems).length}
-            <form class="ds-drop-form" onsubmit={(e) => { e.preventDefault(); drop(); }}>
-              <select bind:value={dropDraft.key}>
-                {#each Object.entries($sinkItems) as [k, q]}
-                  <option value={k}>{k.replace(/_/g, ' ').toLowerCase()} (×{q})</option>
+        {#if Object.keys($tileItems).length > 0}
+          <section class="ds-section ds-drops">
+            <button class="ds-section-hd ds-toggle" onclick={() => (dropsOpen = !dropsOpen)} aria-expanded={dropsOpen}>
+              <Stamp kind="scroll" size={12} />
+              <span class="ds-label" style="margin-left:0.4em">ON THIS TILE</span>
+              <span class="ds-count wax">{Object.keys($tileItems).length}</span>
+              <span class="ds-chevron" class:open={dropsOpen}>▸</span>
+            </button>
+            {#if dropsOpen}
+              <ul class="ds-items-list">
+                {#each Object.entries($tileItems) as [k, q]}
+                  <li>
+                    <Stamp kind={glyphFor(k)} size={12} />
+                    <span class="ds-qty">×{q}</span>
+                    <span class="ds-item-name">{k.replace(/_/g, ' ').toLowerCase()}</span>
+                    <button class="ds-pick" onclick={() => pickup(k, q)} disabled={dropBusy || !$sinkItems}>pick up</button>
+                  </li>
                 {/each}
-              </select>
-              <input type="number" min="1" max="9999" bind:value={dropDraft.qty} />
-              <button type="submit" disabled={dropBusy}>drop</button>
-            </form>
-          {/if}
-        </section>
+              </ul>
+              {#if $sinkItems && Object.keys($sinkItems).length}
+                <form class="ds-drop-form" onsubmit={(e) => { e.preventDefault(); drop(); }}>
+                  <select bind:value={dropDraft.key}>
+                    {#each Object.entries($sinkItems) as [k, q]}
+                      <option value={k}>{k.replace(/_/g, ' ').toLowerCase()} (×{q})</option>
+                    {/each}
+                  </select>
+                  <input type="number" min="1" max="9999" bind:value={dropDraft.qty} />
+                  <button type="submit" disabled={dropBusy}>drop</button>
+                </form>
+              {/if}
+            {/if}
+          </section>
+        {/if}
       {/if}
 
     </div>
@@ -319,7 +347,7 @@
     position: fixed;
     top: 3.5em;
     right: 0;
-    width: 22em;
+    width: 28em;
     bottom: 0;
     z-index: 1100;
     background: linear-gradient(180deg, rgba(10,14,26,0.98) 0%, rgba(10,14,26,0.95) 100%);
@@ -367,21 +395,31 @@
     min-height: 2.5em;
   }
 
+  .ds-topbar-name {
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    color: var(--color-gold-pale, #d4b170);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
   .ds-topbar-coords {
     font-family: var(--font-mono);
-    font-size: 0.72em;
+    font-size: 0.68em;
     color: var(--color-wax-red, #8b2020);
     letter-spacing: 0.08em;
+    flex-shrink: 0;
   }
 
   .ds-topbar-biome {
     font-family: var(--font-mono);
-    font-size: 0.65em;
-    opacity: 0.5;
-    flex: 1;
+    font-size: 0.62em;
+    opacity: 0.45;
+    flex-shrink: 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .ds-close {
@@ -402,34 +440,25 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(176,141,74,0.25) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     display: flex;
     flex-direction: column;
   }
+  .ds-body::-webkit-scrollbar { display: none; }
 
-  /* ── Action panel host ── */
+  /* ── Action panel host — no scroll; ds-body is the single scroller ── */
   .ds-panel {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    overflow-y: auto;
   }
-
-  /* Strip floating-panel chrome from action components when inside the dossier */
-  .ds-panel :global(.modal-container),
-  .ds-panel :global(.overview-container) {
-    position: relative !important;
-    top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
+  /* Suppress inner scrollbars — ds-body is the single scroll owner */
+  .ds-panel :global(*) {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .ds-panel :global(*::-webkit-scrollbar) { display: none; }
 
   /* ── Settlement name ── */
   .ds-settlement {
@@ -453,6 +482,28 @@
     gap: 0.4em;
     margin-bottom: 0.5em;
   }
+
+  /* Collapsible toggle header */
+  .ds-toggle {
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    margin-bottom: 0;
+    color: inherit;
+  }
+  .ds-toggle:hover .ds-label { color: var(--color-gold-pale); }
+  .ds-chevron {
+    font-size: 0.6em;
+    color: rgba(232,228,210,0.35);
+    margin-left: auto;
+    display: inline-block;
+    transition: transform 0.15s;
+    transform: rotate(0deg);
+  }
+  .ds-chevron.open { transform: rotate(90deg); }
 
   .ds-label {
     font-family: var(--font-display);

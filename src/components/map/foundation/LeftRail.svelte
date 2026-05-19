@@ -27,7 +27,7 @@
             title={l.label}
             class:active={$page.url.pathname === l.href}
         >
-            <Stamp kind={l.glyph} size={18} />
+            <Stamp kind={l.glyph} size={22} />
             <span>{l.label.toUpperCase()}</span>
         </a>
     {/each}
@@ -39,7 +39,7 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 3.5em;            /* matches dossier --dossier-left offset */
+        width: 5em;              /* matches dossier --dossier-left offset */
         z-index: 90;
         background: linear-gradient(180deg, rgba(14, 19, 32, 0.94) 0%, rgba(19, 25, 41, 0.94) 100%);
         border-right: 0.075em solid rgba(176, 141, 74, 0.18);
@@ -80,7 +80,7 @@
         color: rgba(232, 228, 210, 0.55);
         text-decoration: none;
         font-family: var(--font-display);
-        font-size: 7px;
+        font-size: 8px;
         letter-spacing: 0.18em;
         transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
         position: relative;

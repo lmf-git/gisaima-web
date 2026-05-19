@@ -345,22 +345,12 @@
 
 <style>
   .unit-details-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 30em;
-    max-height: 90vh;
-    background: white;
-    border-radius: 0.5em;
-    box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    z-index: 1100;
     display: flex;
     flex-direction: column;
+    flex: 1;
+    background: transparent;
+    color: var(--color-parchment-100);
     font-family: var(--font-body);
-    text-shadow: none;
   }
 
   .modal-header {
@@ -368,8 +358,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.7em 0.9em;
-    background: rgba(0, 0, 0, 0.04);
-    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
     gap: 0.5em;
   }
 
@@ -415,14 +405,15 @@
   .badge {
     font-size: 0.72em;
     padding: 0.15em 0.45em;
-    border-radius: 0.3em;
     font-weight: 500;
     white-space: nowrap;
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
   }
-  .you-badge   { background: rgba(76, 175, 80, 0.2); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.4); }
-  .race-badge  { background: rgba(33, 150, 243, 0.15); color: #0277bd; border: 1px solid rgba(33, 150, 243, 0.3); }
-  .type-badge  { background: rgba(0, 0, 0, 0.07); color: rgba(232, 228, 210, 0.65); }
-  .lv-badge    { background: rgba(156, 39, 176, 0.15); color: #7b1fa2; border: 1px solid rgba(156, 39, 176, 0.3); }
+  .you-badge   { background: rgba(63, 90, 78, 0.2); color: #6fcf79; border: 0.075em solid rgba(76, 175, 80, 0.3); }
+  .race-badge  { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.25); }
+  .type-badge  { background: rgba(176, 141, 74, 0.06); color: rgba(232, 228, 210, 0.65); border: 0.075em solid rgba(176, 141, 74, 0.15); }
+  .lv-badge    { background: rgba(91, 26, 31, 0.12); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
 
   .close-btn {
     background: none;
@@ -430,15 +421,15 @@
     cursor: pointer;
     padding: 0.25em;
     display: flex;
-    border-radius: 50%;
     transition: background-color 0.2s;
     flex-shrink: 0;
+    color: var(--color-parchment-100);
   }
-  .close-btn:hover { background: rgba(0, 0, 0, 0.08); }
+  .close-btn:hover { background: rgba(176, 141, 74, 0.12); }
   .close-btn.small { padding: 0.1em; }
 
   .stats-section {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
 
   .stats-row {
@@ -447,12 +438,12 @@
   }
 
   .atk-row {
-    background: rgba(244, 67, 54, 0.03);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(91, 26, 31, 0.05);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
   }
 
   .def-row {
-    background: rgba(33, 150, 243, 0.03);
+    background: rgba(176, 141, 74, 0.03);
   }
 
   .stat {
@@ -461,7 +452,7 @@
     flex-direction: column;
     align-items: center;
     padding: 0.4em 0.25em;
-    border-right: 1px solid rgba(0, 0, 0, 0.06);
+    border-right: 0.075em solid rgba(176, 141, 74, 0.12);
   }
   .stat:last-child { border-right: none; }
 
@@ -471,33 +462,36 @@
     font-size: 0.62em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(232, 228, 210, 0.5);
     font-weight: 600;
     white-space: nowrap;
+    font-family: var(--font-display);
   }
 
   .stat-value {
     font-size: 0.95em;
     font-weight: 700;
     color: var(--color-parchment-200);
+    font-family: var(--font-mono);
   }
 
-  .atk-val { color: rgba(198, 40, 40, 0.85); }
-  .def-val { color: rgba(2, 119, 189, 0.85); }
-  .carry-val { color: rgba(0, 0, 0, 0.65); }
+  .atk-val { color: #c97d85; }
+  .def-val { color: var(--color-gold-pale); }
+  .carry-val { color: rgba(232, 228, 210, 0.65); }
 
   .stat-bonus {
     font-size: 0.65em;
-    color: rgba(76, 175, 80, 0.9);
+    color: #6fcf79;
     font-weight: 600;
+    font-family: var(--font-mono);
   }
 
   .error-bar {
     padding: 0.5em 0.9em;
-    background: rgba(244, 67, 54, 0.1);
-    color: #c62828;
+    background: rgba(91, 26, 31, 0.15);
+    color: #ff5757;
     font-size: 0.85em;
-    border-bottom: 1px solid rgba(244, 67, 54, 0.2);
+    border-bottom: 0.075em solid rgba(91, 26, 31, 0.3);
   }
 
   .equip-section {
@@ -507,12 +501,13 @@
   }
 
   .equip-label {
-    font-size: 0.7em;
+    font-size: 0.65em;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: rgba(0, 0, 0, 0.45);
+    letter-spacing: 0.1em;
+    color: var(--color-aged-gold);
     font-weight: 700;
     margin-bottom: 0.6em;
+    font-family: var(--font-display);
   }
 
   .equip-grid {
@@ -534,24 +529,24 @@
     padding: 0.5em 0.3em;
     min-height: 4.5em;
     width: 100%;
-    background: rgba(176, 141, 74, 0.06);
-    border: 1px dashed rgba(0, 0, 0, 0.18);
-    border-radius: 0.3em;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em dashed rgba(176, 141, 74, 0.25);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s, border-color 0.15s;
     font-family: inherit;
     text-align: center;
     gap: 0.25em;
+    color: var(--color-parchment-100);
   }
 
   .equip-slot:hover {
-    background: rgba(66, 133, 244, 0.06);
-    border-color: rgba(66, 133, 244, 0.4);
+    background: rgba(176, 141, 74, 0.1);
+    border-color: rgba(176, 141, 74, 0.5);
   }
 
   .equip-slot.occupied {
-    background: rgba(66, 133, 244, 0.08);
-    border: 1px solid rgba(66, 133, 244, 0.35);
+    background: rgba(176, 141, 74, 0.1);
+    border: 0.075em solid rgba(176, 141, 74, 0.4);
   }
 
   .equip-cell-empty {
@@ -560,13 +555,15 @@
 
   .slot-empty-icon {
     font-size: 1.4em;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
   .slot-label {
     font-size: 0.65em;
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(232, 228, 210, 0.4);
     font-weight: 500;
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
   }
 
   .slot-item-icon {
@@ -575,7 +572,7 @@
 
   .slot-item-name {
     font-size: 0.62em;
-    color: rgba(0, 0, 0, 0.75);
+    color: var(--color-parchment-200);
     font-weight: 600;
     line-height: 1.2;
     text-align: center;
@@ -590,25 +587,23 @@
     position: absolute;
     top: 0.2em;
     right: 0.2em;
-    background: rgba(244, 67, 54, 0.1);
-    border: 1px solid rgba(244, 67, 54, 0.25);
-    color: #c62828;
+    background: rgba(91, 26, 31, 0.15);
+    border: 0.075em solid rgba(91, 26, 31, 0.3);
+    color: #ff5757;
     font-size: 0.55em;
     padding: 0.1em 0.3em;
-    border-radius: 0.2em;
     cursor: pointer;
     line-height: 1;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
     font-family: inherit;
   }
 
-  .slot-unequip:hover { background: rgba(244, 67, 54, 0.2); }
+  .slot-unequip:hover { background: rgba(91, 26, 31, 0.3); }
   .slot-unequip:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* Picker panel */
   .picker-panel {
-    border-top: 1px solid rgba(176, 141, 74, 0.18);
-    background: rgba(248, 250, 255, 1);
+    border-top: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: rgba(20, 26, 42, 0.95);
     max-height: 40vh;
     overflow: hidden;
     display: flex;
@@ -623,14 +618,16 @@
     padding: 0.5em 0.9em;
     font-weight: 600;
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.75);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    color: var(--color-parchment-100);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
     background: rgba(176, 141, 74, 0.06);
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
 
   .source-tabs, .storage-tabs {
     display: flex;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
 
   .src-tab, .stor-tab {
@@ -642,14 +639,16 @@
     font-weight: 500;
     color: rgba(232, 228, 210, 0.55);
     cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.15s;
     border-bottom: 2px solid transparent;
   }
   .src-tab:hover, .stor-tab:hover { color: var(--color-parchment-200); }
   .src-tab.active, .stor-tab.active {
-    color: rgba(212, 177, 112, 0.95);
-    border-bottom-color: rgba(66, 133, 244, 0.7);
+    color: var(--color-gold-pale);
+    border-bottom-color: var(--color-aged-gold);
   }
 
   .picker-items {
@@ -664,7 +663,7 @@
   .picker-empty {
     padding: 1.5em;
     text-align: center;
-    color: rgba(0, 0, 0, 0.4);
+    color: rgba(232, 228, 210, 0.45);
     font-size: 0.85em;
     font-style: italic;
   }
@@ -674,17 +673,17 @@
     flex-direction: column;
     gap: 0.2em;
     padding: 0.55em 0.7em;
-    background: white;
-    border: 1px solid rgba(176, 141, 74, 0.15);
-    border-radius: 0.3em;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     cursor: pointer;
     font-family: inherit;
     text-align: left;
-    transition: all 0.15s;
+    transition: background-color 0.15s;
+    color: var(--color-parchment-100);
   }
   .picker-item:hover:not(:disabled) {
-    background: rgba(66, 133, 244, 0.06);
-    border-color: rgba(176, 141, 74, 0.45);
+    background: rgba(176, 141, 74, 0.1);
+    border-color: rgba(176, 141, 74, 0.4);
   }
   .picker-item:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -704,19 +703,20 @@
   .pi-stat {
     font-size: 0.72em;
     padding: 0.1em 0.4em;
-    border-radius: 0.25em;
     font-weight: 600;
     white-space: nowrap;
+    font-family: var(--font-mono);
   }
-  .pi-stat.atk { background: rgba(244, 67, 54, 0.1);  color: #c62828; }
-  .pi-stat.def { background: rgba(33, 150, 243, 0.1);  color: #0277bd; }
-  .pi-stat.spd { background: rgba(76, 175, 80, 0.1);   color: #2e7d32; }
-  .pi-stat.pwr { background: rgba(156, 39, 176, 0.1);  color: #7b1fa2; }
+  .pi-stat.atk { background: rgba(91, 26, 31, 0.15); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
+  .pi-stat.def { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.2); }
+  .pi-stat.spd { background: rgba(63, 90, 78, 0.12); color: #6fcf79; border: 0.075em solid rgba(76, 175, 80, 0.2); }
+  .pi-stat.pwr { background: rgba(176, 141, 74, 0.08); color: var(--color-parchment-200); border: 0.075em solid rgba(176, 141, 74, 0.2); }
 
   .pi-qty {
     font-size: 0.72em;
-    color: rgba(0, 0, 0, 0.45);
+    color: rgba(232, 228, 210, 0.45);
     margin-left: auto;
     font-weight: 500;
+    font-family: var(--font-mono);
   }
 </style>

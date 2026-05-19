@@ -267,26 +267,12 @@
 
 <style>
   .demobilise-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 36em;
-    max-height: 90vh;
-    background: white;
-    border-radius: 0.5em;
-    box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    z-index: 1000;
     display: flex;
     flex-direction: column;
+    flex: 1;
+    background: transparent;
+    color: var(--color-parchment-100);
     font-family: var(--font-body);
-    transition: z-index 0s;
-  }
-
-  .demobilise-modal.active {
-    z-index: 1001;
   }
 
   .modal-header {
@@ -294,22 +280,24 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
-    background: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
 
   h2 {
     margin: 0;
-    font-size: 1.3em;
+    font-size: 1.1em;
     font-weight: 600;
-    color: #333;
-    font-family: var(--font-heading);
+    color: var(--color-aged-gold);
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
 
   .content {
     padding: 1em;
     overflow-y: auto;
-    max-height: calc(90vh - 4em);
+    flex: 1;
+    color: var(--color-parchment-200);
   }
 
   .description {
@@ -322,10 +310,13 @@
   }
 
   h3 {
-    font-size: 1.1em;
+    font-size: 0.8em;
     margin: 0 0 0.8em 0;
-    font-family: var(--font-heading);
-    color: var(--color-parchment-200);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold);
   }
 
   .groups-list {
@@ -340,22 +331,21 @@
     display: flex;
     align-items: center;
     padding: 0.8em;
-    border: 1px solid #ddd;
-    border-radius: 0.3em;
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     cursor: pointer;
-    background: white;
-    transition: all 0.2s;
+    background: rgba(176, 141, 74, 0.05);
+    transition: background-color 0.2s;
     text-align: left;
+    color: var(--color-parchment-100);
   }
 
   .group-item:hover:not(:disabled) {
-    background: #f9f9f9;
-    border-color: #ccc;
+    background: rgba(176, 141, 74, 0.1);
   }
 
   .group-item.selected {
     background: rgba(176, 141, 74, 0.14);
-    border-color: rgba(66, 133, 244, 0.4);
+    border-color: rgba(176, 141, 74, 0.45);
   }
 
   .group-item:disabled {
@@ -375,13 +365,13 @@
 
   .group-units {
     font-size: 0.8em;
-    color: rgba(0, 0, 0, 0.75);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .structure-info {
-    background: #f5f5f5;
+    background: rgba(176, 141, 74, 0.05);
     padding: 1em;
-    border-radius: 0.3em;
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     margin-bottom: 1.5em;
   }
 
@@ -393,7 +383,7 @@
 
   .coordinates {
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.75);
+    color: rgba(232, 228, 210, 0.65);
     font-family: var(--font-mono, monospace);
   }
 
@@ -411,16 +401,15 @@
     display: flex;
     flex-direction: column;
     padding: 0.8em;
-    border: 1px solid #ddd;
-    border-radius: 0.3em;
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     position: relative;
     padding-left: 2.5em;
   }
 
   .radio-label:hover {
-    background: #f9f9f9;
+    background: rgba(176, 141, 74, 0.06);
   }
 
   .radio-label input {
@@ -437,38 +426,36 @@
 
   .radio-description {
     font-size: 0.8em;
-    color: rgba(0, 0, 0, 0.75);
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .radio-label input:checked + .radio-text {
-    color: #1e88e5;
+    color: var(--color-gold-pale);
   }
 
   .radio-label input:checked ~ .radio-description {
-    color: #555;
+    color: var(--color-parchment-200);
   }
 
   .radio-label:has(input:checked) {
-    border-color: rgba(33, 150, 243, 0.4);
-    background: rgba(33, 150, 243, 0.05);
+    border-color: rgba(176, 141, 74, 0.4);
+    background: rgba(176, 141, 74, 0.08);
   }
 
   .error {
     padding: 0.8em;
     margin-bottom: 1em;
-    background-color: rgba(255, 0, 0, 0.1);
-    border-left: 3px solid #f44336;
-    border-radius: 0.3em;
-    color: #d32f2f;
+    background-color: rgba(91, 26, 31, 0.15);
+    border-left: 3px solid rgba(91, 26, 31, 0.5);
+    color: #ff5757;
   }
 
   .status {
     padding: 0.8em;
     margin-bottom: 1em;
-    background-color: rgba(176, 141, 74, 0.14);
-    border-left: 3px solid #2196f3;
-    border-radius: 0.3em;
-    color: #0277bd;
+    background-color: rgba(176, 141, 74, 0.08);
+    border-left: 3px solid rgba(176, 141, 74, 0.4);
+    color: var(--color-parchment-200);
   }
 
   .actions {
@@ -483,8 +470,8 @@
     cursor: pointer;
     padding: 0.3em;
     display: flex;
-    border-radius: 50%;
     transition: background-color 0.2s;
+    color: var(--color-parchment-100);
   }
 
   .close-btn:hover {
@@ -493,46 +480,50 @@
 
   .close-btn-secondary {
     padding: 0.6em 1em;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 0.3em;
+    background: transparent;
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
     cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    transition: all 0.2s;
+    font-family: var(--font-display);
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-parchment-200);
+    transition: background-color 0.2s;
   }
 
   .close-btn-secondary:hover {
-    background: #eee;
+    background: rgba(176, 141, 74, 0.08);
   }
 
   .cancel-btn, .demobilise-btn {
     padding: 0.7em 1.2em;
-    border-radius: 0.3em;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 1em;
-    transition: all 0.2s;
+    font-family: var(--font-display);
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+    border: 0;
   }
 
   .cancel-btn {
-    background-color: #f1f3f4;
-    color: #3c4043;
-    border: 1px solid #dadce0;
+    background: transparent;
+    color: var(--color-parchment-200);
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
   }
 
   .cancel-btn:hover:not(:disabled) {
-    background-color: #e8eaed;
+    background-color: rgba(176, 141, 74, 0.08);
   }
 
   .demobilise-btn {
-    background-color: #b08d4a;
-    color: white;
-    border: none;
+    background-color: var(--color-aged-gold);
+    color: var(--color-ink-900);
   }
 
   .demobilise-btn:hover:not(:disabled) {
-    background-color: #3367d6;
+    background-color: var(--color-gold-pale);
   }
 
   .cancel-btn:disabled,
@@ -544,7 +535,8 @@
   .empty-state {
     text-align: center;
     padding: 2em 1em;
-    color: #777;
+    color: rgba(232, 228, 210, 0.55);
+    font-style: italic;
   }
 
   .empty-state p {

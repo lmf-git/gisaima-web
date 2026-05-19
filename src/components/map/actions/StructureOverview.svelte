@@ -15,6 +15,7 @@
   import Goblin from '../../icons/Goblin.svelte';
   import Fairy from '../../icons/Fairy.svelte';
   import Hammer from '../../icons/Hammer.svelte';
+  import BuildingIcon from '../../icons/BuildingIcon.svelte';
   
 
   // Props - using correct Svelte 5 runes syntax
@@ -452,13 +453,13 @@
         newFeatures.push({
           name: 'Storage Expansion',
           description: 'Increases storage capacity',
-          icon: '📦'
+          iconType: 'mine'
         });
       } else if (structureType === 'stronghold') {
         newFeatures.push({
           name: 'Advanced Forge',
           description: 'Allows crafting of better weapons',
-          icon: '⚔️'
+          iconType: 'smithy'
         });
       }
     } else if (currentLevel === 2) {
@@ -466,7 +467,7 @@
         newFeatures.push({
           name: 'Recruitment Hall',
           description: 'Allows training advanced units',
-          icon: '🛡️'
+          iconType: 'barracks'
         });
       }
     }
@@ -884,7 +885,9 @@
                       <div class="new-features-list">
                         {#each getNewFeatures() as feature}
                           <div class="new-feature-item">
-                            <div class="feature-icon">{feature.icon}</div>
+                            <div class="feature-icon building-feature-icon">
+                              <BuildingIcon type={feature.iconType} size="1.2em" extraClass="building-type-icon" />
+                            </div>
                             <div class="feature-details">
                               <div class="feature-name">{feature.name}</div>
                               <div class="feature-description">{feature.description}</div>
@@ -950,9 +953,9 @@
                     {#if building.level === 0}
                       <div class="building-header">
                         <div class="building-icon">
-                          {getBuildingIcon(building.type)}
+                          <BuildingIcon type={building.type} size="1.4em" extraClass="building-type-icon" />
                         </div>
-                        
+
                         <div class="building-title">
                           <div class="building-name">{building.name || formatText(building.type)}</div>
                           <div class="building-level">
@@ -966,7 +969,7 @@
                     {:else}
                       <div class="building-header">
                         <div class="building-icon">
-                          {getBuildingIcon(building.type)}
+                          <BuildingIcon type={building.type} size="1.4em" extraClass="building-type-icon" />
                         </div>
                         
                         <div class="building-title">
@@ -1182,19 +1185,15 @@
 </div>
 
 <style>
+  /* ── Floating modal chrome (standalone use) ── */
   .modal-container {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     pointer-events: none;
-    opacity: 1;
-    transition: opacity 0.2s ease-out;
   }
 
   .structure-modal {
@@ -1202,124 +1201,116 @@
     width: 90%;
     max-width: 34em;
     max-height: 85vh;
-    background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
-    border: 1px solid rgba(176, 141, 74, 0.35);
-    border-radius: 0;
-    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(176, 141, 74, 0.15);
-    text-shadow: none;
-    color: var(--color-parchment-200);
+    background: linear-gradient(180deg, rgba(10, 14, 26, 0.97), rgba(14, 19, 32, 0.97));
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.6);
+    color: var(--color-parchment-100, #fbf6e7);
     z-index: 1000;
     font-size: 1.4em;
-    font-family: var(--font-body);
+    font-family: var(--font-body, 'EB Garamond', serif);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(8px);
-    transform: scale(0.95);
-    opacity: 0;
-    animation: modalAppear 0.3s ease-out forwards;
+    animation: modalAppear 0.2s ease-out forwards;
   }
 
   @keyframes modalAppear {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
   }
 
+  /* ── Header ── */
   .modal-header {
-    padding: 0.8em 1em;
+    padding: 0.7em 1em;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(176, 141, 74, 0.08);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    font-family: var(--font-heading);
+    background: rgba(176, 141, 74, 0.07);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
+    flex-shrink: 0;
   }
 
   h3 {
     margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.78em;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-gold-pale, #d4b170);
   }
 
   .close-button {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.4em;
+    padding: 0.3em;
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(232, 228, 210, 0.5);
+    transition: color 0.15s;
   }
+  .close-button:hover { color: var(--color-parchment-100, #fbf6e7); }
 
-  .close-button:hover {
-    background-color: rgba(176, 141, 74, 0.12);
-    color: rgba(0, 0, 0, 0.9);
-  }
-
+  /* ── Scrollable content ── */
   .modal-content {
-    padding: 0.8em;
+    padding: 0.75em 0.9em;
     overflow-y: auto;
-    max-height: calc(85vh - 4rem);
+    flex: 1;
   }
 
+  /* ── Structure hero row ── */
   .structure-container {
     display: flex;
     align-items: center;
-    gap: 1em;
-    padding: 0.5em 0 1em 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    margin-bottom: 1em;
+    gap: 0.85em;
+    padding-bottom: 0.85em;
+    border-bottom: 0.075em solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 0.85em;
   }
 
   .structure-icon-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-width: 4em;
+    min-width: 3em;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
-  .structure-info {
-    flex: 1;
-  }
-  
+
+  .structure-info { flex: 1; }
+
   .structure-name {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 0.4em;
     flex-wrap: wrap;
-    margin-bottom: 0.5em;
+    margin-bottom: 0.35em;
   }
-  
+
   .structure-name h2 {
     margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.8);
-    font-family: var(--font-heading);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.88em;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    color: var(--color-parchment-100, #fbf6e7);
   }
-  
+
   .structure-description {
-    font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.7);
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    font-size: 0.82em;
+    color: rgba(232, 228, 210, 0.6);
     line-height: 1.4;
   }
 
-  /* Entity badge styling */
+  /* ── Badges ── */
   .entity-badge {
-    font-size: 0.7em;
-    padding: 0.2em 0.4em;
-    border-radius: 0.3em;
-    font-weight: 500;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.62em;
+    padding: 0.2em 0.45em;
+    letter-spacing: 0.08em;
     white-space: nowrap;
     display: flex;
     align-items: center;
@@ -1327,686 +1318,588 @@
   }
 
   .owner-badge {
-    background-color: rgba(63, 90, 78, 0.35);
-    color: #2e7d32;
-    border: 1px solid rgba(76, 175, 80, 0.4);
-  }
-  
-  .race-badge {
-    background-color: rgba(176, 141, 74, 0.22);
-    color: #0277bd;
-    border: 1px solid rgba(33, 150, 243, 0.4);
-  }
-  
-  .level-badge {
-    background-color: rgba(156, 39, 176, 0.2);
-    color: #7b1fa2;
-    border: 1px solid rgba(156, 39, 176, 0.4);
+    background: rgba(76, 175, 80, 0.12);
+    color: #6ecf72;
+    border: 0.075em solid rgba(76, 175, 80, 0.3);
   }
 
-  /* Race icon styling inside the badge */
+  .race-badge {
+    background: rgba(33, 150, 243, 0.12);
+    color: #64b5f6;
+    border: 0.075em solid rgba(33, 150, 243, 0.28);
+  }
+
+  .level-badge {
+    background: rgba(176, 141, 74, 0.15);
+    color: var(--color-gold-pale, #d4b170);
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+  }
+
   :global(.race-icon-badge) {
     width: 1em;
     height: 1em;
-    fill: #000000;
+    fill: currentColor;
   }
 
-  /* Section styling */
+  /* ── Collapsible sections ── */
   .entities-section {
-    margin-bottom: 1.2em;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(26, 32, 48, 0.55);
+    margin-bottom: 0.6em;
+    border: 0.075em solid rgba(176, 141, 74, 0.15);
+    background: rgba(255, 255, 255, 0.02);
   }
-  
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5em 1em;
-    background-color: rgba(176, 141, 74, 0.06);
+    padding: 0.5em 0.8em;
+    background: rgba(176, 141, 74, 0.05);
     cursor: pointer;
     user-select: none;
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
   }
-  
-  .section-header:hover {
-    background-color: rgba(176, 141, 74, 0.08);
-  }
+
+  .section-header:hover { background: rgba(176, 141, 74, 0.09); }
 
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 0.8em;
+    color: rgba(232, 228, 210, 0.4);
+    font-size: 0.75em;
     cursor: pointer;
-    padding: 0.2em 0.5em;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5em;
-    min-height: 1.5em;
+    padding: 0.2em 0.4em;
+    transition: color 0.15s;
+    line-height: 1;
   }
-
-  .collapse-button:hover {
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(176, 141, 74, 0.08);
-    border-radius: 50%;
-  }
+  .collapse-button:hover { color: var(--color-gold-pale, #d4b170); }
 
   h4 {
     margin: 0;
-    font-size: 0.9em;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.6);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.62em;
+    font-weight: 400;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: var(--color-aged-gold, #b08d4a);
     display: flex;
     align-items: center;
-    gap: 0.3em;
+    gap: 0.4em;
   }
 
-  .section-content {
-    padding: 0.8em;
-  }
-  
-  /* Building info styling */
-  .building-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8em;
-  }
-  
+  .section-content { padding: 0.7em 0.85em; }
+
+  /* ── Building info key/value rows ── */
+  .building-info { display: flex; flex-direction: column; gap: 0.5em; }
+
   .info-group {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 0.9em;
-    padding-bottom: 0.5em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    align-items: baseline;
+    font-size: 0.82em;
+    padding-bottom: 0.4em;
+    border-bottom: 0.04em solid rgba(255, 255, 255, 0.05);
   }
-  
+
   .info-label {
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0.7);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.88em;
+    letter-spacing: 0.08em;
+    color: var(--color-aged-gold, #b08d4a);
   }
-  
+
   .info-value {
-    color: rgba(0, 0, 0, 0.9);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--color-parchment-100, #fbf6e7);
   }
-  
+
   h5 {
-    margin: 0.8em 0 0.4em 0;
-    font-size: 0.9em;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.7);
+    margin: 0.7em 0 0.35em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.7em;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold, #b08d4a);
   }
-  
+
   .features-list, .upgrade-requirements, .new-features {
-    background-color: rgba(26, 32, 48, 0.4);
-    border-radius: 0.3em;
-    padding: 0.6em;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.55em;
+    border: 0.075em solid rgba(176, 141, 74, 0.12);
   }
-  
+
   .feature-item, .new-feature-item {
     display: flex;
     align-items: flex-start;
-    gap: 0.6em;
-    margin-bottom: 0.5em;
-    padding-bottom: 0.5em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    gap: 0.55em;
+    margin-bottom: 0.45em;
+    padding-bottom: 0.45em;
+    border-bottom: 0.04em solid rgba(255, 255, 255, 0.05);
   }
-  
   .feature-item:last-child, .new-feature-item:last-child {
     margin-bottom: 0;
     padding-bottom: 0;
     border-bottom: none;
   }
-  
+
   .feature-icon {
-    font-size: 1.2em;
-    background-color: rgba(176, 141, 74, 0.08);
+    background: rgba(176, 141, 74, 0.1);
     width: 1.8em;
     height: 1.8em;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-  }
-  
-  .feature-details {
-    flex: 1;
-  }
-  
-  .feature-name {
-    font-weight: 500;
-    margin-bottom: 0.2em;
-    color: rgba(0, 0, 0, 0.8);
-  }
-  
-  .feature-description {
-    font-size: 0.8em;
-    color: rgba(0, 0, 0, 0.6);
-  }
-  
-  /* Upgrade section styling */
-  .upgrade-section {
-    margin-top: 1em;
-    padding-top: 1em;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-  }
-  
-  .requirements-title, .new-features-title {
-    font-size: 0.85em;
-    font-weight: 500;
-    margin-bottom: 0.4em;
-    color: rgba(0, 0, 0, 0.7);
-  }
-  
-  .requirements-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4em;
-  }
-  
-  .requirement-item {
-    font-size: 0.85em;
-    padding: 0.3em 0.6em;
-    border-radius: 0.3em;
-    background-color: rgba(176, 141, 74, 0.06);
-  }
-  
-  .requirement-item.sufficient {
-    color: #2e7d32;
-    background-color: rgba(63, 90, 78, 0.22);
-  }
-  
-  .requirement-item.insufficient {
-    color: #c62828;
-    background-color: rgba(244, 67, 54, 0.1);
-  }
-  
-  .available-count {
-    font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.6);
-  }
-  
-  .new-features {
-    margin-top: 1em;
+    color: var(--color-gold-pale, #d4b170);
   }
 
-  /* Tab system for shared/personal storage */
+  .feature-details { flex: 1; }
+
+  .feature-name {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.8em;
+    letter-spacing: 0.06em;
+    color: var(--color-parchment-100, #fbf6e7);
+    margin-bottom: 0.15em;
+  }
+
+  .feature-description {
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    font-size: 0.78em;
+    color: rgba(232, 228, 210, 0.55);
+  }
+
+  /* ── Upgrade section ── */
+  .upgrade-section {
+    margin-top: 0.8em;
+    padding-top: 0.8em;
+    border-top: 0.075em solid rgba(176, 141, 74, 0.15);
+  }
+
+  .requirements-title, .new-features-title {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.68em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold, #b08d4a);
+    margin-bottom: 0.4em;
+  }
+
+  .requirements-list { display: flex; flex-direction: column; gap: 0.3em; }
+
+  .requirement-item {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.78em;
+    padding: 0.3em 0.55em;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    color: rgba(232, 228, 210, 0.75);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .requirement-item.sufficient {
+    color: #6ecf72;
+    background: rgba(76, 175, 80, 0.08);
+    border-color: rgba(76, 175, 80, 0.22);
+  }
+
+  .requirement-item.insufficient {
+    color: #ef7878;
+    background: rgba(198, 40, 40, 0.08);
+    border-color: rgba(198, 40, 40, 0.22);
+  }
+
+  .available-count {
+    font-size: 0.88em;
+    opacity: 0.7;
+  }
+
+  .new-features { margin-top: 0.8em; }
+
+  /* ── Storage tabs ── */
   .storage-tabs {
     display: flex;
-    margin-bottom: 1em;
-    border-radius: 0.3em;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.7em;
+    border: 0.075em solid rgba(176, 141, 74, 0.2);
   }
-  
+
   .tab-button {
     flex: 1;
-    padding: 0.6em 0.8em;
-    background: rgba(255, 255, 255, 0.5);
+    padding: 0.45em 0.7em;
+    background: rgba(255, 255, 255, 0.03);
     border: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
-    font-family: inherit;
-    font-size: 0.85em;
-    font-weight: 500;
+    border-right: 0.075em solid rgba(176, 141, 74, 0.18);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.65em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.4em;
-    color: rgba(0, 0, 0, 0.7);
+    color: rgba(232, 228, 210, 0.55);
+    transition: background 0.15s, color 0.15s;
   }
-  
-  .tab-button:last-child {
-    border-right: none;
-  }
-  
+  .tab-button:last-child { border-right: none; }
   .tab-button.active {
-    background: rgba(176, 141, 74, 0.14);
-    color: rgba(0, 0, 0, 0.85);
-    font-weight: 600;
+    background: rgba(176, 141, 74, 0.12);
+    color: var(--color-gold-pale, #d4b170);
   }
-  
   .tab-button:hover:not(.active) {
     background: rgba(176, 141, 74, 0.06);
-  }
-  
-  .tab-count {
-    background: rgba(176, 141, 74, 0.12);
-    border-radius: 1em;
-    padding: 0.1em 0.5em;
-    font-size: 0.85em;
-    min-width: 1.2em;
-    text-align: center;
-  }
-  
-  /* Empty state styling */
-  .empty-state {
-    padding: 2em 0;
-    text-align: center;
-    color: rgba(0, 0, 0, 0.5);
-    font-style: italic;
-    font-size: 0.9em;
+    color: rgba(232, 228, 210, 0.8);
   }
 
-  /* Item styling */
+  .tab-count {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    background: rgba(176, 141, 74, 0.15);
+    padding: 0.1em 0.4em;
+    font-size: 0.85em;
+  }
+
+  /* ── Empty / status states ── */
+  .empty-state {
+    padding: 1.5em 0;
+    text-align: center;
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    color: rgba(232, 228, 210, 0.35);
+    font-size: 0.85em;
+  }
+
+  .items-count-info {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.68em;
+    color: var(--color-aged-gold, #b08d4a);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5em;
+    opacity: 0.8;
+  }
+
+  /* ── Item rows ── */
   .entity {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 0.6em;
-    padding: 0.5em 0.7em;
-    border-radius: 0.3em;
-    background-color: rgba(26, 32, 48, 0.55);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease;
+    margin-bottom: 0.35em;
+    padding: 0.45em 0.65em;
+    background: rgba(255, 255, 255, 0.02);
+    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    transition: background 0.15s;
   }
+  .entity:last-child { margin-bottom: 0; }
+  .entity:hover { background: rgba(176, 141, 74, 0.06); }
 
-  .entity:last-child {
-    margin-bottom: 0;
-  }
-
-  .entity:hover {
-    background-color: rgba(26, 32, 48, 0.75);
-  }
-
-  .item-info {
-    flex: 1;
-  }
+  .item-info { flex: 1; }
 
   .item-name {
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0.85);
-    line-height: 1.2;
-    margin-bottom: 0.2em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+    color: var(--color-parchment-100, #fbf6e7);
+    margin-bottom: 0.15em;
+  }
+
+  .item-quantity {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.88em;
+    color: rgba(232, 228, 210, 0.6);
+    margin-left: 0.4em;
+    font-weight: normal;
   }
 
   .item-details {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6em;
-    font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.7);
-    width: 100%;
-    justify-content: space-between;
+    gap: 0.5em;
+    font-size: 0.75em;
+    color: rgba(232, 228, 210, 0.5);
   }
 
   .item-type {
-    font-weight: 500;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.06em;
   }
 
   .item-description {
-    font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.6);
+    font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
-    margin-top: 0.4em;
+    font-size: 0.82em;
+    color: rgba(232, 228, 210, 0.45);
+    margin-top: 0.3em;
   }
 
-  .item-quantity {
-    font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.7);
-    margin-left: 0.5em;
-    font-weight: normal;
-  }
-  
-  /* Item rarity styling */
-  .entity.item.uncommon {
-    border-color: rgba(76, 175, 80, 0.3);
-    background-color: rgba(76, 175, 80, 0.05);
-  }
-
-  .entity.item.rare {
-    border-color: rgba(33, 150, 243, 0.3);
-    background-color: rgba(33, 150, 243, 0.05);
-  }
-
-  .entity.item.epic {
-    border-color: rgba(156, 39, 176, 0.3);
-    background-color: rgba(156, 39, 176, 0.05);
-  }
-
-  .entity.item.legendary {
-    border-color: rgba(255, 152, 0, 0.3);
-    background-color: rgba(255, 152, 0, 0.05);
-  }
-
-  .entity.item.mythic {
-    border-color: rgba(233, 30, 99, 0.3);
-    background-color: rgba(233, 30, 99, 0.05);
-    animation: pulseMythic 2s infinite alternate;
-  }
+  /* Item rarity borders */
+  .entity.item.uncommon { border-color: rgba(76, 175, 80, 0.28); }
+  .entity.item.rare     { border-color: rgba(33, 150, 243, 0.28); }
+  .entity.item.epic     { border-color: rgba(156, 39, 176, 0.28); }
+  .entity.item.legendary{ border-color: rgba(255, 152, 0, 0.28); }
+  .entity.item.mythic   { border-color: rgba(233, 30, 99, 0.35); animation: pulseMythic 2s infinite alternate; }
 
   .item-rarity {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.8em;
     padding: 0.1em 0.4em;
-    border-radius: 0.2em;
+    letter-spacing: 0.06em;
   }
-
-  .item-rarity.uncommon {
-    background-color: rgba(63, 90, 78, 0.35);
-    color: #2e7d32;
-  }
-
-  .item-rarity.rare {
-    background-color: rgba(176, 141, 74, 0.22);
-    color: #0277bd;
-  }
-
-  .item-rarity.epic {
-    background-color: rgba(156, 39, 176, 0.2);
-    color: #7b1fa2;
-  }
-
-  .item-rarity.legendary {
-    background-color: rgba(255, 152, 0, 0.2);
-    color: #ef6c00;
-  }
-
-  .item-rarity.mythic {
-    background-color: rgba(233, 30, 99, 0.2);
-    color: #c2185b;
-    border: 1px solid rgba(233, 30, 99, 0.4);
-  }
+  .item-rarity.uncommon { color: #6ecf72; background: rgba(76, 175, 80, 0.1); }
+  .item-rarity.rare     { color: #64b5f6; background: rgba(33, 150, 243, 0.1); }
+  .item-rarity.epic     { color: #ba68c8; background: rgba(156, 39, 176, 0.1); }
+  .item-rarity.legendary{ color: #ffb74d; background: rgba(255, 152, 0, 0.1); }
+  .item-rarity.mythic   { color: #f06292; background: rgba(233, 30, 99, 0.1); border: 0.075em solid rgba(233, 30, 99, 0.3); }
 
   @keyframes pulseMythic {
-    from {
-      box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.1);
-    }
-    to {
-      box-shadow: 0 0 10px 2px rgba(233, 30, 99, 0.3);
-    }
+    from { box-shadow: none; }
+    to   { box-shadow: 0 0 0.5em rgba(233, 30, 99, 0.25); }
   }
 
-  /* Entity count styling consistent with Details and Grid components */
+  /* ── Count badges in section headers ── */
   .entity-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 1em;
-    font-size: 0.8em;
-    font-weight: 500;
-    padding: 0.1em 0.6em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.85em;
+    padding: 0.05em 0.5em;
     margin-left: 0.3em;
-    color: rgba(255, 255, 255, 0.95);
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0.15em rgba(255, 255, 255, 0.2);
-  }
-  
-  .items-count {
-    background: rgba(255, 215, 0, 0.8);
-    border-color: rgba(255, 215, 0, 0.5);
-    box-shadow: 0 0 0.15em rgba(255, 215, 0, 0.6);
+    color: rgba(232, 228, 210, 0.6);
+    background: rgba(255, 255, 255, 0.06);
+    border: 0.075em solid rgba(255, 255, 255, 0.1);
   }
 
-  .buildings-count {
-    background: rgba(156, 39, 176, 0.8);
-    border-color: rgba(156, 39, 176, 0.5);
-    box-shadow: 0 0 0.15em rgba(156, 39, 176, 0.6);
-  }
+  .items-count     { color: var(--color-gold-pale, #d4b170); border-color: rgba(176, 141, 74, 0.3); }
+  .buildings-count { color: #ba68c8; border-color: rgba(156, 39, 176, 0.25); }
 
-  :global(.structure-type-icon) {
-    opacity: 0.8;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-  }
-  
-  :global(.spawn-icon) {
-    filter: drop-shadow(0 0 2px rgba(0, 255, 255, 0.6));
-  }
-  
-  :global(.fortress-icon) {
-    filter: drop-shadow(0 0 2px rgba(230, 190, 138, 0.7));
-  }
-  
-  :global(.outpost-icon) {
-    filter: drop-shadow(0 0 2px rgba(138, 176, 230, 0.7));
-  }
-  
-  :global(.watchtower-icon) {
-    filter: drop-shadow(0 0 2px rgba(168, 230, 138, 0.7));
-  }
-  
-  :global(.stronghold-icon) {
-    filter: drop-shadow(0 0 2px rgba(230, 138, 138, 0.7));
-  }
-  
-  :global(.citadel-icon) {
-    filter: drop-shadow(0 0 2px rgba(209, 138, 230, 0.7));
-  }
+  /* ── Structure icon filters ── */
+  :global(.structure-type-icon) { opacity: 0.85; }
+  :global(.spawn-icon)     { filter: drop-shadow(0 0 2px rgba(0, 220, 220, 0.5)); }
+  :global(.fortress-icon)  { filter: drop-shadow(0 0 2px rgba(230, 190, 138, 0.6)); }
+  :global(.outpost-icon)   { filter: drop-shadow(0 0 2px rgba(138, 176, 230, 0.6)); }
+  :global(.watchtower-icon){ filter: drop-shadow(0 0 2px rgba(168, 230, 138, 0.6)); }
+  :global(.stronghold-icon){ filter: drop-shadow(0 0 2px rgba(230, 138, 138, 0.6)); }
+  :global(.citadel-icon)   { filter: drop-shadow(0 0 2px rgba(209, 138, 230, 0.6)); }
 
-  /* Updated building styles */
+  /* ── Buildings grid — single column inside narrow dossier ── */
   .buildings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 0.8em;
-    margin-bottom: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin-bottom: 0.6em;
   }
-  
+
   .building-card {
     display: flex;
     flex-direction: column;
-    background-color: rgba(26, 32, 48, 0.55);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.3em;
-    padding: 0.8em;
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+    border: 0.075em solid rgba(176, 141, 74, 0.15);
+    padding: 0.65em;
+    transition: background 0.15s;
   }
-  
-  .building-card:hover {
-    background-color: rgba(26, 32, 48, 0.65);
-    box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.1);
-  }
-  
-  .available-label {
-    color: #1b8a1f;
-    font-weight: 500;
-  }
-  
-  .unavailable-label {
-    color: #c62828;
-    font-weight: 500;
-  }
-  
-  .building-card.available-building {
-    background-color: rgba(26, 32, 48, 0.65);
-    border: 1px dashed rgba(76, 175, 80, 0.7);
-  }
-  
-  /* Add a new class for buildings with missing resources */
-  .building-card.available-building:has(.unavailable-label) {
-    border: 1px dashed rgba(198, 40, 40, 0.7);
-    background-color: rgba(255, 250, 250, 0.7);
-  }
-  
-  /* New building header style */
+  .building-card:hover { background: rgba(176, 141, 74, 0.05); }
+
+  .building-card.available-building { border-style: dashed; border-color: rgba(76, 175, 80, 0.35); }
+  .building-card.available-building:has(.unavailable-label) { border-color: rgba(198, 40, 40, 0.35); }
+
+  .available-label   { color: #6ecf72; }
+  .unavailable-label { color: #ef7878; }
+
   .building-header {
     display: flex;
     align-items: center;
-    gap: 0.8em;
-    margin-bottom: 0.7em;
+    gap: 0.65em;
+    margin-bottom: 0.5em;
   }
-  
+
   .building-icon {
-    font-size: 1.8em;
-    background-color: rgba(176, 141, 74, 0.08);
-    width: 1.8em;
-    height: 1.8em;
-    border-radius: 0.3em;
+    background: rgba(176, 141, 74, 0.08);
+    width: 2.1em;
+    height: 2.1em;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
-  .building-title {
-    flex: 1;
-  }
-  
+
+  :global(.building-type-icon) { display: block; }
+
+  .building-title { flex: 1; }
+
   .building-name {
-    font-weight: 600;
-    font-size: 1em;
-    color: rgba(0, 0, 0, 0.85);
-    margin-bottom: 0.15em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.82em;
+    letter-spacing: 0.06em;
+    color: var(--color-parchment-100, #fbf6e7);
+    margin-bottom: 0.1em;
   }
-  
+
   .building-level {
-    font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.6);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.72em;
+    color: rgba(232, 228, 210, 0.5);
   }
-  
+
   .building-description {
-    font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.7);
-    margin-bottom: 0.8em;
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    font-size: 0.8em;
+    color: rgba(232, 228, 210, 0.5);
+    margin-bottom: 0.6em;
     line-height: 1.3;
   }
-  
+
   .building-requirements {
-    margin: 0.2em 0 0.8em 0;
-    background-color: rgba(26, 32, 48, 0.55);
-    border-radius: 0.3em;
-    padding: 0.6em;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin: 0.1em 0 0.6em;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.5em;
+    border: 0.075em solid rgba(176, 141, 74, 0.1);
   }
-  
+
   .building-requirements h6 {
-    margin: 0 0 0.4em 0;
-    font-size: 0.8em;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.75);
+    margin: 0 0 0.35em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.65em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold, #b08d4a);
   }
-  
-  .requirements-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4em;
+
+  /* ── Upgrade progress ── */
+  .upgrade-progress { margin-top: 0.4em; }
+
+  .progress-bar {
+    background: rgba(255, 255, 255, 0.06);
+    height: 0.3em;
+    margin-bottom: 0.35em;
+    overflow: hidden;
   }
-  
-  .requirement-item {
-    font-size: 0.8em;
-    padding: 0.3em 0.6em;
-    border-radius: 0.3em;
-    background-color: rgba(0, 0, 0, 0.04);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+  .progress-fill { background: var(--color-aged-gold, #b08d4a); height: 100%; }
+
+  .progress-text {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.72em;
+    color: rgba(232, 228, 210, 0.55);
   }
-  
-  .requirement-item.sufficient {
-    color: #2e7d32;
-    background-color: rgba(63, 90, 78, 0.22);
-  }
-  
-  .requirement-item.insufficient {
-    color: #c62828;
-    background-color: rgba(244, 67, 54, 0.1);
-  }
-  
-  .available-count {
-    font-weight: 400;
-    color: rgba(0, 0, 0, 0.7); /* Improved contrast */
-  }
-  
-  /* Updated button styles for better clarity */
-  .build-building-button {
-    margin-top: 0.2em;
-    padding: 0.5em 0.7em;
-    font-size: 0.85em;
-    background-color: rgba(76, 175, 80, 0.85);
-    color: white;
-    border: none;
-    border-radius: 0.3em;
-    font-weight: 500;
+
+  /* ── Upgrade/build buttons ── */
+  .upgrade-building-button {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.4em;
+    width: 100%;
+    margin-top: 0.4em;
+    padding: 0.45em 0.8em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.65em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--color-gold-pale, #d4b170);
+    border: 0.075em solid rgba(176, 141, 74, 0.4);
     cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%; /* Make button full width */
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); /* Improve text contrast */
+    transition: background 0.15s, border-color 0.15s;
   }
-  
-  .build-building-button:not(:disabled):hover {
-    background-color: rgba(76, 175, 80, 1);
-    transform: translateY(-1px);
+  .upgrade-building-button:hover {
+    background: rgba(176, 141, 74, 0.1);
+    border-color: var(--color-gold-pale, #d4b170);
   }
-  
+
+  .building-max-level {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.7em;
+    color: rgba(232, 228, 210, 0.35);
+    text-align: center;
+    padding: 0.35em 0;
+  }
+
+  .build-building-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    width: 100%;
+    margin-top: 0.3em;
+    padding: 0.45em 0.8em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.65em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: rgba(76, 175, 80, 0.15);
+    color: #6ecf72;
+    border: 0.075em solid rgba(76, 175, 80, 0.35);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .build-building-button:not(:disabled):hover { background: rgba(76, 175, 80, 0.25); }
   .build-building-button:disabled {
-    background-color: rgba(158, 158, 158, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(232, 228, 210, 0.3);
+    border-color: rgba(255, 255, 255, 0.08);
     cursor: not-allowed;
-    transform: none;
   }
-  
-  /* Action button - base style for action buttons */
+
+  /* Upgrade structure button (action-button) */
   .action-button {
-    margin-top: 0.8em;
-    padding: 0.6em 0.8em;
-    font-size: 0.9em;
-    border: none;
-    border-radius: 0.3em;
-    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5em;
-    cursor: pointer;
-    transition: all 0.2s ease;
     width: 100%;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 0.6em;
+    padding: 0.5em 0.9em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.7em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
   }
-  
-  /* Upgrade button specific styling */
+
   .upgrade-button {
-    background-color: rgba(33, 150, 243, 0.85);
-    color: white;
-    border: 1px solid rgba(33, 150, 243, 0.2);
+    background: var(--color-aged-gold, #b08d4a);
+    color: var(--color-ink-900, #0e1320);
+    border: 0.075em solid var(--color-aged-gold, #b08d4a);
   }
-  
   .upgrade-button:not(:disabled):hover {
-    background-color: rgba(33, 150, 243, 1);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
+    background: var(--color-gold-pale, #d4b170);
+    border-color: var(--color-gold-pale, #d4b170);
   }
-  
   .upgrade-button:disabled {
-    background-color: rgba(158, 158, 158, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(232, 228, 210, 0.3);
+    border-color: rgba(255, 255, 255, 0.08);
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
-  
-  /* Error and success message styling */
+
+  /* ── Messages ── */
   .error-message {
-    color: #c62828;
-    font-size: 0.85em;
-    margin-top: 0.5em;
-    padding: 0.4em;
-    background-color: rgba(244, 67, 54, 0.1);
-    border-radius: 0.3em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.75em;
+    color: #ef7878;
+    margin-top: 0.4em;
+    padding: 0.35em 0.55em;
+    background: rgba(198, 40, 40, 0.1);
+    border: 0.075em solid rgba(198, 40, 40, 0.25);
   }
-  
+
   .success-message {
-    color: #2e7d32;
-    font-size: 0.85em;
-    margin-top: 0.5em;
-    padding: 0.4em;
-    background-color: rgba(63, 90, 78, 0.22);
-    border-radius: 0.3em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.75em;
+    color: #6ecf72;
+    margin-top: 0.4em;
+    padding: 0.35em 0.55em;
+    background: rgba(76, 175, 80, 0.1);
+    border: 0.075em solid rgba(76, 175, 80, 0.25);
   }
-  
-  /* Styling for the action icon */
+
   :global(.action-icon) {
-    width: 1.2em;
-    height: 1.2em;
+    width: 1.1em;
+    height: 1.1em;
     fill: currentColor;
   }
 </style>

@@ -49,7 +49,7 @@
     <div class="eyebrow wax">The Council Chamber</div>
     <h1>Politics of the Realm</h1>
     <p class="lede">Where the laws are written, the coffers counted, and the rulers raised or torn down.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if loading}
         <p class="empty italic">Reading from the council ledger…</p>

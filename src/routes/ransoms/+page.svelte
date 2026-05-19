@@ -74,7 +74,7 @@
     <div class="eyebrow wax">The Captive's Coin</div>
     <h1>Ransoms</h1>
     <p class="lede">Better gold than blood. Or so the captives say.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if $user && !$user.isAnonymous}
         <form class="form" onsubmit={submit}>

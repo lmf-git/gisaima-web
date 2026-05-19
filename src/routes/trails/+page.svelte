@@ -68,7 +68,7 @@
     <div class="eyebrow wax">A Bearing Whispered</div>
     <h1>Treasure Trails</h1>
     <p class="lede">Each clue points further. Walk close enough to a waypoint and the next reveals itself.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if $user && !$user.isAnonymous}
         <form class="form" onsubmit={create}>

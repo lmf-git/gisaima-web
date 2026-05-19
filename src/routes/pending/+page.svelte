@@ -194,7 +194,7 @@
         </div>
     </header>
 
-    <Flourish width={300} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <div class="grid">
         <section class="timeline">

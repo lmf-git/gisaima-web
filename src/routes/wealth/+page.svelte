@@ -62,7 +62,7 @@
     <div class="eyebrow wax">The Strongbox Roll</div>
     <h1>Wealth</h1>
     <p class="lede">Coin counted in the open. Those who would not be seen may strike themselves from the roll.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if mine}
         <section class="me">

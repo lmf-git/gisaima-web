@@ -38,7 +38,6 @@
     import { unreadMessages } from "../../lib/stores/chat.js";
 
     import Chat from '../../components/features/Chat.svelte';
-    import Achievements from '../../components/features/feedback/Achievements.svelte';
     import AchievementUnlocked from '../../components/features/feedback/AchievementUnlocked.svelte';
     import Notices from '../../components/features/feedback//Notices.svelte';
     import NextWorldTick from '../../components/features/feedback//NextWorldTick.svelte';
@@ -52,8 +51,6 @@
     
     import Overview from '../../components/map/actions/Overview.svelte';
     import SpawnMenu from '../../components/map/actions/SpawnMenu.svelte';
-    import Tutorial from '../../components/map/actions/Tutorial.svelte';
-    
     import Map from '../../components/icons/Map.svelte';
     import Close from '../../components/icons/Close.svelte';
     import Spyglass from '../../components/icons/Spyglass.svelte';
@@ -75,8 +72,8 @@
     const DEBUG_MODE = true;
     const debugLog = (...args) => DEBUG_MODE && console.log(...args);
 
-    let isTutorialVisible = $state(false);
     let dossierPanel = $state(null); // active action panel in TileDossier, null = closed
+    const isTutorialVisible = $derived(dossierPanel === 'help');
     let detailed = $state(false);   // kept for legacy follow-player check
     let selectedUnit = $state(null);
     let loading = $state(true);
@@ -211,10 +208,8 @@
             // Check if achievements aren't manually closed in localStorage
             const achievementsClosed = localStorage.getItem('achievements_closed') === 'true';
             if (!achievementsClosed) {
-                // Ensure chat is closed before showing achievements
                 showChat = false;
-                showAchievements = true;
-                lastActivePanel = 'achievements';
+                dossierPanel = 'achievements';
                 console.log('Showing achievements after spawn');
             } else {
                 console.log('Achievements closed by user preference, not showing after spawn');
@@ -406,8 +401,11 @@
     });
 
     $effect(() => {
-        if ($game?.player?.alive && isTutorialVisible) {
-            isTutorialVisible = false;
+        // Auto-show help panel on first visit (tutorial not yet dismissed)
+        if ($ready && $game?.player?.alive && dossierPanel === null && browser) {
+            if (localStorage.getItem('tutorial-state') !== 'closed') {
+                dossierPanel = 'help';
+            }
         }
     });
 
@@ -467,8 +465,8 @@
 
         // First handle achievements since it has higher priority
         if (savedAchievementsState === 'true' && !achievementsClosed) {
-          showAchievements = true;
-          showChat = false; // Ensure chat is closed if achievements is open
+          showChat = false;
+          // achievements now lives in the dossier; don't auto-open on load
           return; // Exit early to avoid further changes
         }
         
@@ -838,64 +836,21 @@
       if (!$game?.player?.alive || isTutorialVisible || spawnMenuVisible) {
         return;
       }
-      
-      // If achievements is currently closed and we're about to open it
-      if (!showAchievements) {
-        // Always close chat when opening achievements
-        showChat = false;
-        showAchievements = true;
+      if (dossierPanel === 'achievements') {
+        dossierPanel = null;
       } else {
-        // Simply close achievements if it's already open
+        dossierPanel = 'achievements';
         showAchievements = false;
       }
-      
-      // Set as active panel when opened
-      if (showAchievements) {
-        lastActivePanel = 'achievements';
-      }
-      
-      if (browser) {
-        localStorage.setItem('achievements', showAchievements.toString());
-      }
     }
 
-    function handleTutorialToggle() {
-      console.log('Tutorial visibility toggled');
-    }
-    
     function toggleTutorial() {
-      window.dispatchEvent(new CustomEvent('tutorial:toggle'));
+      dossierPanel = dossierPanel === 'help' ? null : 'help';
     }
 
-    function handleTutorialVisibility(isVisible) {
-        if (!$game?.player?.alive && isVisible) {
-            return;
-        }
-        
-        isTutorialVisible = isVisible;
-        
-        if (isTutorialVisible) {
-            // Close other panels when tutorial opens
-            showMinimap = false;
-            showEntities = false;
-            showAchievements = false; // Also close achievements
-            detailed = false; // Close details panel
-            showChat = false; // Close chat panel
-        }
-    }
-
-    // Add a function to directly open the achievements panel from tutorial
     function openAchievementsFromTutorial() {
         if (!$game?.player?.alive) return;
-        
-        // Close tutorial if open
-        if (isTutorialVisible) isTutorialVisible = false;
-        
-        // Show achievements panel
-        showAchievements = true;
-        lastActivePanel = 'achievements';
-        
-        // Save state to localStorage
+        dossierPanel = 'achievements';
         localStorage.removeItem('achievements_closed');
     }
 
@@ -946,26 +901,42 @@
                 peekOpen = false;
                 peekTile = null;
             }
-            
+
+            // If the dossier is open and the user clicks the currently-targeted tile,
+            // close the dossier and reopen the wheel menu for that tile.
+            const isCurrentTarget = $targetStore && coords.x === $targetStore.x && coords.y === $targetStore.y;
+            if (dossierPanel !== null && isCurrentTarget) {
+                dossierPanel = null;
+                const clickedTile = $coordinates.find(c => c.x === coords.x && c.y === coords.y);
+                if (clickedTile && hasTileContent(clickedTile)) {
+                    setTimeout(() => {
+                        peekTile = clickedTile;
+                        peekOpen = true;
+                    }, 50);
+                }
+                isProcessingClick = false;
+                return;
+            }
+
             // Always move to the clicked location, regardless of peek state
             moveTarget(coords.x, coords.y, false);
-            
+
             // Find the clicked tile
             const clickedTile = $coordinates.find(
                 c => c.x === coords.x && c.y === coords.y
             );
-            
+
             // Only show peek if:
-            // 1. The tile has content 
+            // 1. The tile has content
             // 2. We're not in path drawing mode
             // 3. It's not the same tile we just closed peek for
             // 4. It's not the center tile
-            if (clickedTile && 
-                hasTileContent(clickedTile) && 
+            if (clickedTile &&
+                hasTileContent(clickedTile) &&
                 !isPathDrawingMode &&
                 (!peekTile || peekTile.x !== clickedTile.x || peekTile.y !== clickedTile.y) &&
                 !(clickedTile.x === $map.target.x && clickedTile.y === $map.target.y)) {
-                
+
                 setTimeout(() => {
                     peekTile = clickedTile;
                     peekOpen = true;
@@ -1329,11 +1300,12 @@
                 </button>
             {/if}
 
-            {#if !showAchievements && $game?.player?.alive && !isTutorialVisible && !spawnMenuVisible}
+            {#if $game?.player?.alive && !isTutorialVisible && !spawnMenuVisible}
                 <button
                     class="control-button achievements-button"
+                    class:active={dossierPanel === 'achievements'}
                     onclick={toggleAchievements}
-                    aria-label="Show achievements">
+                    aria-label={dossierPanel === 'achievements' ? 'Close achievements' : 'Show achievements'}>
                     <AchievementIcon extraClass="button-icon" />
                 </button>
             {/if}
@@ -1353,21 +1325,23 @@
             {#if !isTutorialVisible}
                 <button
                     class="control-button help-button"
+                    class:active={isTutorialVisible}
                     onclick={toggleTutorial}
-                    aria-label="Show tutorial"
+                    aria-label={isTutorialVisible ? 'Close help' : 'Show help'}
                     disabled={!$game?.player?.alive}>
                     <Info extraClass="button-icon" />
                 </button>
             {/if}
         </div>
 
-        {#if (showChat || showAchievements) && $game?.player?.alive && !isTutorialVisible}
+        {#if showChat && $game?.player?.alive && !isTutorialVisible}
             <div class="controls-middle-right">
-                {#if showChat && !showAchievements}
+                {#if showChat}
                     <button
                         class="control-button achievements-button"
+                        class:active={dossierPanel === 'achievements'}
                         onclick={toggleAchievements}
-                        aria-label="Show achievements">
+                        aria-label={dossierPanel === 'achievements' ? 'Close achievements' : 'Show achievements'}>
                         <AchievementIcon extraClass="button-icon" />
                     </button>
                 {/if}
@@ -1384,8 +1358,9 @@
                 </button>
                 <button
                     class="control-button help-button"
+                    class:active={isTutorialVisible}
                     onclick={toggleTutorial}
-                    aria-label="Show tutorial"
+                    aria-label={isTutorialVisible ? 'Close help' : 'Show help'}
                     disabled={!$game?.player?.alive}>
                     <Info extraClass="button-icon" />
                 </button>
@@ -1394,12 +1369,6 @@
 
 
         {#if $ready && $game?.player?.alive}
-            <Tutorial 
-                onVisibilityChange={handleTutorialVisibility}
-                hideToggleButton={true}
-                onToggle={handleTutorialToggle}
-                onOpenAchievements={openAchievementsFromTutorial}
-            />
             <Recenter />
         {/if}
         
@@ -1429,21 +1398,6 @@
                     />
                 {/if}
             </div>
-
-            {#if showAchievements && !isTutorialVisible}
-                <div class="achievements-wrapper"
-                    class:visible={true}
-                    class:active={lastActivePanel === 'achievements'}
-                    onmouseenter={() => handlePanelHover('achievements')}
-                    role="region"
-                    aria-label="Achievements panel container"
-                >
-                    <Achievements
-                      onClose={toggleAchievements}
-                      onMouseEnter={() => handlePanelHover('achievements')}
-                    />
-                </div>
-            {/if}
 
             <!-- Reports / Diplomacy / Rankings are dedicated routes now
                  (/chronicle, /diplomacy, /rankings) — see GameHeader. The
@@ -1480,10 +1434,11 @@
         {/if}
 
         <!-- Right-rail dossier — shows tile info + action panels, opens on Peek action selection -->
-        {#if $ready && $game?.player?.alive && !isTutorialVisible}
+        {#if $ready && $game?.player?.alive}
             <TileDossier
                 panel={dossierPanel}
                 onClose={() => { dossierPanel = null; }}
+                onSwitchPanel={(p) => { dossierPanel = p; }}
                 onStartPathDrawing={startPathDrawing}
                 onBuildRequest={handleBuildRequest}
             />
@@ -1656,6 +1611,12 @@
         color: var(--color-parchment-100);
     }
 
+    .control-button.active {
+        background-color: rgba(176, 141, 74, 0.2);
+        border-color: var(--color-aged-gold, #b08d4a);
+        color: var(--color-gold-pale, #d4b170);
+    }
+
     .control-button:disabled {
         opacity: 0.4;
         cursor: not-allowed;
@@ -1680,8 +1641,6 @@
     :global(.button-icon) {
         height: 1.2em;
         width: 1.2em;
-        fill: var(--color-gold-pale, #d4b170);
-        stroke: var(--color-gold-pale, #d4b170);
     }
     :global(.close-icon-dark) {
         fill: var(--color-parchment-100, #fbf6e7);
@@ -1740,7 +1699,6 @@
        and the action-menu host). Reports/Diplomacy/Rankings live on their own
        routes and are no longer wrapped here. */
     .chat-wrapper,
-    .achievements-wrapper,
     :global(.modal-container),
     :global(.overview-container) {
         position: fixed;
@@ -1748,22 +1706,19 @@
         transition: opacity 300ms ease, z-index 0s linear;
     }
 
-    .chat-wrapper.visible,
-    .achievements-wrapper.visible {
+    .chat-wrapper.visible {
         opacity: 1;
         pointer-events: all;
         display: block;
     }
 
-    .chat-wrapper:not(.visible),
-    .achievements-wrapper:not(.visible) {
+    .chat-wrapper:not(.visible) {
         opacity: 0;
         pointer-events: none;
         transition: opacity 300ms ease, z-index 0s linear 300ms;
     }
 
     .chat-wrapper.active,
-    .achievements-wrapper.active,
     :global(.modal-container.active),
     :global(.overview-container.active) {
         z-index: 1600;

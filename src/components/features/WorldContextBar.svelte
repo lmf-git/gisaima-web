@@ -4,7 +4,7 @@
     import { goto } from '$app/navigation';
     import { game, worldInfo } from '$lib/stores/game.js';
     import { user } from '$lib/stores/user.js';
-    import { entities, currentPlayerPosition } from '$lib/stores/map.js';
+    import { entities, currentPlayerPosition, moveTarget } from '$lib/stores/map.js';
     import WaxSeal from '../ui/WaxSeal.svelte';
     import Stamp from '../ui/Stamp.svelte';
 
@@ -85,16 +85,20 @@
         if (m) {
             const x = Number(m[1]);
             const y = Number(m[2]);
-            try {
-                localStorage.setItem(`${$game.worldKey}-targetX`, String(x));
-                localStorage.setItem(`${$game.worldKey}-targetY`, String(y));
-            } catch { /* ignore */ }
-            goto('/map');
+            if (onMap) {
+                // Already on the map — jump directly via the store
+                moveTarget(x, y, true);
+                search = '';
+            } else {
+                try {
+                    localStorage.setItem(`${$game.worldKey}-targetX`, String(x));
+                    localStorage.setItem(`${$game.worldKey}-targetY`, String(y));
+                } catch { /* ignore */ }
+                goto('/map');
+            }
             return;
         }
-        // Plain settlement search isn't yet wired; route to the map and let
-        // the user see chunks load.
-        goto('/map');
+        if (!onMap) goto('/map');
     }
 
     function fmt(n) {
@@ -211,7 +215,7 @@
     }
     /* The LeftRail appears on map + all world-scoped pages; offset the dossier. */
     :global(.app.map) .dossier,
-    :global(.app.world-scoped) .dossier { --dossier-left: 3.5em; }
+    :global(.app.world-scoped) .dossier { --dossier-left: 5em; }
     @media (max-width: 700px) {
         :global(.app.map) .dossier,
         :global(.app.world-scoped) .dossier { --dossier-left: 0; }
@@ -300,25 +304,26 @@
 
     .spacer { flex: 1 1 auto; }
 
-    /* Search */
+    /* Search — unified pill: icon + input + kbd share one background/border */
     .search {
         display: inline-flex;
         align-items: center;
         gap: 0.6em;
         background: rgba(255, 255, 255, 0.06);
         border: 0.075em solid rgba(255, 255, 255, 0.14);
-        padding: 0 1em;
+        padding: 0 0.85em;
         height: 2.25em;
         width: 17.5em;
         font-family: var(--font-mono);
         font-size: 0.78em;
-        color: rgba(251, 246, 231, 0.7);
+        color: rgba(251, 246, 231, 0.55);
         flex-shrink: 0;
-        transition: border-color 0.15s;
+        transition: border-color 0.15s, background 0.15s;
     }
     .search:focus-within {
-        border-color: rgba(176, 141, 74, 0.5);
-        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(176, 141, 74, 0.6);
+        background: rgba(255, 255, 255, 0.09);
+        color: rgba(251, 246, 231, 0.75);
     }
     .search input {
         flex: 1;
@@ -326,6 +331,7 @@
         height: 100%;
         background: transparent;
         border: none;
+        box-shadow: none;
         outline: none;
         color: var(--color-parchment-100);
         font-family: inherit;
@@ -334,17 +340,17 @@
         line-height: 1;
     }
     .search input::placeholder {
-        color: rgba(251, 246, 231, 0.38);
+        color: rgba(251, 246, 231, 0.32);
     }
-    .search svg { color: rgba(251, 246, 231, 0.5); flex-shrink: 0; }
+    /* Icon and kbd inherit the form's color — no isolated backgrounds or borders */
+    .search svg { color: inherit; flex-shrink: 0; }
     .search kbd {
         margin-left: auto;
         font-size: 0.8em;
-        opacity: 0.35;
-        padding: 0.1em 0.4em;
-        border: 0.075em solid rgba(255, 255, 255, 0.15);
+        opacity: 0.5;
         font-family: inherit;
         flex-shrink: 0;
+        color: inherit;
     }
 
     /* Next tick pill */

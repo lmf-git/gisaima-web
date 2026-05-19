@@ -123,7 +123,7 @@
     <div class="eyebrow wax">The Family Tree</div>
     <h1>Lives</h1>
     <p class="lede">A house is many lives, one after another. Death is not the end of the chronicle.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <section class="block">
         <div class="eyebrow">Characters</div>

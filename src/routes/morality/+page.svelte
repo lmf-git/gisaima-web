@@ -64,7 +64,7 @@
     <div class="eyebrow wax">The Ledger of Deeds</div>
     <h1>Morality</h1>
     <p class="lede">Good and evil are decided by the realm. Five accusations a day, and a long memory.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if mine}
         <section class="me">

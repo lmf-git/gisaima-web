@@ -60,7 +60,7 @@
     <div class="eyebrow wax">Sir Edran of the Hill · Knight · Lvl 4</div>
     <h1>Loadout</h1>
     <p class="lede">Eleven slots, one body. What hangs on a knight makes the difference between glory and a quiet grave.</p>
-    <Flourish width={240} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <div class="grid">
         <section class="doll">

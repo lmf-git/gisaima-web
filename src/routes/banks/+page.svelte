@@ -86,7 +86,7 @@
     <div class="eyebrow wax">The Strongbox</div>
     <h1>Banks & Loans</h1>
     <p class="lede">Lend, borrow, charge interest. Default and the chronicle remembers.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <section class="cred">
         <div class="eyebrow">Banker credibility</div>

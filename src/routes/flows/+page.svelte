@@ -81,7 +81,7 @@
     <div class="eyebrow wax">The Cartographer's Diagrams</div>
     <h1>Flows of the Realm</h1>
     <p class="lede">The shapes of cause and effect, drawn plainly so the game may be read.</p>
-    <Flourish width={240} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <div class="grid">
         {#each flows as f}

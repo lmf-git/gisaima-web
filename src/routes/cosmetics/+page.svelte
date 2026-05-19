@@ -57,7 +57,7 @@
     <div class="eyebrow wax">Honours & Adornments</div>
     <h1>Aesthetics</h1>
     <p class="lede">Wealth, worn. Bought with in-realm gold — never with coin from the world outside.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if loading}
         <p class="empty italic">Reading the wardrobe…</p>

@@ -30,7 +30,7 @@
     <div class="eyebrow wax">The Cartographers</div>
     <h1>Admin · World Start</h1>
     <p class="lede">Every realm begins with a checklist. None proceed until each ledger is signed.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if !$user || !$user?.admin}
         <div class="warning">

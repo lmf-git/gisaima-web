@@ -58,7 +58,7 @@
     <div class="eyebrow wax">The Mint</div>
     <h1>Currencies</h1>
     <p class="lede">Issue a coin in your own name. Set its rate against gold. Make it the law of a city.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if $user && !$user.isAnonymous}
         <form class="form" onsubmit={submit}>

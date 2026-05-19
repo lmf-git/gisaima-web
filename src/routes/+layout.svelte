@@ -535,6 +535,11 @@
         font-size: 0.7em;
         color: var(--color-ink-700);
     }
+    :global(.page-flourish) {
+        display: block;
+        margin: 0.5em auto 1.25em;
+        color: var(--color-ink-900);
+    }
     
     :global(body) {
         background: var(--color-parchment-200);
@@ -814,22 +819,6 @@
     :global(.app.map.app.map .tick-info) {
         color: var(--color-gold-pale);
         font-family: var(--font-mono);
-    }
-    :global(.app.map.app.map input),
-    :global(.app.map.app.map select),
-    :global(.app.map.app.map textarea) {
-        background: rgba(14, 19, 32, 0.6);
-        border: 0.075em solid rgba(176, 141, 74, 0.35);
-        color: var(--color-parchment-100);
-        border-radius: 0;
-        font-family: var(--font-body);
-    }
-    :global(.app.map.app.map input:focus),
-    :global(.app.map.app.map select:focus),
-    :global(.app.map.app.map textarea:focus) {
-        outline: none;
-        border-color: var(--color-gold-pale);
-        background: rgba(14, 19, 32, 0.8);
     }
     /* Section dividers + sub-headers commonly used inside action panels. */
     :global(.app.map.app.map .section-title),
@@ -1126,10 +1115,10 @@
     }
 
     /* World-scoped routes: the layout header is hidden. WorldContextBar sits
-       fixed at top:0 (~3.5em). LeftRail occupies left:0 (3.5em wide).
+       fixed at top:0 (~3.5em). LeftRail occupies left:0 (5em wide).
        Shift page content so it doesn't hide under either chrome element. */
     .app.world-scoped .main-content {
-        padding-left: 3.5em;
+        padding-left: 5em;
         padding-top: 3.5em;
     }
     @media (max-width: 700px) {

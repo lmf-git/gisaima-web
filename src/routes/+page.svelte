@@ -156,7 +156,7 @@
         <header class="pillars-head">
             <div class="eyebrow gold">Four laws</div>
             <h2>The Promises of the Realm</h2>
-            <div class="flourish-wrap"><Flourish width={300} color="var(--color-aged-gold)" /></div>
+            <div class="flourish-wrap"><Flourish /></div>
         </header>
         <div class="pillar-grid">
             {#each pillars as p}

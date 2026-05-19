@@ -11,6 +11,10 @@
 
     import Close from "../../icons/Close.svelte";
     import Unit from "../../icons/Unit.svelte";
+    import BuildingIcon from "../../icons/BuildingIcon.svelte";
+    import Structure from "../../icons/Structure.svelte";
+    import Lock from "../../icons/Lock.svelte";
+    import Info from "../../icons/Info.svelte";
 
     // Props - Add isActive and onMouseEnter props
     const {
@@ -704,20 +708,20 @@
                                     title={unit.available ? (unit.tooltip || unit.description) : `${unit.description} - ${unit.unavailableReason}`}
                                 >
                                     <div class="unit-option-icon">
-                                        <!-- Replace getUnitIcon with Unit component -->
-                                        <Unit unitIconKey={unit.type} extraClass="unit-icon" />
+                                        <!-- Use unit.id (e.g. 'human_warrior') not unit.type -->
+                                        <Unit unitIconKey={unit.id} extraClass="unit-icon" />
                                     </div>
                                     <div class="unit-option-info">
                                         <div class="unit-option-name">
                                             {unit.name}
                                             {#if !unit.available}
-                                                <span class="locked-icon">🔒</span>
+                                                <span class="locked-icon"><Lock size="0.85em" /></span>
                                             {/if}
                                         </div>
                                         <div class="unit-option-power">
                                             Power: {unit.power}
                                             {#if unit.tooltip}
-                                                <span class="unit-tooltip-hint">ℹ️</span>
+                                                <span class="unit-tooltip-hint"><Info size="0.9em" /></span>
                                             {/if}
                                         </div>
                                     </div>
@@ -740,40 +744,40 @@
                                 <div class="requirements-list">
                                     {#if selectedUnit.requirements.structureLevel}
                                         <div class="requirement-item {structureData.level >= selectedUnit.requirements.structureLevel ? 'met' : 'unmet'}">
-                                            <span class="requirement-icon">🏛️</span>
+                                            <span class="requirement-icon"><Structure size="1em" /></span>
                                             <span class="requirement-text">Structure Level {selectedUnit.requirements.structureLevel}</span>
                                             <span class="requirement-status">{structureData.level >= selectedUnit.requirements.structureLevel ? '✓' : '✗'}</span>
                                         </div>
                                     {/if}
-                                    
+
                                     {#if selectedUnit.requirements.race}
                                         <div class="requirement-item {structureData.race === selectedUnit.requirements.race ? 'met' : 'unmet'}">
-                                            <span class="requirement-icon">👥</span>
+                                            <span class="requirement-icon"><Structure size="1em" /></span>
                                             <span class="requirement-text">{formatRaceName(selectedUnit.requirements.race)} Structure</span>
                                             <span class="requirement-status">{structureData.race === selectedUnit.requirements.race ? '✓' : '✗'}</span>
                                         </div>
                                     {/if}
-                                    
+
                                     {#if selectedUnit.requirements.structureType}
                                         {@const hasCorrectType = selectedUnit.requirements.structureType.includes(structureData.type)}
                                         <div class="requirement-item {hasCorrectType ? 'met' : 'unmet'}">
-                                            <span class="requirement-icon">🏠</span>
+                                            <span class="requirement-icon"><Structure size="1em" /></span>
                                             <span class="requirement-text">Structure Type: {selectedUnit.requirements.structureType.map(formatStructureTypeName).join(' or ')}</span>
                                             <span class="requirement-status">{hasCorrectType ? '✓' : '✗'}</span>
                                         </div>
                                     {/if}
-                                    
+
                                     {#if selectedUnit.requirements.buildingType}
                                         {@const building = (structureData.buildings || {})[selectedUnit.requirements.buildingType]}
                                         {@const requiredLevel = selectedUnit.requirements.buildingLevel || 1}
                                         {@const hasBuilding = building && building.level >= requiredLevel}
                                         <div class="requirement-item {hasBuilding ? 'met' : 'unmet'}">
-                                            <span class="requirement-icon">🔨</span>
+                                            <span class="requirement-icon"><BuildingIcon type={selectedUnit.requirements.buildingType} size="1em" /></span>
                                             <span class="requirement-text">{formatStructureTypeName(selectedUnit.requirements.buildingType)} (Level {requiredLevel}+)</span>
                                             <span class="requirement-status">{hasBuilding ? '✓' : '✗'}</span>
                                         </div>
                                     {/if}
-                                    
+
                                     {#if selectedUnit.requirements.research}
                                         {@const researchCompleted = structureData.research && structureData.research[selectedUnit.requirements.research]}
                                         {@const buildingWithResearch = Object.values(structureData.buildings || {}).some(
@@ -781,7 +785,7 @@
                                         )}
                                         {@const hasResearch = researchCompleted || buildingWithResearch}
                                         <div class="requirement-item {hasResearch ? 'met' : 'unmet'}">
-                                            <span class="requirement-icon">📚</span>
+                                            <span class="requirement-icon"><BuildingIcon type="academy" size="1em" /></span>
                                             <span class="requirement-text">Research: {formatResearchName(selectedUnit.requirements.research)}</span>
                                             <span class="requirement-status">{hasResearch ? '✓' : '✗'}</span>
                                         </div>
@@ -791,7 +795,7 @@
                             
                             {#if !selectedUnit.available}
                                 <div class="unavailable-reason">
-                                    <span class="locked-icon">🔒</span> {selectedUnit.unavailableReason}
+                                    <span class="locked-icon"><Lock size="1em" /></span> {selectedUnit.unavailableReason}
                                 </div>
                             {/if}
 
@@ -887,7 +891,7 @@
                                     
                                     {#if getPlayerResources().isOwner}
                                         <div class="storage-note">
-                                            <span class="note-icon">ℹ️</span> 
+                                            <span class="note-icon"><Info size="0.9em" /></span>
                                             Resources will be used from both your personal bank and shared storage
                                         </div>
                                     {/if}
@@ -945,29 +949,12 @@
 
 <style>
     .recruitment-modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 36rem;
-        max-height: 85vh;
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 0.05em solid rgba(255, 255, 255, 0.3);
-        border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
         display: flex;
         flex-direction: column;
-        z-index: 1000;
-        overflow: hidden;
+        flex: 1;
+        background: transparent;
+        color: var(--color-parchment-100);
         font-family: var(--font-body);
-        transition: z-index 0s;
-    }
-
-    .recruitment-modal.active {
-        z-index: 1001;
     }
 
     .modal-header {
@@ -976,15 +963,16 @@
         justify-content: space-between;
         align-items: center;
         background-color: rgba(176, 141, 74, 0.08);
-        border-bottom: 1px solid rgba(176, 141, 74, 0.18);
+        border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
     }
 
     h3 {
         margin: 0;
         font-size: 1.1rem;
         font-weight: 600;
-        color: var(--color-parchment-200);
-        font-family: var(--font-heading);
+        color: var(--color-aged-gold);
+        font-family: var(--font-display);
+        letter-spacing: 0.06em;
     }
 
     .close-button {
@@ -995,8 +983,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 50%;
         transition: background-color 0.2s;
+        color: var(--color-parchment-100);
     }
 
     .close-button:hover:not(:disabled) {
@@ -1006,46 +994,46 @@
     .modal-content {
         padding: 1rem;
         overflow-y: auto;
-        max-height: calc(85vh - 3.5rem);
+        flex: 1;
     }
 
     .section {
         margin-bottom: 1.5rem;
         padding: 1rem;
-        background-color: rgba(26, 32, 48, 0.7);
-        border-radius: 0.3rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
+        background-color: rgba(176, 141, 74, 0.03);
+        border: 0.075em solid rgba(176, 141, 74, 0.18);
     }
 
     h4 {
         margin: 0 0 1rem 0;
-        font-size: 1rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-parchment-200);
+        color: var(--color-aged-gold);
         display: flex;
         align-items: center;
-        font-family: var(--font-heading);
+        font-family: var(--font-display);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
     }
 
     .entity-count {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 1em;
-        font-size: 0.8em;
+        font-size: 0.85em;
         font-weight: 500;
         padding: 0.1em 0.6em;
         margin-left: 0.5rem;
-        color: rgba(255, 255, 255, 0.95);
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 0.15em rgba(255, 255, 255, 0.2);
+        color: var(--color-parchment-200);
+        background: rgba(176, 141, 74, 0.08);
+        border: 0.075em solid rgba(176, 141, 74, 0.2);
+        font-family: var(--font-mono);
     }
 
     .empty-state {
         padding: 2rem 0;
         text-align: center;
-        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 for better contrast */
+        color: rgba(232, 228, 210, 0.55);
         font-style: italic;
     }
 
@@ -1057,9 +1045,8 @@
 
     .queue-item {
         padding: 0.8rem;
-        background-color: rgba(26, 32, 48, 0.6);
-        border-radius: 0.3rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
+        background-color: rgba(176, 141, 74, 0.05);
+        border: 0.075em solid rgba(176, 141, 74, 0.18);
     }
 
     .queue-item-header {
@@ -1073,17 +1060,18 @@
         width: 2.5rem;
         height: 2.5rem;
         background-color: rgba(176, 141, 74, 0.08);
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        color: var(--color-gold-pale);
     }
 
     :global(.unit-icon) {
         width: 1.5rem;
         height: 1.5rem;
-        opacity: 0.8;
+        fill: var(--color-gold-pale);
+        color: var(--color-gold-pale);
     }
 
     .queue-item-info {
@@ -1093,43 +1081,42 @@
     .queue-item-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: var(--color-parchment-100); /* Improved contrast */
+        color: var(--color-parchment-100);
     }
 
     .queue-item-time {
         font-size: 0.85rem;
-        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 */
+        color: rgba(232, 228, 210, 0.65);
+        font-family: var(--font-mono);
     }
 
     .cancel-button {
         width: 1.8rem;
         height: 1.8rem;
-        border-radius: 50%;
-        background-color: rgba(255, 59, 48, 0.1);
-        border: 1px solid rgba(255, 59, 48, 0.2);
-        color: rgb(255, 59, 48);
+        background-color: rgba(91, 26, 31, 0.15);
+        border: 0.075em solid rgba(91, 26, 31, 0.3);
+        color: #ff5757;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         font-size: 0.9rem;
-        transition: all 0.2s;
+        transition: background-color 0.2s;
     }
 
     .cancel-button:hover:not(:disabled) {
-        background-color: rgba(255, 59, 48, 0.2);
+        background-color: rgba(91, 26, 31, 0.3);
     }
 
     .progress-bar {
         height: 0.5rem;
         background-color: rgba(176, 141, 74, 0.12);
-        border-radius: 0.25rem;
         overflow: hidden;
     }
 
     .progress-fill {
         height: 100%;
-        background-color: rgba(76, 175, 80, 0.7); /* Added missing background-color */
+        background-color: var(--color-aged-gold);
     }
 
     .unit-select-container {
@@ -1139,9 +1126,8 @@
         max-height: 16rem;
         overflow-y: auto;
         padding: 0.5rem;
-        background-color: rgba(26, 32, 48, 0.55);
-        border-radius: 0.3rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
+        background-color: rgba(176, 141, 74, 0.03);
+        border: 0.075em solid rgba(176, 141, 74, 0.15);
     }
 
     .unit-option {
@@ -1149,35 +1135,34 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem;
-        background-color: rgba(26, 32, 48, 0.7);
-        border-radius: 0.3rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
+        background-color: rgba(176, 141, 74, 0.05);
+        border: 0.075em solid rgba(176, 141, 74, 0.18);
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background-color 0.2s;
         width: calc(50% - 0.25rem);
         text-align: left;
+        color: var(--color-parchment-100);
     }
 
     .unit-option:hover {
-        background-color: rgba(255, 255, 255, 0.9);
+        background-color: rgba(176, 141, 74, 0.1);
         border-color: rgba(176, 141, 74, 0.3);
     }
 
     .unit-option.selected {
-        background-color: rgba(0, 122, 255, 0.1);
-        border-color: rgba(0, 122, 255, 0.3);
-        box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        background-color: rgba(176, 141, 74, 0.14);
+        border-color: rgba(176, 141, 74, 0.45);
     }
 
     .unit-option-icon {
         width: 2rem;
         height: 2rem;
         background-color: rgba(176, 141, 74, 0.08);
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        color: var(--color-gold-pale);
     }
 
     .unit-option-info {
@@ -1188,19 +1173,19 @@
     .unit-option-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: var(--color-parchment-100); /* Improved contrast */
+        color: var(--color-parchment-100);
     }
 
     .unit-option-power {
         font-size: 0.75rem;
-        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200);
+        font-family: var(--font-mono);
     }
 
     .unit-details {
         padding: 1rem;
-        background-color: rgba(26, 32, 48, 0.55);
-        border-radius: 0.3rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
+        background-color: rgba(176, 141, 74, 0.05);
+        border: 0.075em solid rgba(176, 141, 74, 0.18);
     }
 
     h5 {
@@ -1208,12 +1193,16 @@
         font-size: 1rem;
         font-weight: 600;
         color: var(--color-parchment-100);
+        font-family: var(--font-display);
+        letter-spacing: 0.05em;
     }
 
     .unit-description {
         margin: 0 0 1rem 0;
         font-size: 0.9rem;
-        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200);
+        font-family: var(--font-editorial);
+        font-style: italic;
     }
 
     .unit-stats {
@@ -1228,19 +1217,26 @@
 
     .stat-label {
         font-weight: 500;
-        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
+        color: var(--color-parchment-200);
+        font-family: var(--font-display);
+        letter-spacing: 0.06em;
+        font-size: 0.85em;
     }
-    
+
     .stat-value {
-        color: var(--color-parchment-100); /* Improved contrast */
+        color: var(--color-parchment-100);
+        font-family: var(--font-mono);
     }
 
     .unit-cost h6,
     .total-section h6 {
         margin: 0 0 0.5rem 0;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
+        color: var(--color-aged-gold);
+        font-family: var(--font-display);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
     }
 
     .cost-items,
@@ -1257,21 +1253,21 @@
         font-size: 0.85rem;
         padding: 0.3rem 0.6rem;
         background-color: rgba(176, 141, 74, 0.08);
-        border-radius: 0.2rem;
+        border: 0.075em solid rgba(176, 141, 74, 0.15);
         width: calc(50% - 0.25rem);
-        color: var(--color-parchment-200); /* Added explicit text color */
+        color: var(--color-parchment-200);
     }
 
     .total-item.sufficient {
-        background-color: rgba(52, 199, 89, 0.1);
-        border: 1px solid rgba(52, 199, 89, 0.2);
-        color: rgb(20, 128, 56);
+        background-color: rgba(63, 90, 78, 0.15);
+        border-color: rgba(76, 175, 80, 0.2);
+        color: #6fcf79;
     }
 
     .total-item.insufficient {
-        background-color: rgba(255, 59, 48, 0.1);
-        border: 1px solid rgba(255, 59, 48, 0.2);
-        color: rgb(168, 36, 28);
+        background-color: rgba(91, 26, 31, 0.15);
+        border-color: rgba(91, 26, 31, 0.25);
+        color: #ff5757;
     }
 
     .resource-name {
@@ -1283,6 +1279,7 @@
         align-items: center;
         gap: 0.15rem;
         font-weight: 500;
+        font-family: var(--font-mono);
     }
 
     .separator {
@@ -1290,7 +1287,6 @@
         margin: 0 0.1rem;
     }
 
-    /* Make sure we're responsive on small screens */
     @media (max-width: 500px) {
         .unit-option, .total-item {
             width: 100%;
@@ -1298,35 +1294,36 @@
     }
 
     .unit-option.unavailable {
-        opacity: 0.8; /* Improved from 0.7 to 0.8 for better visibility */
-        background-color: rgba(176, 141, 74, 0.08);
-        border-color: rgba(176, 141, 74, 0.2);
+        opacity: 0.75;
+        background-color: rgba(176, 141, 74, 0.04);
+        border-color: rgba(176, 141, 74, 0.12);
         cursor: help;
     }
 
     .unit-option.unavailable:hover {
-        background-color: rgba(0, 0, 0, 0.08);
+        background-color: rgba(176, 141, 74, 0.08);
     }
 
     .locked-icon {
-        display: inline-block;
-        font-size: 0.7em;
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.8em;
         margin-left: 0.3rem;
-        color: rgba(232, 228, 210, 0.78); /* Improved from 0.6 to 0.7 */
+        color: rgba(232, 228, 210, 0.5);
+        vertical-align: middle;
     }
 
     .unit-details.unavailable {
-        background-color: rgba(176, 141, 74, 0.08);
-        border-color: rgba(0, 0, 0, 0.15);
+        background-color: rgba(176, 141, 74, 0.04);
+        border-color: rgba(176, 141, 74, 0.12);
     }
 
     .unavailable-reason {
         margin: 0.5rem 0 1rem;
         padding: 0.5rem;
-        background-color: rgba(255, 152, 0, 0.1);
-        border: 1px solid rgba(255, 152, 0, 0.3);
-        border-radius: 0.3rem;
-        color: rgb(196, 98, 0);
+        background-color: rgba(176, 141, 74, 0.08);
+        border: 0.075em solid rgba(176, 141, 74, 0.25);
+        color: var(--color-gold-pale);
         font-size: 0.85rem;
         display: flex;
         align-items: center;
@@ -1335,7 +1332,7 @@
 
     .unavailable-reason .locked-icon {
         font-size: 1em;
-        color: rgb(196, 98, 0);
+        color: var(--color-gold-pale);
     }
 
     .unit-requirements {
@@ -1354,24 +1351,31 @@
         gap: 0.5rem;
         font-size: 0.85rem;
         padding: 0.5rem;
-        background-color: rgba(176, 141, 74, 0.08);
-        border-radius: 0.3rem;
+        background-color: rgba(176, 141, 74, 0.05);
+        border: 0.075em solid rgba(176, 141, 74, 0.15);
+        color: var(--color-parchment-200);
     }
 
     .requirement-item.met {
-        background-color: rgba(52, 199, 89, 0.1);
-        color: rgb(20, 128, 56);
-        border: 1px solid rgba(52, 199, 89, 0.2); /* Added border for better visibility */
+        background-color: rgba(63, 90, 78, 0.12);
+        color: #6fcf79;
+        border-color: rgba(76, 175, 80, 0.2);
     }
 
     .requirement-item.unmet {
-        background-color: rgba(255, 59, 48, 0.1);
-        color: rgb(168, 36, 28);
-        border: 1px solid rgba(255, 59, 48, 0.2); /* Added border for better visibility */
+        background-color: rgba(91, 26, 31, 0.12);
+        color: #ff5757;
+        border-color: rgba(91, 26, 31, 0.25);
     }
 
     .requirement-icon {
-        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.4rem;
+        height: 1.4rem;
+        flex-shrink: 0;
+        color: inherit;
     }
 
     .requirement-text {
@@ -1381,16 +1385,19 @@
     .requirement-status {
         margin-left: auto;
         font-weight: bold;
+        font-family: var(--font-mono);
     }
 
     h6 {
         margin: 0.8rem 0 0.5rem 0;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-parchment-200); /* Improved from 0.7 to 0.8 */
+        color: var(--color-aged-gold);
+        font-family: var(--font-display);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
     }
 
-    /* Add styles for quantity control and input */
     .form-group {
         margin-bottom: 1rem;
     }
@@ -1399,7 +1406,11 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: var(--color-parchment-200); /* Added explicit color */
+        color: var(--color-parchment-200);
+        font-family: var(--font-display);
+        font-size: 0.85em;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
     .quantity-control {
@@ -1411,21 +1422,20 @@
     .quantity-button {
         width: 2.5rem;
         height: 2.5rem;
-        border-radius: 0.3rem;
         background-color: rgba(176, 141, 74, 0.08);
-        border: 1px solid rgba(176, 141, 74, 0.15);
-        color: var(--color-parchment-200); /* Improved text contrast */
+        border: 0.075em solid rgba(176, 141, 74, 0.25);
+        color: var(--color-parchment-200);
         font-size: 1.2rem;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background-color 0.2s;
     }
 
     .quantity-button:hover:not(:disabled) {
-        background-color: rgba(176, 141, 74, 0.12);
-        border-color: rgba(176, 141, 74, 0.3);
+        background-color: rgba(176, 141, 74, 0.15);
+        border-color: rgba(176, 141, 74, 0.4);
     }
 
     .quantity-button:disabled {
@@ -1438,23 +1448,22 @@
         height: 2.5rem;
         text-align: center;
         padding: 0 0.5rem;
-        border: 1px solid rgba(176, 141, 74, 0.15);
-        border-radius: 0.3rem;
+        border: 0.075em solid rgba(176, 141, 74, 0.25);
         font-size: 1rem;
-        color: var(--color-parchment-100); /* Improved text contrast */
-        background-color: rgba(26, 32, 48, 0.78);
+        color: var(--color-parchment-100);
+        background-color: rgba(26, 32, 48, 0.7);
+        font-family: var(--font-mono);
     }
 
     input[type="number"]:focus {
         outline: none;
-        border-color: rgba(0, 122, 255, 0.5);
-        box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        border-color: var(--color-aged-gold);
     }
 
-    /* Add styles for time info */
     .time-info {
         font-size: 0.85rem;
-        color: var(--color-parchment-200); /* Improved text contrast */
+        color: var(--color-parchment-200);
+        font-family: var(--font-mono);
     }
 
     .completion-estimate {
@@ -1462,28 +1471,24 @@
         font-weight: 500;
     }
 
-    /* Add styles for error and success messages */
     .error-message {
         margin: 1rem 0;
         padding: 0.8rem;
-        background-color: rgba(255, 59, 48, 0.1);
-        border: 1px solid rgba(255, 59, 48, 0.3);
-        border-radius: 0.3rem;
-        color: rgb(168, 36, 28);
+        background-color: rgba(91, 26, 31, 0.15);
+        border: 0.075em solid rgba(91, 26, 31, 0.3);
+        color: #ff5757;
         font-weight: 500;
     }
 
     .success-message {
         margin: 1rem 0;
         padding: 0.8rem;
-        background-color: rgba(52, 199, 89, 0.1);
-        border: 1px solid rgba(52, 199, 89, 0.3);
-        border-radius: 0.3rem;
-        color: rgb(20, 128, 56);
+        background-color: rgba(63, 90, 78, 0.15);
+        border: 0.075em solid rgba(76, 175, 80, 0.2);
+        color: #6fcf79;
         font-weight: 500;
     }
 
-    /* Add styles for the recruit button */
     .form-actions {
         margin-top: 1.5rem;
         display: flex;
@@ -1492,67 +1497,67 @@
 
     .recruit-button {
         padding: 0.8rem 2rem;
-        background-color: rgba(0, 122, 255, 0.8); /* Increased from 0.7 to 0.8 for better contrast */
-        color: white;
+        background-color: var(--color-aged-gold);
+        color: var(--color-ink-900);
         border: none;
-        border-radius: 0.3rem;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background-color 0.2s;
+        font-family: var(--font-display);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
     }
 
     .recruit-button:hover:not(:disabled) {
-        background-color: rgba(0, 122, 255, 0.9);
-        transform: translateY(-1px);
+        background-color: var(--color-gold-pale);
     }
 
     .recruit-button:disabled {
-        background-color: rgba(14, 19, 32, 0.45);
-        color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(176, 141, 74, 0.25);
+        color: rgba(26, 32, 48, 0.4);
         cursor: not-allowed;
     }
 
-    /* Add styles for unit tooltip hint */
     .unit-tooltip-hint {
         font-size: 0.9em;
         margin-left: 0.3rem;
         opacity: 0.8;
     }
 
-    /* Improve visibility of the unit-option when selected */
     .unit-option.selected .unit-option-name {
-        color: rgba(0, 122, 255, 0.9);
+        color: var(--color-gold-pale);
     }
-    
+
     .resource-breakdown {
         display: inline-flex;
         align-items: center;
         gap: 0.1rem;
+        font-family: var(--font-mono);
     }
-    
+
     .personal-amount {
-        color: #4a6fa5;
+        color: var(--color-gold-pale);
     }
-    
+
     .shared-amount {
-        color: #6a7a8c;
+        color: rgba(232, 228, 210, 0.65);
     }
-    
+
     .total-amount {
         font-weight: 600;
     }
-    
+
     .storage-note {
         margin-top: 0.5rem;
         font-size: 0.8rem;
         font-style: italic;
-        color: rgba(232, 228, 210, 0.78);
+        color: rgba(232, 228, 210, 0.65);
         display: flex;
         align-items: center;
         gap: 0.3rem;
     }
-    
+
     .note-icon {
         font-size: 1rem;
         opacity: 0.8;

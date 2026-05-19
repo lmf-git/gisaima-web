@@ -170,20 +170,11 @@
 
 <style>
   .move-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 30em;
-    max-height: 85vh;
-    background: white;
-    border-radius: 0.5em;
-    box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    z-index: 1000;
+    flex: 1;
+    background: transparent;
+    color: var(--color-parchment-100);
     font-family: var(--font-body);
   }
 
@@ -192,16 +183,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
-    font-family: var(--font-heading);
+    background: rgba(176, 141, 74, 0.08);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
 
   h3 {
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 600;
-    color: #333;
+    color: var(--color-aged-gold);
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
 
   .close-button {
@@ -212,19 +204,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
     transition: background-color 0.2s;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--color-parchment-100);
   }
 
   .close-button:hover {
     background-color: rgba(176, 141, 74, 0.12);
-    color: var(--color-parchment-100);
   }
 
   .modal-body {
     padding: 1em;
     overflow-y: auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1em;
@@ -236,9 +227,12 @@
 
   h4 {
     margin: 0 0 0.5em 0;
-    font-size: 1em;
+    font-size: 0.8em;
     font-weight: 600;
-    color: var(--color-parchment-200);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
+    font-family: var(--font-display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold);
   }
 
   .groups-list {
@@ -251,15 +245,14 @@
     display: flex;
     align-items: center;
     padding: 0.5em;
-    border-radius: 0.3em;
     cursor: pointer;
-    background-color: rgba(26, 32, 48, 0.55);
-    border: 1px solid rgba(176, 141, 74, 0.15);
-    transition: all 0.2s ease;
+    background-color: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    transition: background-color 0.2s;
   }
 
   .group-option:hover {
-    background-color: rgba(26, 32, 48, 0.7);
+    background-color: rgba(176, 141, 74, 0.1);
   }
 
   .group-option.selected {
@@ -279,35 +272,34 @@
 
   .group-name {
     font-weight: 500;
-    color: var(--color-parchment-100);  /* Improved contrast */
+    color: var(--color-parchment-100);
   }
 
   .group-units {
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.75);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
+    color: rgba(232, 228, 210, 0.65);
   }
 
   .info-box {
     padding: 0.6em;
-    background-color: rgba(176, 141, 74, 0.08);
-    border-radius: 0.3em;
+    background-color: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     font-size: 0.9em;
-    color: var(--color-parchment-200);  /* Improved contrast from rgba(0, 0, 0, 0.7) */
+    color: var(--color-parchment-200);
     text-align: center;
   }
 
   .message {
     padding: 0.7em;
-    border-radius: 0.3em;
     font-size: 0.9em;
     text-align: center;
-    color: var(--color-parchment-100);  /* Added explicit color with good contrast */
+    color: var(--color-parchment-100);
   }
 
   .message.error {
-    background-color: rgba(244, 67, 54, 0.1);
-    border: 1px solid rgba(244, 67, 54, 0.3);
-    color: #d32f2f;
+    background-color: rgba(91, 26, 31, 0.15);
+    border: 0.075em solid rgba(91, 26, 31, 0.4);
+    color: #ff5757;
   }
 
   .modal-footer {
@@ -315,33 +307,35 @@
     justify-content: space-between;
     gap: 1em;
     padding: 0.8em 1em;
-    background-color: #f5f5f5;
-    border-top: 1px solid #e0e0e0;
+    background: rgba(176, 141, 74, 0.05);
+    border-top: 0.075em solid rgba(176, 141, 74, 0.18);
   }
 
   .cancel-button, .action-button {
     padding: 0.5em 1em;
-    border-radius: 0.3em;
-    font-size: 1em;
-    font-weight: 500;
+    font-size: 0.9em;
+    font-weight: 600;
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
+    border: 0;
   }
 
   .cancel-button {
-    background-color: #f1f3f4;
-    color: #3c4043;
-    border: 1px solid #dadce0;
+    background: transparent;
+    color: var(--color-parchment-200);
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
   }
 
   .cancel-button:hover:not(:disabled) {
-    background-color: #e8eaed;
+    background-color: rgba(176, 141, 74, 0.08);
   }
 
   .action-button {
-    background-color: #b08d4a;
-    color: white;
-    border: none;
+    background-color: var(--color-aged-gold);
+    color: var(--color-ink-900);
     flex-grow: 1;
     display: flex;
     align-items: center;
@@ -350,25 +344,16 @@
   }
 
   .action-button:hover:not(:disabled) {
-    background-color: #3367d6;
-    transform: translateY(-1px);
+    background-color: var(--color-gold-pale);
   }
 
   .action-button:disabled, .cancel-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-    transform: none;
   }
 
   :global(.compass-icon) {
     width: 1.2em;
     fill: currentColor;
-  }
-
-  @media (max-width: 768px) {
-    .move-modal {
-      width: 95%;
-      max-width: none;
-    }
   }
 </style>

@@ -42,7 +42,7 @@
     <div class="eyebrow wax">The Catalogue</div>
     <h1>Bestiary & Items</h1>
     <p class="lede">Named things, named beasts. What may be held, what may be slain.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <section class="block">
         <div class="eyebrow">Named Items</div>

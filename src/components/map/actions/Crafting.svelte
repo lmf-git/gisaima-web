@@ -11,6 +11,8 @@
   
   import Close from '../../icons/Close.svelte';
   import Back from '../../icons/Back.svelte';
+  import CraftingCategoryIcon from '../../icons/CraftingCategoryIcon.svelte';
+  import BuildingIcon from '../../icons/BuildingIcon.svelte';
 
   // Props
   const {
@@ -321,7 +323,7 @@
                 class="category-card" 
                 onclick={() => selectCategory(category.id)}
               >
-                <div class="category-icon">{category.icon || '🔨'}</div>
+                <div class="category-icon"><CraftingCategoryIcon category={category.id} size="2em" extraClass="category-svg-icon" /></div>
                 <div class="category-name">{category.label}</div>
               </button>
             {/each}
@@ -407,7 +409,7 @@
                     {meetsBuildingLevelRequirements(selectedRecipe) ? '✓ Available' : '✗ Not Available'}
                   </span>
                 </div>
-                <div class="building-icon">{BUILDINGS.getBuildingIcon(selectedRecipe.requiredBuilding.type)}</div>
+                <div class="building-icon"><BuildingIcon type={selectedRecipe.requiredBuilding.type} size="2em" extraClass="building-svg-icon" /></div>
                 <div class="building-description">
                   {BUILDINGS.getBuildingDescription(selectedRecipe.requiredBuilding.type)}
                 </div>
@@ -445,49 +447,30 @@
 </div>
 
 <style>
-  /* Base modal styles */
   .crafting-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 36em;
-    max-height: 85vh;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 0.05em solid rgba(255, 255, 255, 0.3);
-    border-radius: 0.5rem;
-    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
-    z-index: 1000;
-    overflow: hidden;
+    flex: 1;
+    background: transparent;
+    color: var(--color-parchment-100);
     font-family: var(--font-body);
-    transition: z-index 0s;
   }
-  
-  .crafting-modal.active {
-    z-index: 1001;
-  }
-  
-  /* Header styles */
+
   .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.8em 1em;
     background: rgba(176, 141, 74, 0.08);
-    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
   }
-  
+
   .header-content {
     display: flex;
     align-items: center;
     gap: 0.5em;
   }
-  
+
   .back-btn {
     background: none;
     border: none;
@@ -496,354 +479,376 @@
     align-items: center;
     justify-content: center;
     padding: 0.3em;
-    border-radius: 50%;
     transition: background 0.2s;
+    color: var(--color-parchment-100);
   }
-  
+
   .back-btn:hover {
     background: rgba(176, 141, 74, 0.12);
   }
-  
+
   h2 {
     margin: 0;
-    font-size: 1.3em;
+    font-size: 1.1em;
     font-weight: 600;
-    color: var(--color-parchment-200);
-    font-family: var(--font-heading);
+    color: var(--color-aged-gold);
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
-  
+
   .content {
     padding: 1em;
     overflow-y: auto;
-    max-height: calc(90vh - 4em);
+    flex: 1;
     color: var(--color-parchment-200);
   }
-  
-  /* Close button */
+
   .close-btn {
     background: none;
     border: none;
     cursor: pointer;
     padding: 0.3em;
     display: flex;
-    border-radius: 50%;
     transition: background-color 0.2s;
+    color: var(--color-parchment-100);
   }
-  
+
   .close-btn:hover {
     background-color: rgba(176, 141, 74, 0.12);
   }
-  
-  /* Categories grid styles */
+
   .categories-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(8em, 1fr));
     gap: 1em;
     padding: 0.5em;
   }
-  
+
   .category-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(176, 141, 74, 0.08);
-    border: 1px solid rgba(176, 141, 74, 0.15);
-    border-radius: 0.5em;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     padding: 1.5em 1em;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     text-align: center;
-  }
-  
-  .category-card:hover {
-    background: rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .category-icon {
-    font-size: 1.8em;
-    margin-bottom: 0.5em;
-  }
-  
-  .category-name {
-    font-weight: 500;
-    font-size: 0.9em;
+    color: var(--color-parchment-200);
   }
 
-  /* Recipe list */
+  .category-card:hover {
+    background: rgba(176, 141, 74, 0.1);
+  }
+
+  .category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5em;
+    color: var(--color-gold-pale);
+  }
+
+  :global(.category-svg-icon) {
+    display: block;
+  }
+
+  .category-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.8em;
+    letter-spacing: 0.08em;
+    color: var(--color-parchment-200);
+  }
+
   .recipe-list {
     overflow-y: auto;
-    max-height: 65vh;
     padding: 0.5em;
   }
-  
+
   .recipe-item {
     padding: 0.75rem;
-    background: rgba(176, 141, 74, 0.08);
-    border: 1px solid rgba(176, 141, 74, 0.15);
-    border-radius: 0.25rem;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     margin-bottom: 0.75rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
+    color: var(--color-parchment-100);
   }
-  
+
   .recipe-item:hover {
-    background: rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    background: rgba(176, 141, 74, 0.1);
   }
-  
+
   .recipe-item.disabled {
     opacity: 0.7;
-    border-color: rgba(255, 0, 0, 0.2);
+    border-color: rgba(91, 26, 31, 0.25);
   }
-  
-  /* Recipe header */
+
   .recipe-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.25rem;
   }
-  
+
   .recipe-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--color-parchment-200);
+    color: var(--color-parchment-100);
   }
-  
-  /* Rarity badges */
+
   .recipe-rarity {
     font-size: 0.75rem;
     padding: 0.1rem 0.3rem;
-    border-radius: 0.2rem;
     text-transform: capitalize;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
-  
+
   .recipe-rarity.common {
-    background: rgba(158, 158, 158, 0.2);
-    color: #616161;
+    background: rgba(176, 141, 74, 0.08);
+    color: var(--color-parchment-200);
+    border: 0.075em solid rgba(176, 141, 74, 0.2);
   }
-  
+
   .recipe-rarity.uncommon {
-    background: rgba(76, 175, 80, 0.2);
-    color: #2e7d32;
+    background: rgba(63, 90, 78, 0.15);
+    color: #6fcf79;
+    border: 0.075em solid rgba(76, 175, 80, 0.25);
   }
-  
+
   .recipe-rarity.rare {
-    background: rgba(33, 150, 243, 0.2);
-    color: #0277bd;
+    background: rgba(176, 141, 74, 0.12);
+    color: var(--color-gold-pale);
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
   }
-  
+
   .recipe-rarity.epic {
-    background: rgba(156, 39, 176, 0.2);
-    color: #7b1fa2;
+    background: rgba(91, 26, 31, 0.12);
+    color: #c97d85;
+    border: 0.075em solid rgba(91, 26, 31, 0.3);
   }
-  
+
   .recipe-rarity.legendary {
-    background: rgba(255, 152, 0, 0.2);
-    color: #ef6c00;
+    background: rgba(176, 141, 74, 0.18);
+    color: var(--color-gold-pale);
+    border: 0.075em solid rgba(212, 177, 112, 0.4);
   }
-  
-  /* Recipe descriptions */
+
   .recipe-description {
     font-size: 0.85rem;
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--color-parchment-200);
     margin-bottom: 0.5rem;
     line-height: 1.3;
+    font-family: var(--font-editorial);
+    font-style: italic;
   }
-  
-  /* Recipe status and requirements */
+
   .recipe-blocked {
     font-size: 0.8rem;
-    color: #ff6666;
+    color: #ff5757;
     margin: 0.5rem 0;
     font-weight: 500;
   }
-  
+
   .recipe-requires {
     font-size: 0.8rem;
-    color: #ffcc66;
+    color: var(--color-gold-pale);
     margin-top: 0.25rem;
     font-style: italic;
   }
-  
+
   .recipe-craft-level {
     font-size: 0.8rem;
-    color: #66ccff;
+    color: var(--color-parchment-200);
     margin-top: 0.25rem;
     font-style: italic;
   }
-  
+
   .recipe-time {
     font-size: 0.8rem;
-    color: #666666;
+    color: rgba(232, 228, 210, 0.55);
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
+    font-family: var(--font-mono);
   }
-  
+
   .time-icon {
     margin-right: 0.3rem;
   }
-  
-  /* Recipe details */
+
   .recipe-details {
     padding: 0.5rem;
   }
-  
+
   .recipe-details h3 {
     margin-top: 0;
     margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-    color: var(--color-parchment-100);
+    font-size: 1.1rem;
+    font-family: var(--font-display);
+    color: var(--color-aged-gold);
+    letter-spacing: 0.06em;
   }
-  
+
   .recipe-details h4 {
     margin: 1.2rem 0 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
+    font-family: var(--font-display);
     text-transform: uppercase;
-    letter-spacing: 0.05rem;
-    color: rgba(232, 228, 210, 0.65);
+    letter-spacing: 0.1rem;
+    color: var(--color-aged-gold);
   }
 
   .recipe-rarity-badge {
     display: inline-block;
     font-size: 0.8rem;
     padding: 0.2rem 0.5rem;
-    border-radius: 0.2rem;
     text-transform: capitalize;
     margin: 0.5rem 0;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    background: rgba(176, 141, 74, 0.08);
+    color: var(--color-gold-pale);
   }
-  
-  /* Materials list */
+
   .materials-list {
     margin-bottom: 1rem;
-    background: rgba(176, 141, 74, 0.08);
-    border-radius: 0.3rem;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     padding: 0.5rem;
   }
-  
+
   .material-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.3rem 0.5rem;
     font-size: 0.9rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    color: var(--color-parchment-200);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
   }
-  
+
   .material-item:last-child {
     border-bottom: none;
   }
-  
+
   .material-item.insufficient {
-    color: #ff6666;
+    color: #ff5757;
   }
 
   .material-quantity {
     font-family: var(--font-mono, monospace);
     font-size: 0.85rem;
   }
-  
-  /* Building requirements */
+
   .building-requirement {
     margin-bottom: 1rem;
-    background: rgba(176, 141, 74, 0.08);
-    border-radius: 0.3rem;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     padding: 0.5rem;
   }
-  
+
   .building-info {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    color: var(--color-parchment-200);
   }
-  
+
   .building-name {
     font-weight: 500;
+    color: var(--color-parchment-100);
   }
-  
+
   .level-info {
-    color: #ffcc66;
+    color: var(--color-gold-pale);
     font-weight: 500;
+    font-family: var(--font-mono);
   }
-  
+
   .status-indicator {
     padding: 0.1rem 0.3rem;
-    border-radius: 0.2rem;
     font-size: 0.8rem;
     margin-left: auto;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
   }
-  
+
   .status-indicator.available {
-    color: #4caf50;
-    background: rgba(76, 175, 80, 0.1);
+    color: #6fcf79;
+    background: rgba(63, 90, 78, 0.15);
+    border: 0.075em solid rgba(76, 175, 80, 0.25);
   }
-  
+
   .status-indicator.unavailable {
-    color: #f44336;
-    background: rgba(244, 67, 54, 0.1);
+    color: #ff5757;
+    background: rgba(91, 26, 31, 0.15);
+    border: 0.075em solid rgba(91, 26, 31, 0.3);
   }
-  
+
   .building-icon {
-    font-size: 1.5rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 0.5rem 0;
+    color: var(--color-gold-pale);
   }
-  
+
+  :global(.building-svg-icon) {
+    display: block;
+  }
+
   .building-description {
     font-size: 0.85rem;
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--color-parchment-200);
     font-style: italic;
+    font-family: var(--font-editorial);
   }
-  
-  /* Crafting time info */
+
   .crafting-time-info {
     margin-top: 1rem;
-    background: rgba(176, 141, 74, 0.08);
-    border-radius: 0.3rem;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     padding: 0.5rem;
   }
-  
+
   .time-display {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 0.5rem;
   }
-  
+
   .tick-count {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #ffcc66;
-    text-shadow: 0 0 5px rgba(255, 204, 102, 0.5);
+    color: var(--color-gold-pale);
+    font-family: var(--font-mono);
   }
-  
-  /* Message styles */
+
   .success-message {
-    background-color: rgba(0, 255, 0, 0.1);
-    border: 1px solid rgba(0, 255, 0, 0.3);
-    color: #4caf50;
+    background-color: rgba(63, 90, 78, 0.15);
+    border: 0.075em solid rgba(76, 175, 80, 0.25);
+    color: #6fcf79;
     padding: 0.8rem;
-    border-radius: 0.25rem;
     margin: 1rem 0;
     text-align: center;
     font-weight: 500;
   }
-  
+
   .empty-message {
     padding: 2rem 1rem;
     text-align: center;
     color: rgba(232, 228, 210, 0.55);
     font-style: italic;
   }
-  
-  /* Loading styles */
+
   .loading-container {
     display: flex;
     flex-direction: column;
@@ -851,84 +856,86 @@
     justify-content: center;
     height: 12rem;
     gap: 1rem;
+    color: var(--color-parchment-200);
   }
-  
+
   .loading-spinner {
     width: 2rem;
     height: 2rem;
-    border: 0.25rem solid rgba(0, 0, 0, 0.1);
-    border-top: 0.25rem solid #b08d4a;
+    border: 0.25rem solid rgba(176, 141, 74, 0.15);
+    border-top: 0.25rem solid var(--color-aged-gold);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
-  
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-  
-  /* Error message */
+
   .error-message {
     padding: 1rem;
     text-align: center;
-    color: #ff6666;
-    background: rgba(255, 0, 0, 0.1);
-    border-radius: 0.25rem;
+    color: #ff5757;
+    background: rgba(91, 26, 31, 0.15);
+    border: 0.075em solid rgba(91, 26, 31, 0.3);
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .try-again-btn {
     padding: 0.5rem 1rem;
-    background: #f1f3f4;
-    border: 1px solid #dadce0;
-    border-radius: 0.25rem;
-    color: #3c4043;
-    font-family: var(--font-body);
+    background: transparent;
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    color: var(--color-parchment-200);
+    font-family: var(--font-display);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     transition: background-color 0.2s;
   }
-  
+
   .try-again-btn:hover {
-    background-color: #e8eaed;
+    background-color: rgba(176, 141, 74, 0.08);
   }
-  
-  /* Craft button */
+
   .craft-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     padding: 0.8rem;
-    font-size: 1rem;
-    font-weight: 500;
-    color: white;
-    background-color: #b08d4a;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-ink-900);
+    background-color: var(--color-aged-gold);
     border: none;
-    border-radius: 0.25rem;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s;
+    transition: background-color 0.2s;
     margin-top: 1.5rem;
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
-  
+
   .craft-btn:hover:not(:disabled) {
-    background-color: #3367d6;
-    transform: translateY(-2px);
+    background-color: var(--color-gold-pale);
   }
-  
+
   .craft-btn:disabled {
-    background-color: #9e9e9e;
+    background-color: rgba(176, 141, 74, 0.3);
+    color: rgba(26, 32, 48, 0.5);
     cursor: not-allowed;
     opacity: 0.7;
   }
-  
+
   .button-spinner {
     width: 1rem;
     height: 1rem;
-    border: 0.15rem solid rgba(255, 255, 255, 0.3);
-    border-top: 0.15rem solid white;
+    border: 0.15rem solid rgba(26, 32, 48, 0.3);
+    border-top: 0.15rem solid var(--color-ink-900);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-right: 0.5rem;

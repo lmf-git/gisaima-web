@@ -27,7 +27,7 @@
                 <div class="eyebrow wax">House</div>
                 <h1>{$user.displayName || ($user.isAnonymous ? 'Guest' : $user.email?.split('@')[0]) || 'Wanderer'}</h1>
                 <div class="motto">"What is written here will outlast me."</div>
-                <Flourish width={200} color="var(--color-ink-900)" />
+                <Flourish extraClass="page-flourish" />
             </div>
         </header>
 

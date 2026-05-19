@@ -1,6 +1,5 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { fade } from 'svelte/transition';
 
   import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 
@@ -9,27 +8,18 @@
   import Close from '../../icons/Close.svelte';
   import Trophy from '../../icons/Trophy.svelte';
 
-  // Add onMouseEnter to props
-  const { 
-    onClose = () => {}, 
+  const {
+    onClose = () => {},
     closing = false,
     onMouseEnter = () => {}
   } = $props();
 
-  // State variables using $state rune
-  let visible = $state(true);
   let selectedCategory = $state('all');
-  
-  // Animation constants
-  const animationDuration = 300;
 
-  // Use the imported ACHIEVEMENTS instead of defining locally
   const achievementDefinitions = $state(ACHIEVEMENTS);
 
-  // Get player achievements for current world
   const playerAchievements = $derived($currentPlayer?.achievements || {});
 
-  // Categories for filtering - updated labels
   const categories = [
     { id: 'all', label: 'All' },
     { id: 'explore', label: 'Explore' },
@@ -38,14 +28,11 @@
     { id: 'social', label: 'Social' }
   ];
 
-  // Process achievements with player data - updated to show all non-hidden achievements
   const processedAchievements = $derived(
     Object.entries(achievementDefinitions).map(([id, achievement]) => {
       const isUnlocked = playerAchievements[id] === true;
       const isFiltered = selectedCategory === 'all' || achievement.category === selectedCategory;
-      // Show all achievements that are either unlocked or not hidden
       const shouldShow = isUnlocked || !achievement.hidden;
-      
       return {
         ...achievement,
         id,
@@ -56,386 +43,290 @@
     })
   );
 
-  // Filtered achievements for display
-  const filteredAchievements = $derived(
-    processedAchievements.filter(a => a.visible)
-  );
+  const filteredAchievements = $derived(processedAchievements.filter(a => a.visible));
 
-  // Count unlocked achievements
   const unlockedCount = $derived(
     Object.keys(playerAchievements).filter(key => !key.endsWith('_date')).length
   );
 
-  // Calculate total count of non-hidden achievements
   const totalCount = $derived(
     Object.values(achievementDefinitions).filter(a => !a.hidden).length
   );
 
-  // Use $effect for side effects based on closing prop
-  $effect(() => {
-    if (closing) {
-      visible = false;
-      onVisibilityChange(false);
-    } else {
-      visible = true;
-      onVisibilityChange(true);
-    }
-  });
-
-  // Export function for other components to trigger achievement unlocks
   export function unlockAchievement(id) {
-    if (!$currentPlayer || !$game.worldKey || playerAchievements[id] === true) {
-      return false;
-    }
-    
-    savePlayerAchievement($game.worldKey, id, true)
-      .then(() => {
-        // No need to manually show notification; store will handle it
-        return true;
-      })
-      .catch(error => {
-        console.error('Failed to save achievement:', error);
-        return false;
-      });
+    if (!$currentPlayer || !$game.worldKey || playerAchievements[id] === true) return false;
+    savePlayerAchievement($game.worldKey, id, true).catch(e => console.error('Failed to save achievement:', e));
   }
 
-  function selectCategory(categoryId) {
-    selectedCategory = categoryId;
-  }
+  function selectCategory(categoryId) { selectedCategory = categoryId; }
 
-  // Simplify close function - add localStorage tracking
   function close() {
-    // Save the closed state in localStorage
     localStorage.setItem('achievements_closed', 'true');
     onClose();
   }
 
-  // Add missing onVisibilityChange function
-  function onVisibilityChange(isVisible) {
-    if (isVisible) {
-      // If panel is becoming visible, clear the closed state
-      localStorage.removeItem('achievements_closed');
-    }
-  }
-
-  // Function to format date in a user-friendly way
   function formatDate(timestamp) {
     if (!timestamp) return '';
-    
-    const date = new Date(timestamp);
-    return new Intl.DateTimeFormat('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(timestamp));
   }
-
-  // Handle mouse enter event
-  function handleMouseEnter() {
-    onMouseEnter();
-  }
-
-  // Initialize localStorage state on mount
-  onMount(() => {
-    // Check if this is the first time we're showing achievements
-    const achievementsClosed = localStorage.getItem('achievements_closed') === 'true';
-    if (!achievementsClosed) {
-      // If never closed before, remove any stored closed state
-      localStorage.removeItem('achievements_closed');
-    }
-  });
-
-  // Handle escape key for Achievements component
-  function handleKeyDown(event) {
-    if (event.key === 'Escape' && visible && !closing) {
-      event.preventDefault();
-      close();
-    }
-  }
-
-  onMount(() => {
-    document.addEventListener('keydown', handleKeyDown);
-  });
-
-  onDestroy(() => {
-    document.removeEventListener('keydown', handleKeyDown);
-  });
 </script>
 
-<div 
-  class="achievements-container"
-  class:closing
-  onmouseenter={handleMouseEnter}
-  in:fade={{ duration: animationDuration }}
-  out:fade={{ duration: animationDuration }}
-  role="dialog"
-  tabindex="-1"
-  aria-labelledby="achievements-heading"
->
-  <div class="achievements-panel" class:closing>
-    <header class="achievements-header">
-      <h2 id="achievements-heading">
-        <Trophy extraClass="trophy-icon" />
-        Achievements
-        <span class="achievement-count">
-          {unlockedCount} / {totalCount}
-        </span>
-      </h2>
-      <button class="close-btn" onclick={close} aria-label="Close achievements">
-        <Close size="1.5em" />
+<div class="achievements-panel" onmouseenter={onMouseEnter}>
+  <header class="ach-header modal-header">
+    <h2 id="achievements-heading">
+      <Trophy extraClass="trophy-icon" />
+      <span>Achievements</span>
+      <span class="ach-count">{unlockedCount} / {totalCount}</span>
+    </h2>
+    <button class="close-btn" onclick={close} aria-label="Close achievements">
+      <Close size="1em" />
+    </button>
+  </header>
+
+  <div class="ach-categories">
+    {#each categories as category}
+      <button
+        class="ach-cat-btn"
+        class:active={selectedCategory === category.id}
+        onclick={() => selectCategory(category.id)}
+      >
+        {category.label}
       </button>
-    </header>
-    
-    <div class="categories">
-      {#each categories as category}
-        <button 
-          class="category-btn"
-          class:active={selectedCategory === category.id}
-          onclick={() => selectCategory(category.id)}
-        >
-          {category.label}
-        </button>
-      {/each}
-    </div>
-    
-    <div class="achievements-content">
-      {#if filteredAchievements.length === 0}
-        <div class="empty-state">
-          No achievements to display in this category.
-        </div>
-      {:else}
-        <div class="achievements-list">
-          {#each filteredAchievements as achievement}
-            <div
-              class="achievement-item"
-              class:unlocked={achievement.unlocked}
-              class:locked={!achievement.unlocked}
-            >
-              <div class="achievement-icon">
-                {#if achievement.unlocked}
-                  <Trophy extraClass="achievement-trophy" />
-                {:else}
-                  <div class="lock-icon">?</div>
-                {/if}
-              </div>
-              <div class="achievement-details">
-                <h3 class="achievement-name">
-                  {achievement.unlocked || !achievement.hiddenTitle ? achievement.title : 'Hidden Achievement'}
-                </h3>
-                <p class="achievement-description">
-                  {achievement.unlocked || !achievement.hiddenDesc ? achievement.description : 'Complete this hidden achievement to reveal its details.'}
-                </p>
-                {#if achievement.unlocked && achievement.date}
-                  <div class="achievement-date">
-                    Unlocked: {formatDate(achievement.date)}
-                  </div>
-                {/if}
-              </div>
+    {/each}
+  </div>
+
+  <div class="ach-content">
+    {#if filteredAchievements.length === 0}
+      <div class="ach-empty">No achievements in this category.</div>
+    {:else}
+      <ul class="ach-list">
+        {#each filteredAchievements as achievement}
+          <li class="ach-item" class:unlocked={achievement.unlocked} class:locked={!achievement.unlocked}>
+            <div class="ach-icon">
+              {#if achievement.unlocked}
+                <Trophy extraClass="ach-trophy" />
+              {:else}
+                <span class="ach-lock">?</span>
+              {/if}
             </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
+            <div class="ach-details">
+              <div class="ach-name">
+                {achievement.unlocked || !achievement.hiddenTitle ? achievement.title : 'Hidden Achievement'}
+              </div>
+              <div class="ach-desc">
+                {achievement.unlocked || !achievement.hiddenDesc ? achievement.description : 'Complete this hidden achievement to reveal its details.'}
+              </div>
+              {#if achievement.unlocked && achievement.date}
+                <div class="ach-date">Unlocked: {formatDate(achievement.date)}</div>
+              {/if}
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </div>
 </div>
 
 <style>
-  .achievements-container {
-    position: fixed;
-    bottom: 6em; /* Changed from bottom: -8em to bottom: 6em */
-    right: 1em;
-    width: 25em;
-    height: 30em;
-    z-index: 1010;
-    display: flex;
-    flex-direction: column;
-  }
-  
   .achievements-panel {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
-    border-left: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    flex: 1;
+    min-height: 0;
+    color: var(--color-parchment-100, #fbf6e7);
+    font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
   }
-  
-  .achievements-panel.closing {
-    transform: translateX(100%);
-    opacity: 0; /* Fade out panel */
-    box-shadow: none; /* Remove shadow during exit */
-  }
-  
-  .achievements-header {
+
+  /* Header — matches ds-panel :global(.modal-header) overrides */
+  .ach-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1em;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.7em 1em;
+    background: rgba(176, 141, 74, 0.06);
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
+    flex-shrink: 0;
   }
-  
+
   h2 {
     margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5em;
-    font-family: var(--font-heading);
-    font-size: 1.4em;
-    font-weight: 600;
-    color: #333;
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
-  .achievement-count {
-    font-size: 0.7em;
-    background-color: rgba(66, 133, 244, 0.15);
-    color: #4285f4;
-    padding: 0.2em 0.6em;
-    border-radius: 1em;
-    margin-left: 0.5em;
+
+  .ach-count {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    letter-spacing: 0.06em;
+    color: rgba(251, 246, 231, 0.45);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.15em 0.5em;
+    margin-left: 0.3em;
   }
-  
+
+  /* The dossier hides .close-btn via global override, but keep it styled for standalone use */
   .close-btn {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.3em;
+    padding: 0.2em;
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: #666;
-    transition: background-color 0.2s;
-  }
-  
-  .close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: #333;
-  }
-  
-  .categories {
-    display: flex;
-    gap: 0.5em;
-    padding: 0.8em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    flex-wrap: wrap;
-  }
-  
-  .category-btn {
-    padding: 0.5em 1em;
-    background-color: #f1f3f4;
-    border: none;
-    border-radius: 1.5em;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .category-btn.active {
-    background-color: #4285f4;
-    color: white;
-  }
-  
-  .category-btn:hover:not(.active) {
-    background-color: #e8eaed;
-  }
-  
-  .achievements-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1em;
-  }
-  
-  .achievements-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-  }
-  
-  .achievement-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 1em;
-    border-radius: 0.5em;
-    background-color: #f5f5f5;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  
-  .achievement-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .achievement-item.unlocked {
-    background-color: rgba(66, 133, 244, 0.1);
-    border-left: 3px solid #4285f4;
-  }
-  
-  .achievement-item.locked {
-    opacity: 0.85; /* Slightly increased opacity for better contrast */
-    filter: grayscale(40%); /* Reduced grayscale for better readability */
-  }
-  
-  .achievement-icon {
-    width: 2.5em;
-    height: 2.5em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1em;
+    color: rgba(251, 246, 231, 0.5);
+    transition: color 0.12s;
     flex-shrink: 0;
   }
-  
-  .lock-icon {
-    width: 2em;
-    height: 2em;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
+  .close-btn:hover { color: var(--color-parchment-100); }
+
+  /* Trophy icon in header */
+  .achievements-panel :global(.trophy-icon) {
+    width: 1em;
+    height: 1em;
+    color: var(--color-gold-pale, #d4b170);
+  }
+
+  /* Category filter strip */
+  .ach-categories {
+    display: flex;
+    gap: 0.4em;
+    padding: 0.6em 1em;
+    border-bottom: 0.075em solid rgba(255, 255, 255, 0.06);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    background: transparent;
+  }
+
+  .ach-cat-btn {
+    padding: 0.25em 0.7em;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.075em solid rgba(255, 255, 255, 0.1);
+    color: rgba(251, 246, 231, 0.6);
+    font-family: var(--font-display);
+    font-size: 0.62em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .ach-cat-btn:hover {
+    background: rgba(176, 141, 74, 0.1);
+    border-color: rgba(176, 141, 74, 0.35);
+    color: var(--color-parchment-100);
+  }
+  .ach-cat-btn.active {
+    background: rgba(176, 141, 74, 0.18);
+    border-color: var(--color-aged-gold, #b08d4a);
+    color: var(--color-gold-pale, #d4b170);
+  }
+
+  /* Scrollable content */
+  .ach-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75em 1em;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(176, 141, 74, 0.25) transparent;
+  }
+
+  .ach-empty {
+    font-family: var(--font-editorial, serif);
+    font-style: italic;
+    color: rgba(232, 228, 210, 0.4);
+    font-size: 0.82em;
+    text-align: center;
+    padding: 2em 0;
+  }
+
+  .ach-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+
+  .ach-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75em;
+    padding: 0.65em 0.75em;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .ach-item:hover {
+    background: rgba(176, 141, 74, 0.07);
+    border-color: rgba(176, 141, 74, 0.28);
+  }
+
+  .ach-item.unlocked {
+    border-left: 0.2em solid var(--color-aged-gold, #b08d4a);
+    background: rgba(176, 141, 74, 0.06);
+  }
+  .ach-item.locked {
+    opacity: 0.65;
+  }
+
+  .ach-icon {
+    width: 1.8em;
+    height: 1.8em;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(0, 0, 0, 0.5);
-    font-weight: bold;
+    flex-shrink: 0;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
-  .achievement-details {
-    flex: 1;
+
+  .achievements-panel :global(.ach-trophy) {
+    width: 1.4em;
+    height: 1.4em;
+    color: var(--color-gold-pale, #d4b170);
   }
-  
-  .achievement-name {
-    margin: 0 0 0.3em 0;
-    font-family: var(--font-heading);
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #222; /* Darker text color for better contrast */
+
+  .ach-lock {
+    width: 1.4em;
+    height: 1.4em;
+    background: rgba(255, 255, 255, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 0.75em;
+    letter-spacing: 0.1em;
+    color: rgba(251, 246, 231, 0.3);
   }
-  
-  .achievement-description {
-    margin: 0;
-    font-size: 0.9em;
-    color: #333; /* Darker text color for better contrast */
+
+  .ach-details { flex: 1; min-width: 0; }
+
+  .ach-name {
+    font-family: var(--font-display);
+    font-size: 0.76em;
+    letter-spacing: 0.08em;
+    color: var(--color-parchment-100, #fbf6e7);
+    margin-bottom: 0.2em;
+  }
+
+  .ach-desc {
+    font-family: var(--font-editorial, serif);
+    font-style: italic;
+    font-size: 0.72em;
+    color: rgba(232, 228, 210, 0.55);
     line-height: 1.4;
   }
-  
-  .achievement-date {
-    margin-top: 0.5em;
-    font-size: 0.8em;
-    color: #777;
-  }
-  
-  .empty-state {
-    padding: 2em 0;
-    text-align: center;
-    color: #777;
-    font-style: italic;
-  }
-  
-  @media (max-width: 768px) {
-    .achievements-container {
-      right: 0;
-      width: 25em; /* Keep consistent with the larger width */
-    }
+
+  .ach-date {
+    margin-top: 0.3em;
+    font-family: var(--font-mono);
+    font-size: 0.62em;
+    color: rgba(176, 141, 74, 0.6);
+    letter-spacing: 0.06em;
   }
 </style>

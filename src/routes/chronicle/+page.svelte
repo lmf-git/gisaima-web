@@ -57,7 +57,7 @@
     <div class="eyebrow wax">The Long Memory</div>
     <h1>The Chronicle</h1>
     <p class="lede">Every realm keeps a book. Battles, foundings, betrayals — all are recorded by the Cartographers.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if loading}
         <p class="empty italic">Turning the pages…</p>

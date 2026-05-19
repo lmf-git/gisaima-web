@@ -69,7 +69,7 @@
             <h1>{current.title}</h1>
             <p class="body">{current.body}</p>
 
-            <Flourish width={200} color="var(--color-ink-900)" />
+            <Flourish extraClass="page-flourish" />
 
             <div class="cta">
                 <Button variant="ghost" onclick={back} disabled={step === 0}>

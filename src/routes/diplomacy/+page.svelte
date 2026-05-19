@@ -75,7 +75,7 @@
     <div class="eyebrow wax">The Council of Banners</div>
     <h1>Diplomacy</h1>
     <p class="lede">Alliances are signed in wax. The Chronicle keeps every oath, and every breach.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     {#if loading}
         <p class="empty italic">Reading the heraldry rolls…</p>

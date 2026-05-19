@@ -35,7 +35,8 @@
     onShowModal = null,
     isActive = false,
     onMouseEnter = () => {},
-    onOpenUnitDetails = () => {}
+    onOpenUnitDetails = () => {},
+    inDossier = false
   } = $props();
 
   // Add state to track collapsed sections
@@ -733,14 +734,16 @@
   aria-modal="true"
 >
   <div class="details-modal" key={renderKey}>
-    <header class="modal-header">
-      <h3>
-        Tile Details {detailsData ? `(${detailsData.x},${detailsData.y})` : ''}
-      </h3>
-      <button class="close-button" onclick={onClose}>
-        <Close size="1.6em" extraClass="close-icon-dark" />
-      </button>
-    </header>
+    {#if !inDossier}
+      <header class="modal-header">
+        <h3>
+          Tile Details {detailsData ? `(${detailsData.x},${detailsData.y})` : ''}
+        </h3>
+        <button class="close-button" onclick={onClose}>
+          <Close size="1.6em" extraClass="close-icon-dark" />
+        </button>
+      </header>
+    {/if}
     
     <div class="modal-content">
       <!-- Combined terrain and actions in a single core section -->
@@ -783,36 +786,38 @@
               </div>
             {/if}
             
-            <!-- Right column: Terrain Information -->
-            <div class="terrain-column">
-              <div class="attribute">
-                <span class="attribute-label">Type</span>
-                <span class="attribute-value">
-                  <span class="terrain-color" style="background-color: {detailsData?.terrain?.color || detailsData?.color || '#cccccc'}"></span>
-                  {_fmt(detailsData?.terrain?.biome?.name || 'Unknown')}
-                </span>
-              </div>
-              
-              {#if detailsData?.terrain?.rarity || detailsData?.rarity}
+            <!-- Right column: Terrain Information — biome/coords hidden in dossier (shown in topbar) -->
+            {#if !inDossier}
+              <div class="terrain-column">
                 <div class="attribute">
-                  <span class="attribute-label">Rarity</span>
+                  <span class="attribute-label">Type</span>
                   <span class="attribute-value">
-                    <span class="rarity-badge {(detailsData?.terrain?.rarity || detailsData?.rarity)?.toLowerCase()}">
-                      {_fmt(detailsData?.terrain?.rarity || detailsData?.rarity)}
-                    </span>
+                    <span class="terrain-color" style="background-color: {detailsData?.terrain?.color || detailsData?.color || '#cccccc'}"></span>
+                    {_fmt(detailsData?.terrain?.biome?.name || 'Unknown')}
                   </span>
                 </div>
-              {/if}
-              
-              <div class="attribute">
-                <span class="attribute-label">Coordinates</span>
-                <span class="attribute-value">{detailsData ? formatCoords(detailsData.x, detailsData.y) : ''}</span>
+
+                {#if detailsData?.terrain?.rarity || detailsData?.rarity}
+                  <div class="attribute">
+                    <span class="attribute-label">Rarity</span>
+                    <span class="attribute-value">
+                      <span class="rarity-badge {(detailsData?.terrain?.rarity || detailsData?.rarity)?.toLowerCase()}">
+                        {_fmt(detailsData?.terrain?.rarity || detailsData?.rarity)}
+                      </span>
+                    </span>
+                  </div>
+                {/if}
+
+                <div class="attribute">
+                  <span class="attribute-label">Coordinates</span>
+                  <span class="attribute-value">{detailsData ? formatCoords(detailsData.x, detailsData.y) : ''}</span>
+                </div>
               </div>
-            </div>
+            {/if}
           </div>
           
           <!-- Available actions section in same container -->
-          {#if detailsData}
+          {#if detailsData && !inDossier}
             <div class="core-actions">
               <div class="actions-grid">
                 {#if detailsData.structure}

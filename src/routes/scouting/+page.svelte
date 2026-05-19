@@ -34,7 +34,7 @@
     <div class="eyebrow wax">By Spyglass & Rumour</div>
     <h1>Scouting</h1>
     <p class="lede">Distance dulls the eye. Bad deeds raise a beacon — visible all the further for it.</p>
-    <Flourish width={220} color="var(--color-ink-900)" />
+    <Flourish extraClass="page-flourish" />
 
     <section class="block">
         <div class="eyebrow">Visibility tiers</div>

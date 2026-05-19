@@ -58,7 +58,7 @@
         <div class="eyebrow wax">The Roll</div>
         <h1>Standings of the Realm</h1>
         <p class="lede">Power, blood, and ground. The Chronicle keeps account.</p>
-        <Flourish width={220} color="var(--color-ink-900)" />
+        <Flourish extraClass="page-flourish" />
     </header>
 
     <nav class="tabs">

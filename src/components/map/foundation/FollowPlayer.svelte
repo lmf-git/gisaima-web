@@ -53,57 +53,45 @@
 <style>
   .control-button {
     min-width: 2em;
+    width: 2em;
     height: 2em;
     background-color: rgba(14, 19, 32, 0.85);
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    border-radius: 0.3em;
-    color: var(--color-parchment-200);
-    padding: 0.3em 0.8em;
-    font-size: 1em;
-    font-weight: bold;
+    border: 0.075em solid rgba(176, 141, 74, 0.4);
+    border-radius: 0;
+    color: var(--color-gold-pale, #d4b170);
+    padding: 0.3em;
+    font-size: 0.9em;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     text-shadow: none;
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     backdrop-filter: blur(0.5em);
     -webkit-backdrop-filter: blur(0.5em);
     opacity: 0;
     transform: translateY(-1em);
     animation: fadeInButton 0.7s ease-out 0.5s forwards;
   }
-  
+
   .control-button:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.95);
-    border-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(176, 141, 74, 0.16);
+    border-color: var(--color-gold-pale, #d4b170);
+    color: var(--color-parchment-100);
   }
-  
+
   .control-button:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
   }
-  
+
   @keyframes fadeInButton {
-    0% {
-      opacity: 0;
-      transform: translateY(-1em);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    0%   { opacity: 0; transform: translateY(-1em); }
+    100% { opacity: 1; transform: translateY(0); }
   }
-  
+
   .control-button:focus-visible {
-    outline: 0.15em solid rgba(0, 0, 0, 0.6);
+    outline: 0.15em solid var(--color-aged-gold, #b08d4a);
     outline-offset: 0.1em;
-  }
-  
-  .follow-button {
-    padding: 0.3em;
-    min-width: 2em;
-    width: 2em;
-    display: flex;
   }
 </style>
