@@ -31,10 +31,8 @@
   let processing = $state(false);
   let mobilizeSuccess = $state(false);
 
-  // Reference: Captain / Rule-of-march settings — captured here so they
-  // attach to the new group on raise. The backend may not enforce them yet,
-  // but they round-trip with the action payload so the tick can read them.
-  let captain = $state("self");          // 'self' | 'eldest'
+  // Rule-of-march settings — captured here so they attach to the new group
+  // on raise. They round-trip with the action payload so the tick can read them.
   let fleeAtLosses = $state(40);          // 0..100 (%)
   let joinBattlesInProgress = $state(true);
 
@@ -187,12 +185,11 @@
         units: selectedUnits.map(u => u.id),
         includePlayer,
         name: groupName,
-        captain,
         fleeAtLosses,
         joinBattlesInProgress,
         race: $currentPlayer?.race
       });
-      
+
       const result = await apiPost('/actions/mobiliseUnits', {
         worldId: $game.worldKey,
         tileX: tileData.x,
@@ -200,7 +197,6 @@
         units: selectedUnits.map(u => u.id),
         includePlayer,
         name: groupName,
-        captain,
         fleeAtLosses,
         joinBattlesInProgress,
         race: $currentPlayer?.race
@@ -278,17 +274,10 @@
           </div>
         </div>
 
-        <!-- Reference: Rule of march — captain choice + retreat threshold +
-             whether the new banner is allowed to join battles in progress. -->
+        <!-- Rule of march — retreat threshold + whether the new banner is
+             allowed to join battles in progress. -->
         <div class="rule-of-march">
           <div class="row-of-march eyebrow">Rule of march</div>
-          <label class="march-row">
-            <span>Captain</span>
-            <select bind:value={captain}>
-              <option value="self">Self</option>
-              <option value="eldest">The eldest</option>
-            </select>
-          </label>
           <label class="march-row">
             <span>Flee at losses · <b>{fleeAtLosses}%</b></span>
             <input type="range" min="0" max="100" bind:value={fleeAtLosses} />
