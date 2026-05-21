@@ -5,12 +5,11 @@
   } from '../../../lib/stores/game';
   import { targetStore } from '../../../lib/stores/map';
 
-  import Close from '../../icons/Close.svelte';
   import Compass from '../../icons/Compass.svelte';
-  
-  const { 
-    onClose = () => {}, 
-    onStartPathDrawing = () => {}
+
+  const {
+    onClose = () => {},
+    onStartPathDrawing = () => {},
   } = $props();
 
 
@@ -38,12 +37,6 @@
       group.owner === $currentPlayer.id && 
       group.status === 'idle'
     );
-  }
-
-  function handleKeyDown(event) {
-    if (event.key === "Escape") {
-      onClose();
-    }
   }
 
   function startPathDrawing() {
@@ -102,16 +95,7 @@
   }
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
-<div class="move-modal" transition:scale={{ start: 0.95, duration: 200 }}>
-  <header class="modal-header">
-    <h3>Move Group</h3>
-    <button class="close-button" onclick={onClose}>
-      <Close size="1.6em" extraClass="close-icon-dark" />
-    </button>
-  </header>
-
+<div class="move-modal">
   <div class="modal-body">
     {#if eligibleGroups.length === 0}
       <div class="message error">
@@ -176,40 +160,6 @@
     background: transparent;
     color: var(--color-parchment-100);
     font-family: var(--font-body);
-  }
-
-  .modal-header {
-    padding: 0.8em 1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
-  }
-
-  .close-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.4em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-button:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .modal-body {

@@ -1,6 +1,4 @@
 <script>
-  import { scale } from 'svelte/transition';
-
   import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
   import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
@@ -8,13 +6,9 @@
   import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore, coordinates } from '../../../lib/stores/map';
 
-  import Close from '../../icons/Close.svelte';
-
-  const { 
+  const {
     onClose = () => {},
     onBuild = () => {},
-    isActive = false,
-    onMouseEnter = () => {}
   } = $props();
 
   let tileData = $derived($targetStore || null);
@@ -260,19 +254,6 @@
     onClose();
   }
 
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-    
-    if (event.key === 'Enter' && event.target.tagName === 'INPUT') {
-      event.preventDefault();
-      if (canBuild) {
-        startBuilding();
-      }
-    }
-  }
-
   function hasRequiredResources() {
     if (!selectedStructure || !selectedGroup) return false;
     
@@ -318,19 +299,7 @@
 
 <div
   class="build-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}
 >
-  <header class="modal-header">
-    <h2 id="build-title">Build Structure - {tileData?.x}, {tileData?.y}</h2>
-    <button class="close-btn" onclick={onClose} aria-label="Close build dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
-
   <div class="content">
     {#if tileData}
       <div class="location-info">
@@ -516,38 +485,6 @@
     background: transparent;
     color: var(--color-parchment-100);
     font-family: var(--font-body);
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .location-info {

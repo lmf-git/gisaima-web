@@ -4,7 +4,7 @@
 
   const {
     onClose = () => {},
-    onOpenAchievements = () => {}
+    onOpenAchievements = () => {},
   } = $props();
 
   let worldExpanded    = $state(false);
@@ -25,10 +25,6 @@
 </script>
 
 <div class="help-panel">
-  <header class="modal-header">
-    <h2>Welcome to Gisaima</h2>
-  </header>
-
   <div class="help-body">
     <p class="summary">
       Strategic open-world MMO with procedurally generated maps, territory control,
@@ -137,24 +133,6 @@
     min-height: 0;
     color: var(--color-parchment-100, #fbf6e7);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
-  }
-
-  /* Matches the dossier's .modal-header override */
-  .modal-header {
-    padding: 0.7em 1em;
-    background: rgba(176, 141, 74, 0.06);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-    flex-shrink: 0;
-  }
-
-  h2 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 0.72em;
-    font-weight: 400;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-gold-pale, #d4b170);
   }
 
   .help-body {

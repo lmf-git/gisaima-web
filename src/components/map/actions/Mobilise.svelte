@@ -1,6 +1,5 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
-  import { scale } from 'svelte/transition';
 
   // Import unit definitions to get boat capacities
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
@@ -8,17 +7,14 @@
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore } from '../../../lib/stores/map';
 
-  import Close from '../../icons/Close.svelte';
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
   import Dwarf from '../../icons/Dwarf.svelte';
   import Goblin from '../../icons/Goblin.svelte';
   import Fairy from '../../icons/Fairy.svelte';
 
-  const { 
+  const {
     onClose = () => {},
-    isActive = false, // Add prop for z-index control
-    onMouseEnter = () => {} // Add prop for mouse enter event
   } = $props();
 
   let tileData = $derived($targetStore || null);
@@ -240,38 +236,14 @@
     && !capacityExceeded // Add capacity check
   );
 
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-    
-    if (event.key === 'Enter' && event.target.tagName === 'INPUT') {
-      event.preventDefault();
-    }
-  }
-  
   function toggleCheckbox() {
     includePlayer = !includePlayer;
   }
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
 <div
-  class="mobilise-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}>
-  
-  <header class="modal-header">
-    <h2 id="mobilise-title">Mobilise Forces - {tileData?.x}, {tileData?.y}</h2>
-    <button class="close-btn" onclick={onClose} aria-label="Close mobilise dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
-  
+  class="mobilise-modal">
+
   <div class="content">
     {#if tileData}
       <div class="location-info">
@@ -579,43 +551,11 @@
     font-family: var(--font-body);
   }
 
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
-  }
-
   .content {
     padding: 1em;
     overflow-y: auto;
     flex: 1;
     color: var(--color-parchment-200);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .location-info {

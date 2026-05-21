@@ -6,7 +6,6 @@
   import { currentPlayer } from "../../../lib/stores/game.js";
   import { targetStore, coordinates } from "../../../lib/stores/map.js";
 
-  import Close from '../../icons/Close.svelte';
   import Structure from '../../icons/Structure.svelte';
   import Torch from '../../icons/Torch.svelte';
   import Human from '../../icons/Human.svelte';
@@ -19,14 +18,12 @@
   
 
   // Props - using correct Svelte 5 runes syntax
-  const { 
-    x = 0, 
-    y = 0, 
+  const {
+    x = 0,
+    y = 0,
     onClose = () => {},
-    onAchievement = () => {}, // Add this to handle achievements
-    onShowModal = () => {}, // Add this prop to handle showing modals
-    isActive = false, // Add prop for z-index control
-    onMouseEnter = () => {} // Add prop for mouse enter event
+    onAchievement = () => {},
+    onShowModal = () => {},
   } = $props();
   
   // Add to the state
@@ -144,13 +141,6 @@
       Object.keys(tileData?.structure?.items).filter(k => !k.startsWith('_')).length > 0))
   );
   
-  // Add keyboard handler for the Escape key
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  }
-
   // Function to check if recruitment is possible at this structure
   function canRecruitAtStructure() {
     // Check if structure exists
@@ -729,20 +719,7 @@
   });
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
-
-<div class="modal-container">
-  <div class="structure-modal" class:active={isActive} onmouseenter={onMouseEnter} role="dialog" tabindex="-1">
-    <header class="modal-header">
-      <h3>
-        {formatText(tileData?.structure?.type || 'Structure')} 
-        {tileData ? `(${formatCoords(tileData.x, tileData.y)})` : ''}
-      </h3>
-      <button class="close-button" onclick={onClose}>
-        <Close size="1.6em" extraClass="close-icon-dark" />
-      </button>
-    </header>
-
+<div class="structure-modal">
     <div class="modal-content">
       <div class="structure-container">
         <div class="structure-icon-container">
@@ -1181,77 +1158,18 @@
         </div>
       {/if}
     </div>
-  </div>
 </div>
 
 <style>
-  /* ── Floating modal chrome (standalone use) ── */
-  .modal-container {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    pointer-events: none;
-  }
-
   .structure-modal {
-    pointer-events: auto;
-    width: 90%;
-    max-width: 34em;
-    max-height: 85vh;
-    background: linear-gradient(180deg, rgba(10, 14, 26, 0.97), rgba(14, 19, 32, 0.97));
-    border: 0.075em solid rgba(176, 141, 74, 0.3);
-    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.6);
-    color: var(--color-parchment-100, #fbf6e7);
-    z-index: 1000;
-    font-size: 1.4em;
-    font-family: var(--font-body, 'EB Garamond', serif);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    backdrop-filter: blur(8px);
-    animation: modalAppear 0.2s ease-out forwards;
+    flex: 1;
+    background: transparent;
+    color: var(--color-parchment-100, #fbf6e7);
+    font-family: var(--font-body, 'EB Garamond', serif);
+    overflow: hidden;
   }
-
-  @keyframes modalAppear {
-    from { opacity: 0; transform: scale(0.97); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-
-  /* ── Header ── */
-  .modal-header {
-    padding: 0.7em 1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(176, 141, 74, 0.07);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-    flex-shrink: 0;
-  }
-
-  h3 {
-    margin: 0;
-    font-family: var(--font-display, 'Cinzel', serif);
-    font-size: 0.78em;
-    font-weight: 400;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-gold-pale, #d4b170);
-  }
-
-  .close-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    align-items: center;
-    color: rgba(232, 228, 210, 0.5);
-    transition: color 0.15s;
-  }
-  .close-button:hover { color: var(--color-parchment-100, #fbf6e7); }
 
   /* ── Scrollable content ── */
   .modal-content {

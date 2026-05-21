@@ -1,17 +1,12 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
-  import { scale } from 'svelte/transition';
 
   import { targetStore } from '../../../lib/stores/map';
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
 
-  import Close from '../../icons/Close.svelte';
-  
-  const { 
-    onClose = () => {}, 
+  const {
+    onClose = () => {},
     onDemobilize = () => {},
-    isActive = false, // Add prop for z-index control
-    onMouseEnter = () => {} // Add prop for mouse enter event
   } = $props();
 
   // Use $derived for tileData to prevent reactivity issues
@@ -120,35 +115,15 @@
     }
   }
 
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  }
-
   function _fmt(t) {
     if (!t) return '';
     return t.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
 <div
   class="demobilise-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}
 >
-  <header class="modal-header">
-    <h2>Demobilise Group - {tileData?.x}, {tileData?.y}</h2>
-    <button class="close-btn" onclick={onClose} aria-label="Close demobilise dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
-  
   <div class="content">
     {#if tileData && tileData.structure}
       <p class="description">
@@ -273,24 +248,6 @@
     background: transparent;
     color: var(--color-parchment-100);
     font-family: var(--font-body);
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
   }
 
   .content {
@@ -462,20 +419,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.8em;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .close-btn-secondary {

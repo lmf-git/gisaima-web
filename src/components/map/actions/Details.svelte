@@ -10,7 +10,6 @@
   import { coordinates, targetStore, entities } from "../../../lib/stores/map.js";
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
   
-  import Close from '../../icons/Close.svelte';
   import Torch from '../../icons/Torch.svelte';
   import Structure from '../../icons/Structure.svelte';
   import Cancel from '../../icons/Close.svelte';
@@ -33,10 +32,7 @@
   const {
     onClose = () => {},
     onShowModal = null,
-    isActive = false,
-    onMouseEnter = () => {},
     onOpenUnitDetails = () => {},
-    inDossier = false
   } = $props();
 
   // Add state to track collapsed sections
@@ -499,12 +495,6 @@
   }
 
   // Add keyboard handler for the Escape key
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  }
-  
   // Function to handle keyboard events on interactive elements
   function handleSectionKeyDown(event, sectionId) {
     // Toggle section on Enter or Space key
@@ -720,31 +710,7 @@
   }
 </script>
 
-<!-- Add global keyboard event listener -->
-<svelte:window on:keydown={handleKeyDown} />
-
-<div 
-  class="modal-container" 
-  class:ready={isReady} 
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  aria-label="Tile details"
-  aria-modal="true"
->
-  <div class="details-modal" key={renderKey}>
-    {#if !inDossier}
-      <header class="modal-header">
-        <h3>
-          Tile Details {detailsData ? `(${detailsData.x},${detailsData.y})` : ''}
-        </h3>
-        <button class="close-button" onclick={onClose}>
-          <Close size="1.6em" extraClass="close-icon-dark" />
-        </button>
-      </header>
-    {/if}
-    
+<div class="details-modal" key={renderKey}>
     <div class="modal-content">
       <!-- Combined terrain and actions in a single core section -->
       <div class="core-section">
@@ -786,115 +752,7 @@
               </div>
             {/if}
             
-            <!-- Right column: Terrain Information — biome/coords hidden in dossier (shown in topbar) -->
-            {#if !inDossier}
-              <div class="terrain-column">
-                <div class="attribute">
-                  <span class="attribute-label">Type</span>
-                  <span class="attribute-value">
-                    <span class="terrain-color" style="background-color: {detailsData?.terrain?.color || detailsData?.color || '#cccccc'}"></span>
-                    {_fmt(detailsData?.terrain?.biome?.name || 'Unknown')}
-                  </span>
-                </div>
-
-                {#if detailsData?.terrain?.rarity || detailsData?.rarity}
-                  <div class="attribute">
-                    <span class="attribute-label">Rarity</span>
-                    <span class="attribute-value">
-                      <span class="rarity-badge {(detailsData?.terrain?.rarity || detailsData?.rarity)?.toLowerCase()}">
-                        {_fmt(detailsData?.terrain?.rarity || detailsData?.rarity)}
-                      </span>
-                    </span>
-                  </div>
-                {/if}
-
-                <div class="attribute">
-                  <span class="attribute-label">Coordinates</span>
-                  <span class="attribute-value">{detailsData ? formatCoords(detailsData.x, detailsData.y) : ''}</span>
-                </div>
-              </div>
-            {/if}
           </div>
-          
-          <!-- Available actions section in same container -->
-          {#if detailsData && !inDossier}
-            <div class="core-actions">
-              <div class="actions-grid">
-                {#if detailsData.structure}
-                  <button class="action-button inspect-button" onclick={() => executeAction('inspect')}>
-                    <Eye extraClass="action-icon eye-icon" />
-                    Inspect
-                  </button>
-                {/if}
-                
-                {#if canMobilize(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('mobilise')}>
-                    <Rally extraClass="action-icon rally-icon" />
-                    Mobilise
-                  </button>
-                {/if}
-                
-                {#if canRecruit(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('recruit')}>
-                    <Horn extraClass="action-icon horn-icon" />
-                    Recruit
-                  </button>
-                {/if}
-                
-                {#if canMove(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('move')}>
-                    <Compass extraClass="action-icon compass-icon" />
-                    Move
-                  </button>
-                {/if}
-                
-                {#if canAttack(detailsData)}
-                  <button class="action-button attack-button" onclick={() => executeAction('attack')}>
-                    <Sword extraClass="action-icon attack-icon" />
-                    Attack
-                  </button>
-                {/if}
-
-                {#if canBuild(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('build')}>
-                    <Hammer extraClass="action-icon hammer-icon" />
-                    Build
-                  </button>
-                {/if}
-                
-                {#if canCraft(detailsData)}
-                  <button class="action-button craft-button" onclick={() => executeAction('craft')}>
-                    <Hammer extraClass="action-icon hammer-icon" />
-                    Craft
-                  </button>
-                {/if}
-                
-                {#if canGather(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('gather', { source: 'details' })}>
-                    <Crop extraClass="action-icon crop-icon" />
-                    Gather
-                  </button>
-                {/if}
-                
-                {#if canJoinBattle(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('joinBattle')}>
-                    Join Battle
-                  </button>
-                {/if}
-                
-                {#if canDemobilize(detailsData)}
-                  <button class="action-button" onclick={() => executeAction('demobilise')}>
-                    {#if detailsData.structure?.type === 'spawn'}
-                      <Torch extraClass="action-icon torch-icon" />
-                    {:else}
-                      <Structure extraClass="action-icon structure-icon" />
-                    {/if}
-                    Demobilise
-                  </button>
-                {/if}
-              </div>
-            </div>
-          {/if}
         </div>
       </div>
       
@@ -1599,97 +1457,17 @@
         </div>
       {/if}
     </div>
-  </div>
 </div>
 
 <style>
-  .modal-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease-out, z-index 0s;
-  }
-
-  .modal-container.active {
-    z-index: 1001;
-  }
-  
-  .modal-container.ready {
-    opacity: 1;
-  }
-
   .details-modal {
-    pointer-events: auto;
-    width: 90%;
-    max-width: 34em;
-    max-height: 85vh;
-    background-color: rgba(14, 19, 32, 0.85);
-    border: 1px solid rgba(176, 141, 74, 0.3);
-    border-radius: 0.3em;
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
-    text-shadow: none;
-    font-size: 1.4em;
-    font-family: var(--font-body);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    transform: scale(0.95);
-    opacity: 0;
-    animation: modalAppear 0.3s ease-out forwards;
-  }
-
-  @keyframes modalAppear {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 1.3em;
-    font-weight: 600;
+    flex: 1;
+    background: transparent;
     color: var(--color-parchment-200);
-    font-family: var(--font-heading);
-  }
-
-  .close-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-    color: rgba(232, 228, 210, 0.65);
-  }
-
-  .close-button:hover {
-    background-color: rgba(176, 141, 74, 0.12);
-    color: var(--color-parchment-100);
+    font-family: var(--font-body);
+    overflow: hidden;
   }
 
   .modal-content {

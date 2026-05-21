@@ -1,17 +1,12 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
-  import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
   import { targetStore } from '../../../lib/stores/map';
 
-  import Close from '../../icons/Close.svelte';
-
-  const { 
-    onClose = () => {}, 
+  const {
+    onClose = () => {},
     onJoinBattle = () => {},
-    isActive = false,
-    onMouseEnter = () => {}
   } = $props();
 
   // Get tile data directly from the targetStore
@@ -148,29 +143,11 @@
     if (!loading) selectedSide = side;
   }
   
-  // Handle keyboard events
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') onClose();
-  }
 </script>
-
-<svelte:window onkeydown={handleKeyDown} />
 
 <div
   class="join-battle-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}
 >
-  <header class="modal-header">
-    <h2>Join Battle - {tileData?.x}, {tileData?.y}</h2>
-    <button class="close-btn" onclick={onClose} aria-label="Close dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
-  
   <div class="content">
     {#if availableGroups.length === 0 || activeBattles.length === 0}
       <div class="message error">
@@ -304,45 +281,16 @@
     z-index: 1001;
   }
 
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8em 1em;
-    background: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
   h2, h3 {
     margin: 0;
     font-family: var(--font-heading);
   }
-  
-  h2 {
-    font-size: 1.3em;
-    font-weight: 600;
-    color: #333;
-  }
-  
+
   h3 {
     margin-bottom: 0.8em;
     font-size: 1.1em;
     font-weight: 500;
     color: #333;
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .content {

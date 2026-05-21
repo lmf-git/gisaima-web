@@ -1,6 +1,6 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
-  import { scale, fade } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
 
   import { BUILDINGS } from 'gisaima-shared';
   import { 
@@ -8,8 +8,7 @@
     getAllRecipes
   } from 'gisaima-shared/definitions/ITEMS.js';
   import { game, currentPlayer } from '../../../lib/stores/game.js';
-  
-  import Close from '../../icons/Close.svelte';
+
   import Back from '../../icons/Back.svelte';
   import CraftingCategoryIcon from '../../icons/CraftingCategoryIcon.svelte';
   import BuildingIcon from '../../icons/BuildingIcon.svelte';
@@ -21,8 +20,6 @@
     y = 0,
     onClose = () => {},
     onCraftStart = () => {},
-    isActive = false,
-    onMouseEnter = () => {}
   } = $props();
 
   // Use $state() for reactive variables
@@ -237,18 +234,6 @@
     return ticks === 1 ? `${ticks} tick` : `${ticks} ticks`;
   }
   
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      if (currentView === 'details') {
-        goBack();
-      } else if (currentView === 'recipes') {
-        goBack();
-      } else {
-        onClose();
-      }
-    }
-  }
-  
   function canCraft(recipe) {
     if (!recipe) return false;
     
@@ -270,37 +255,23 @@
   }
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
 <div
-  class="crafting-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}>
-  
-  <header class="modal-header">
-    <div class="header-content">
-      {#if currentView !== 'categories'}
-        <button class="back-btn" onclick={goBack} aria-label="Go back">
-          <Back size="1.2em" />
-        </button>
-      {/if}
-      <h2 id="crafting-title">
-        {#if currentView === 'categories'}
-          Crafting
-        {:else if currentView === 'recipes'}
-          {categories.find(c => c.id === selectedCategory)?.label || 'Select Recipe'}
+  class="crafting-modal">
+
+  {#if currentView !== 'categories'}
+    <div class="dossier-back-bar">
+      <button class="back-btn" onclick={goBack} aria-label="Go back">
+        <Back size="1.1em" />
+      </button>
+      <span class="dossier-back-label">
+        {#if currentView === 'recipes'}
+          {categories.find(c => c.id === selectedCategory)?.label || 'Back'}
         {:else}
-          {selectedRecipe?.name || 'Recipe Details'}
+          {selectedRecipe?.name || 'Back'}
         {/if}
-      </h2>
+      </span>
     </div>
-    <button class="close-btn" onclick={onClose} aria-label="Close crafting dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
+  {/if}
   
   <div class="content">
     {#if loading}
@@ -456,19 +427,19 @@
     font-family: var(--font-body);
   }
 
-  .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
-  .header-content {
+  .dossier-back-bar {
     display: flex;
     align-items: center;
     gap: 0.5em;
+    padding: 0.45em 0.9em;
+    border-bottom: 0.075em solid rgba(176,141,74,0.15);
+    background: rgba(176,141,74,0.04);
+  }
+  .dossier-back-label {
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    color: var(--color-gold-pale);
   }
 
   .back-btn {
@@ -487,34 +458,11 @@
     background: rgba(176, 141, 74, 0.12);
   }
 
-  h2 {
-    margin: 0;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    font-family: var(--font-display);
-    letter-spacing: 0.06em;
-  }
-
   .content {
     padding: 1em;
     overflow-y: auto;
     flex: 1;
     color: var(--color-parchment-200);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .categories-grid {

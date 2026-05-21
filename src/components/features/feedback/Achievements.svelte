@@ -5,13 +5,11 @@
 
   import { currentPlayer, game, savePlayerAchievement } from '../../../lib/stores/game.js';
 
-  import Close from '../../icons/Close.svelte';
   import Trophy from '../../icons/Trophy.svelte';
 
   const {
     onClose = () => {},
     closing = false,
-    onMouseEnter = () => {}
   } = $props();
 
   let selectedCategory = $state('all');
@@ -71,17 +69,8 @@
   }
 </script>
 
-<div class="achievements-panel" onmouseenter={onMouseEnter}>
-  <header class="ach-header modal-header">
-    <h2 id="achievements-heading">
-      <Trophy extraClass="trophy-icon" />
-      <span>Achievements</span>
-      <span class="ach-count">{unlockedCount} / {totalCount}</span>
-    </h2>
-    <button class="close-btn" onclick={close} aria-label="Close achievements">
-      <Close size="1em" />
-    </button>
-  </header>
+<div class="achievements-panel">
+  <div class="ach-dossier-count">{unlockedCount} / {totalCount} unlocked</div>
 
   <div class="ach-categories">
     {#each categories as category}
@@ -137,53 +126,13 @@
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
   }
 
-  /* Header — matches ds-panel :global(.modal-header) overrides */
-  .ach-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.7em 1em;
-    background: rgba(176, 141, 74, 0.06);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-    flex-shrink: 0;
-  }
-
-  h2 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    font-family: var(--font-display);
-    font-size: 0.72em;
-    font-weight: 400;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-gold-pale, #d4b170);
-  }
-
-  .ach-count {
+  .ach-dossier-count {
     font-family: var(--font-mono);
-    font-size: 0.85em;
-    letter-spacing: 0.06em;
-    color: rgba(251, 246, 231, 0.45);
-    background: rgba(255, 255, 255, 0.06);
-    padding: 0.15em 0.5em;
-    margin-left: 0.3em;
-  }
-
-  /* The dossier hides .close-btn via global override, but keep it styled for standalone use */
-  .close-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0.2em;
-    display: flex;
-    align-items: center;
-    color: rgba(251, 246, 231, 0.5);
-    transition: color 0.12s;
+    font-size: 0.72em;
+    color: rgba(251,246,231,0.45);
+    padding: 0.5em 1em 0.25em;
     flex-shrink: 0;
   }
-  .close-btn:hover { color: var(--color-parchment-100); }
 
   /* Trophy icon in header */
   .achievements-panel :global(.trophy-icon) {

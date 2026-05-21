@@ -1,11 +1,9 @@
 <script>
-  import { scale } from 'svelte/transition';
   import { apiPost } from '../../../lib/api.js';
   import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
   import { EQUIPMENT_SLOTS, SLOT_ORDER } from 'gisaima-shared/definitions/EQUIPMENT_SLOTS.js';
   import { game, currentPlayer } from '../../../lib/stores/game.js';
-  import Close from '../../icons/Close.svelte';
   import Race from '../../icons/Race.svelte';
   import Unit from '../../icons/Unit.svelte';
 
@@ -14,8 +12,8 @@
     unitId,
     group,
     tileData,
-    onClose  = () => {},
-    onEquipped = () => {},   // called after a successful equip/unequip so parent can refresh
+    onClose    = () => {},
+    onEquipped = () => {},
   } = $props();
 
   const _fmt = t => t?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '';
@@ -169,12 +167,7 @@
   }
 </script>
 
-<div
-  class="unit-details-modal"
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}
->
+<div class="unit-details-modal">
   <header class="modal-header">
     <div class="unit-header-info">
       <div class="unit-header-icon">
@@ -198,7 +191,6 @@
         </div>
       </div>
     </div>
-    <button class="close-btn" onclick={onClose}><Close size="1.4em" /></button>
   </header>
 
   <!-- Stats section: two rows (attack / defense + carry) -->
@@ -295,7 +287,7 @@
     <div class="picker-panel">
       <div class="picker-header">
         <span>Equip {slotDef.name}</span>
-        <button class="close-btn small" onclick={closePicker}><Close size="1em" /></button>
+        <button class="picker-close-btn" onclick={closePicker}>✕</button>
       </div>
 
       <!-- Source tabs -->
@@ -414,19 +406,6 @@
   .race-badge  { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.25); }
   .type-badge  { background: rgba(176, 141, 74, 0.06); color: rgba(232, 228, 210, 0.65); border: 0.075em solid rgba(176, 141, 74, 0.15); }
   .lv-badge    { background: rgba(91, 26, 31, 0.12); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25em;
-    display: flex;
-    transition: background-color 0.2s;
-    flex-shrink: 0;
-    color: var(--color-parchment-100);
-  }
-  .close-btn:hover { background: rgba(176, 141, 74, 0.12); }
-  .close-btn.small { padding: 0.1em; }
 
   .stats-section {
     border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
@@ -600,6 +579,19 @@
 
   .slot-unequip:hover { background: rgba(91, 26, 31, 0.3); }
   .slot-unequip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .picker-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.1em 0.3em;
+    display: flex;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+    color: var(--color-parchment-100);
+    font-size: 0.9em;
+  }
+  .picker-close-btn:hover { background: rgba(176, 141, 74, 0.12); }
 
   .picker-panel {
     border-top: 0.075em solid rgba(176, 141, 74, 0.18);

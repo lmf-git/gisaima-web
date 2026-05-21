@@ -1,11 +1,9 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
-  import { scale } from 'svelte/transition';
 
   import { currentPlayer, game } from '../../../lib/stores/game';
   import { targetStore, entities } from '../../../lib/stores/map';
 
-  import Close from '../../icons/Close.svelte';
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
   import Dwarf from '../../icons/Dwarf.svelte';
@@ -13,10 +11,8 @@
   import Fairy from '../../icons/Fairy.svelte';
   import Structure from '../../icons/Structure.svelte';
 
-  const { 
+  const {
     onClose = () => {},
-    isActive = false, // Add prop for z-index control
-    onMouseEnter = () => {} // Add prop for mouse enter event 
   } = $props();
 
   // Get tile data directly from the targetStore (same as current player location)
@@ -303,13 +299,6 @@
     !loading
   );
   
-  // Handle keyboard events
-  function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  }
-
   // Format owner name for display
   function formatOwnerName(group) {
     return group.ownerName || "Unknown Player";
@@ -325,23 +314,9 @@
   let hasTargets = $derived(hasEnemyGroups || hasStructures);
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
 <div
   class="attack-modal"
-  class:active={isActive}
-  onmouseenter={onMouseEnter}
-  role="dialog"
-  tabindex="-1"
-  transition:scale={{ start: 0.95, duration: 200 }}
 >
-  <header class="modal-header">
-    <h2>Attack - {tileData?.x}, {tileData?.y}</h2>
-    <button class="close-btn" onclick={onClose} aria-label="Close dialog">
-      <Close size="1.5em" />
-    </button>
-  </header>
-  
   <div class="content">
     {#if playerGroups.length === 0}
       <div class="message error">
@@ -524,25 +499,9 @@
     font-family: var(--font-body);
   }
 
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8em 1em;
-    background: rgba(176, 141, 74, 0.08);
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-  }
-
   h2, h3 {
     margin: 0;
     font-family: var(--font-display);
-  }
-
-  h2 {
-    font-size: 1.1em;
-    font-weight: 600;
-    color: var(--color-aged-gold);
-    letter-spacing: 0.06em;
   }
 
   h3 {
@@ -552,20 +511,6 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-aged-gold);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3em;
-    display: flex;
-    transition: background-color 0.2s;
-    color: var(--color-parchment-100);
-  }
-
-  .close-btn:hover {
-    background-color: rgba(176, 141, 74, 0.12);
   }
 
   .content {

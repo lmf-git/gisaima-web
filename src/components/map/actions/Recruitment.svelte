@@ -9,22 +9,19 @@
 
     import { game, currentPlayer } from "../../../lib/stores/game.js";
 
-    import Close from "../../icons/Close.svelte";
     import Unit from "../../icons/Unit.svelte";
     import BuildingIcon from "../../icons/BuildingIcon.svelte";
     import Structure from "../../icons/Structure.svelte";
     import Lock from "../../icons/Lock.svelte";
     import Info from "../../icons/Info.svelte";
 
-    // Props - Add isActive and onMouseEnter props
+    // Props
     const {
         structure = null,
         x = 0,
         y = 0,
         onClose = () => {},
         onRecruitStart = () => {},
-        isActive = false, // Add prop for z-index control
-        onMouseEnter = () => {} // Add prop for mouse enter event
     } = $props();
 
     // Component state
@@ -595,13 +592,6 @@
         return Math.floor((elapsed / total) * 100);
     }
 
-    // Add keyboard handler for the Escape key
-    function handleKeyDown(event) {
-        if (event.key === "Escape" && !isLoading) {
-            onClose();
-        }
-    }
-
     // Initialize
     onMount(() => {
         // Refresh queue on interval
@@ -614,23 +604,7 @@
     });
 </script>
 
-<svelte:window on:keydown={handleKeyDown} />
-
-<div
-    class="recruitment-modal"
-    class:active={isActive}
-    onmouseenter={onMouseEnter}
-    role="dialog"
-    tabindex="-1">
-    <header class="modal-header">
-        <h3>
-            Recruitment at {structureData?.name || "Structure"} ({x}, {y})
-        </h3>
-        <button class="close-button" onclick={onClose} disabled={isLoading}>
-            <Close size="1.6em" extraClass="close-icon-dark" />
-        </button>
-    </header>
-
+<div class="recruitment-modal">
     <div class="modal-content">
         <!-- Queue section -->
         <div class="section queue-section">
@@ -955,40 +929,6 @@
         background: transparent;
         color: var(--color-parchment-100);
         font-family: var(--font-body);
-    }
-
-    .modal-header {
-        padding: 0.8rem 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: rgba(176, 141, 74, 0.08);
-        border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
-    }
-
-    h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--color-aged-gold);
-        font-family: var(--font-display);
-        letter-spacing: 0.06em;
-    }
-
-    .close-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s;
-        color: var(--color-parchment-100);
-    }
-
-    .close-button:hover:not(:disabled) {
-        background-color: rgba(176, 141, 74, 0.12);
     }
 
     .modal-content {

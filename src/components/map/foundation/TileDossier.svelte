@@ -129,6 +129,23 @@
   // ─── helpers ───────────────────────────────────────────────────
   const _fmt = t => t?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) ?? '';
 
+  const PANEL_TITLES = {
+    mobilise:    'Mobilise',
+    move:        'Move Group',
+    gather:      'Gather',
+    demobilise:  'Demobilise',
+    attack:      'Attack',
+    joinBattle:  'Join Battle',
+    build:       'Build',
+    recruitment: 'Recruit',
+    craft:       'Crafting',
+    achievements:'Achievements',
+    help:        'Guide',
+    inspect:     'Inspect',
+  };
+
+  const panelTitle = $derived(panel ? (PANEL_TITLES[panel] ?? null) : null);
+
   function glyphFor(key) {
     const k = (key || '').toUpperCase();
     if (k === 'GOLD' || k.includes('COIN'))  return 'coin';
@@ -164,19 +181,25 @@
   aria-hidden={!visible}
 >
   {#if visible}
-    <!-- ── Persistent header (coords/name only — close lives in each panel) ── -->
-    {#if tile && (panel === 'details' || panel === null)}
-      <div class="ds-topbar">
-        {#if struct?.name}
+    <!-- ── Persistent header — always shown, provides consistent close + context ── -->
+    <div class="ds-topbar">
+      <div class="ds-topbar-left">
+        {#if panelTitle}
+          <span class="ds-topbar-action">{panelTitle}</span>
+        {:else if struct?.name}
           <span class="ds-topbar-name">{struct.name}</span>
+        {:else}
+          <span class="ds-topbar-name">Tile</span>
         {/if}
-        <span class="ds-topbar-coords">{tile.x} | {tile.y}</span>
-        <span class="ds-topbar-biome">{_fmt(tile.biome?.name)}</span>
-        <button class="ds-close" onclick={onClose} aria-label="Close dossier">
-          <Close size="1em" />
-        </button>
+        {#if tile}
+          <span class="ds-topbar-coords">{tile.x},{tile.y}</span>
+          {#if tile.biome?.name}<span class="ds-topbar-biome">{_fmt(tile.biome.name)}</span>{/if}
+        {/if}
       </div>
-    {/if}
+      <button class="ds-close" onclick={onClose} aria-label="Close dossier">
+        <Close size="1.25em" />
+      </button>
+    </div>
 
     <div class="ds-body">
 
@@ -219,7 +242,6 @@
 
       {:else if panel === 'details' && !selectedUnit}
         <div class="ds-panel"><Details
-          inDossier={true}
           onClose={onClose}
           onShowModal={() => {}}
           onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
@@ -388,52 +410,78 @@
   .ds-topbar {
     display: flex;
     align-items: center;
-    gap: 0.6em;
-    padding: 0.6em 0.9em;
-    border-bottom: 0.075em solid rgba(255,255,255,0.08);
+    justify-content: space-between;
+    padding: 0.55em 0.75em 0.55em 1em;
+    border-bottom: 0.075em solid rgba(255,255,255,0.1);
     flex-shrink: 0;
-    min-height: 2.5em;
+    min-height: 2.75em;
+    background: rgba(176,141,74,0.06);
+  }
+
+  .ds-topbar-left {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55em;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ds-topbar-action {
+    font-family: var(--font-display);
+    font-size: 0.8em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-gold-pale, #d4b170);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .ds-topbar-name {
     font-family: var(--font-display);
-    font-size: 0.78em;
+    font-size: 0.8em;
     letter-spacing: 0.1em;
     color: var(--color-gold-pale, #d4b170);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex: 1;
   }
 
   .ds-topbar-coords {
     font-family: var(--font-mono);
-    font-size: 0.68em;
-    color: var(--color-wax-red, #8b2020);
-    letter-spacing: 0.08em;
+    font-size: 0.72em;
+    color: rgba(251,246,231,0.4);
+    letter-spacing: 0.04em;
     flex-shrink: 0;
   }
 
   .ds-topbar-biome {
     font-family: var(--font-mono);
-    font-size: 0.62em;
-    opacity: 0.45;
+    font-size: 0.65em;
+    color: rgba(251,246,231,0.28);
     flex-shrink: 0;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 7em;
   }
 
   .ds-close {
     background: transparent;
     border: none;
-    color: rgba(251,246,231,0.5);
+    color: rgba(251,246,231,0.55);
     cursor: pointer;
-    padding: 0.2em;
+    padding: 0.3em 0.35em;
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    transition: color 0.12s;
+    transition: color 0.14s, background 0.14s;
+    border-radius: 2px;
+    margin-left: 0.4em;
   }
-  .ds-close:hover { color: var(--color-parchment-100); }
+  .ds-close:hover {
+    color: var(--color-parchment-100);
+    background: rgba(176,141,74,0.12);
+  }
 
   /* ── Scrollable body ── */
   .ds-body {
@@ -459,6 +507,56 @@
     -ms-overflow-style: none;
   }
   .ds-panel :global(*::-webkit-scrollbar) { display: none; }
+
+  /* ── Scoped typography improvements for panels rendered in the dossier ── */
+
+  /* Section headings: compact but readable */
+  .ds-panel :global(h3) {
+    font-size: 0.72em;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.6em;
+  }
+
+  /* Item / row font size: comfortably readable in narrow column */
+  .ds-panel :global(.group-name),
+  .ds-panel :global(.structure-name),
+  .ds-panel :global(.unit-name) {
+    font-size: 0.9em;
+  }
+
+  /* Reduce tag/badge padding in the narrow context */
+  .ds-panel :global(.race-tag),
+  .ds-panel :global(.strength-tag),
+  .ds-panel :global(.resources-tag),
+  .ds-panel :global(.group-tag) {
+    font-size: 0.72em;
+    padding: 0.1em 0.35em;
+  }
+
+  /* Primary action button: full width in dossier */
+  .ds-panel :global(.mobilise-btn),
+  .ds-panel :global(.build-btn),
+  .ds-panel :global(.gather-btn),
+  .ds-panel :global(.attack-btn),
+  .ds-panel :global(.join-btn),
+  .ds-panel :global(.recruit-btn),
+  .ds-panel :global(.craft-btn) {
+    flex: 1;
+  }
+
+  /* Location-info blocks: compact */
+  .ds-panel :global(.location-info) {
+    padding: 0.6em 0.8em;
+    margin-bottom: 0.7em;
+  }
+
+  /* Error / success banners */
+  .ds-panel :global(.mobilise-error),
+  .ds-panel :global(.build-error) {
+    font-size: 0.82em;
+    padding: 0.6em 0.8em;
+    margin: 0.5em 0;
+  }
 
   /* ── Settlement name ── */
   .ds-settlement {
