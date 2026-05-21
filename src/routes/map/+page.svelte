@@ -137,6 +137,7 @@
 
     let peekOpen = $state(false);
     let peekTile = $state(null);
+    let openPeekTrigger = $state(0);
     
     function handlePanelHover(panelType) {
         if (panelType && ((panelType === 'chat' && showChat) || 
@@ -902,18 +903,15 @@
                 peekTile = null;
             }
 
-            // If the dossier is open and the user clicks the currently-targeted tile,
-            // close the dossier and reopen the wheel menu for that tile.
-            const isCurrentTarget = $targetStore && coords.x === $targetStore.x && coords.y === $targetStore.y;
-            if (dossierPanel !== null && isCurrentTarget) {
+            // If the dossier is open, any tile click should close it and open the
+            // wheel menu for the clicked tile.
+            if (dossierPanel !== null) {
                 dossierPanel = null;
-                const clickedTile = $coordinates.find(c => c.x === coords.x && c.y === coords.y);
-                if (clickedTile && hasTileContent(clickedTile)) {
-                    setTimeout(() => {
-                        peekTile = clickedTile;
-                        peekOpen = true;
-                    }, 50);
-                }
+                moveTarget(coords.x, coords.y, false);
+                // Defer so the dossier-close flows through modalOpen before Grid opens Peek.
+                setTimeout(() => {
+                    openPeekTrigger++;
+                }, 50);
                 isProcessingClick = false;
                 return;
             }
@@ -1213,6 +1211,7 @@
             onUndoPoint={undoLastPathPoint}
             customPathPoints={currentPath}
             modalOpen={isAnyModalOpen}
+            openPeekTrigger={openPeekTrigger}
             pathDrawingGroup={pathDrawingGroup}
             buildingPlacementMode={buildingPlacementMode}
             allowedSubCells={allowedSubCells}

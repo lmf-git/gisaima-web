@@ -19,6 +19,7 @@
   import Peek from './Peek.svelte';
   import YouAreHere from './YouAreHere.svelte';
   import BiomeScatter from './BiomeScatter.svelte';
+  import FogOfWar from './FogOfWar.svelte';
 
   import Torch from '../../icons/Torch.svelte';
   import Hammer from '../../icons/Hammer.svelte';
@@ -76,7 +77,8 @@
     pathDrawingGroup = null,
     buildingPlacementMode = false,
     allowedSubCells = null,
-    onSubCellSelect = null
+    onSubCellSelect = null,
+    openPeekTrigger = 0
   } = $props();
   
   // Add zoom level state
@@ -138,8 +140,21 @@
     console.log('Center tile clicked');
     
     // Don't handle clicks if these conditions apply
-    if (isPathDrawingMode || detailed || modalOpen) {
-      console.log('Not showing Peek:', { isPathDrawingMode, detailed, modalOpen });
+    if (isPathDrawingMode || detailed) {
+      console.log('Not showing Peek:', { isPathDrawingMode, detailed });
+      return;
+    }
+
+    // When a modal (e.g. dossier sidebar) is open, forward the center-tile click
+    // to the parent so it can close the modal and reopen the wheel.
+    if (modalOpen) {
+      if (onClick && centerTileData) {
+        onClick({
+          x: centerTileData.x,
+          y: centerTileData.y,
+          tileData: centerTileData
+        });
+      }
       return;
     }
     
@@ -161,6 +176,21 @@
       }
     }
   }
+
+  // Allow parent to imperatively open the wheel (Peek) on the current center
+  // by incrementing openPeekTrigger. Skips the initial 0 value.
+  let lastPeekTriggerSeen = $state(0);
+  $effect(() => {
+    if (openPeekTrigger > 0 && openPeekTrigger !== lastPeekTriggerSeen) {
+      lastPeekTriggerSeen = openPeekTrigger;
+      if (isPathDrawingMode || detailed) return;
+      lastCenterClickTime = Date.now();
+      const centerTile = $gridArray.find(cell => cell.isCenter);
+      if (centerTile) {
+        peekOpenedAtPosition = { x: centerTile.x, y: centerTile.y };
+      }
+    }
+  });
 
   // Add an effect to monitor map movement for closing Peek
   $effect(() => {
@@ -2011,9 +2041,11 @@
           </div>
         {/each}
       </div>
+
+      <FogOfWar />
     {/if}
   </div>
-  
+
   <!-- Peek component should still be available -->
   <Peek 
     isOpen={isPeekVisible}
