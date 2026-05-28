@@ -5,10 +5,10 @@
 
   // Default sight radii — mirror api/lib/visibility.js so the visual reveal
   // matches what the server will actually send entity data for.
-  const PLAYER_SIGHT    = 2;
-  const GROUP_SIGHT     = 2;
-  const STRUCTURE_SIGHT = 1;
-  const STRUCTURE_OVERRIDES = { watchtower: 2, outpost: 3, spawn: 2 };
+  const PLAYER_SIGHT    = 7;
+  const GROUP_SIGHT     = 5;
+  const STRUCTURE_SIGHT = 2;
+  const STRUCTURE_OVERRIDES = { watchtower: 5, outpost: 7, spawn: 5 };
 
   // Union of all the player's sight sources as { x, y, r } in world coords.
   const sightSources = derived(
@@ -97,5 +97,16 @@
     height: 100%;
     pointer-events: none;
     z-index: 900;
+  }
+
+  /* Fog fades in on mount — the dark overlay animates from transparent so
+     the map feels like it's revealing rather than starting fully fogged. */
+  .fog-layer {
+    animation: fog-appear 1.2s ease-out both;
+  }
+
+  @keyframes fog-appear {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 </style>

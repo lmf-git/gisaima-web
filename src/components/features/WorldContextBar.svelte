@@ -4,7 +4,7 @@
     import { goto } from '$app/navigation';
     import { game, worldInfo } from '$lib/stores/game.js';
     import { user } from '$lib/stores/user.js';
-    import { entities, currentPlayerPosition, moveTarget } from '$lib/stores/map.js';
+    import { entities, coordinates, currentPlayerPosition, moveTarget } from '$lib/stores/map.js';
     import WaxSeal from '../ui/WaxSeal.svelte';
     import Stamp from '../ui/Stamp.svelte';
 
@@ -76,29 +76,97 @@
         );
     });
 
-    // Jump-to-coordinates search.
+    // Jump-to-coordinates search with live dropdown.
     let search = $state('');
+    let dropdownOpen = $state(false);
+    let closeTimeout = null;
+
+    const MAX_RESULTS = 8;
+
+    const searchResults = $derived.by(() => {
+        const v = (search || '').trim();
+        if (!v || !onMap) return [];
+
+        // Pure coordinate input — no dropdown, just jump on submit
+        if (/^-?\d+\s*[, ]\s*-?\d+$/.test(v)) return [];
+
+        const q = v.toLowerCase();
+        const results = [];
+        const cells = $coordinates;
+
+        for (const cell of cells) {
+            if (results.length >= MAX_RESULTS) break;
+            const s = cell.structure;
+            if (s) {
+                const name = (s.name || s.type || '').replace(/_/g, ' ');
+                if (name.toLowerCase().includes(q)) {
+                    results.push({ kind: 'structure', label: name, sub: s.type?.replace(/_/g, ' '), x: cell.x, y: cell.y });
+                }
+            }
+        }
+
+        for (const cell of cells) {
+            if (results.length >= MAX_RESULTS) break;
+            for (const p of (cell.players || [])) {
+                if (results.length >= MAX_RESULTS) break;
+                if ((p.displayName || '').toLowerCase().includes(q)) {
+                    results.push({ kind: 'player', label: p.displayName || 'Player', sub: p.race || '', x: cell.x, y: cell.y });
+                }
+            }
+        }
+
+        return results;
+    });
+
+    function jumpTo(x, y) {
+        if (onMap) {
+            // persist=false: search jumps are transient — don't overwrite the
+            // user's saved position so refreshing still restores their last
+            // intentional location.
+            moveTarget(x, y, false, false);
+        } else {
+            try {
+                localStorage.setItem(`${$game.worldKey}-targetX`, String(x));
+                localStorage.setItem(`${$game.worldKey}-targetY`, String(y));
+            } catch { /* ignore */ }
+            goto('/map');
+        }
+        search = '';
+        dropdownOpen = false;
+    }
+
     function onSearch(e) {
         e.preventDefault();
         const v = (search || '').trim();
+        if (!v) return;
+
         const m = v.match(/^(-?\d+)\s*[, ]\s*(-?\d+)$/);
         if (m) {
-            const x = Number(m[1]);
-            const y = Number(m[2]);
-            if (onMap) {
-                // Already on the map — jump directly via the store
-                moveTarget(x, y, true);
-                search = '';
-            } else {
-                try {
-                    localStorage.setItem(`${$game.worldKey}-targetX`, String(x));
-                    localStorage.setItem(`${$game.worldKey}-targetY`, String(y));
-                } catch { /* ignore */ }
-                goto('/map');
-            }
+            jumpTo(Number(m[1]), Number(m[2]));
             return;
         }
+
+        // Jump to first dropdown result if available
+        if (searchResults.length > 0) {
+            jumpTo(searchResults[0].x, searchResults[0].y);
+            return;
+        }
+
         if (!onMap) goto('/map');
+    }
+
+    function onInputFocus() {
+        dropdownOpen = true;
+    }
+
+    function onInputBlur() {
+        // Delay so result clicks register before hiding
+        closeTimeout = setTimeout(() => { dropdownOpen = false; }, 180);
+    }
+
+    function onResultMousedown(e) {
+        // Prevent blur from firing before click
+        e.preventDefault();
     }
 
     function fmt(n) {
@@ -166,19 +234,44 @@
         <div class="spacer"></div>
 
         <!-- Search / jump-to-coords -->
-        <form class="search" onsubmit={onSearch}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-4-4" />
-            </svg>
-            <input
-                type="text"
-                placeholder="Jump to coordinates, settlement…"
-                bind:value={search}
-                aria-label="Jump to coordinates or settlement"
-            />
-            <kbd>⏎</kbd>
-        </form>
+        <div class="search-wrap">
+            <form class="search" onsubmit={onSearch}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-4-4" />
+                </svg>
+                <input
+                    type="text"
+                    placeholder="Find player/structure…"
+                    bind:value={search}
+                    aria-label="Search structures or players, or enter x,y coordinates"
+                    onfocus={onInputFocus}
+                    onblur={onInputBlur}
+                />
+                <kbd>⏎</kbd>
+            </form>
+            {#if dropdownOpen && searchResults.length > 0}
+                <ul class="search-dropdown" role="listbox">
+                    {#each searchResults as r}
+                        <li
+                            class="search-result"
+                            role="option"
+                            aria-selected="false"
+                            onmousedown={onResultMousedown}
+                            onclick={() => jumpTo(r.x, r.y)}
+                        >
+                            <span class="result-kind">{r.kind === 'player' ? '⚔' : '⬛'}</span>
+                            <span class="result-label">{r.label}</span>
+                            {#if r.sub}
+                                <span class="result-sub">{r.sub}</span>
+                            {/if}
+                            <span class="result-coords">{r.x},{r.y}</span>
+                        </li>
+                    {/each}
+                    <li class="search-hint">Showing visible tiles only</li>
+                </ul>
+            {/if}
+        </div>
 
         <!-- Next tick pill -->
         <a class="tick" href="/pending" title="Pending events">
@@ -311,9 +404,8 @@
         gap: 0.6em;
         background: rgba(255, 255, 255, 0.06);
         border: 0.075em solid rgba(255, 255, 255, 0.14);
-        padding: 0 0.85em;
-        height: 2.25em;
-        width: 17.5em;
+        padding: 0.4em 0.85em;
+        width: 22em;
         font-family: var(--font-mono);
         font-size: 0.78em;
         color: rgba(251, 246, 231, 0.55);
@@ -362,6 +454,7 @@
         background: rgba(176, 141, 74, 0.12);
         border: 0.075em solid rgba(176, 141, 74, 0.3);
         font-family: var(--font-mono);
+        font-size: 0.78em;
         color: var(--color-gold-pale);
         text-decoration: none;
         flex-shrink: 0;
@@ -390,21 +483,95 @@
         color: var(--color-gold-pale);
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1200px) {
         .res li:nth-child(n+3) { display: none; }   /* keep first 2 cells */
-        .search { width: 12em; }
+        .search { width: 16em; }
     }
     @media (max-width: 900px) {
         .res { display: none; }
         .house-sub { display: none; }
-        .search { width: 9em; }
+        .search { width: 12em; }
         .tick-lbl { display: none; }
     }
     @media (max-width: 700px) {
         .dossier { padding: 0 0.65em; gap: 0.5em; }
         .rule { display: none; }
         .house-text { display: none; }
-        .search { display: none; }
+        .search-wrap { display: none; }
         .tick { padding: 0.3em 0.6em; }
+    }
+
+    /* Search wrapper — positions the dropdown relative to the pill */
+    .search-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .search-dropdown {
+        position: absolute;
+        top: calc(100% + 0.35em);
+        left: 0;
+        right: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        background: rgba(14, 19, 32, 0.97);
+        border: 0.075em solid rgba(176, 141, 74, 0.4);
+        border-top: none;
+        z-index: 2000;
+        max-height: 18em;
+        overflow-y: auto;
+    }
+
+    .search-result {
+        display: flex;
+        align-items: center;
+        gap: 0.55em;
+        padding: 0.55em 0.85em;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 0.78em;
+        color: var(--color-parchment-200, rgba(232, 228, 210, 0.8));
+        border-bottom: 0.075em solid rgba(255, 255, 255, 0.05);
+        transition: background 0.1s;
+    }
+    .search-result:hover {
+        background: rgba(176, 141, 74, 0.14);
+        color: var(--color-parchment-100);
+    }
+
+    .result-kind {
+        font-size: 0.8em;
+        opacity: 0.6;
+        flex-shrink: 0;
+    }
+    .result-label {
+        font-weight: 500;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .result-sub {
+        font-size: 0.85em;
+        opacity: 0.5;
+        text-transform: capitalize;
+        flex-shrink: 0;
+    }
+    .result-coords {
+        font-size: 0.8em;
+        color: var(--color-wax-red, #5b1a1f);
+        flex-shrink: 0;
+        margin-left: auto;
+        padding-left: 0.5em;
+    }
+    .search-hint {
+        padding: 0.4em 0.85em;
+        font-family: var(--font-mono);
+        font-size: 0.68em;
+        opacity: 0.4;
+        font-style: italic;
+        color: var(--color-parchment-100);
     }
 </style>

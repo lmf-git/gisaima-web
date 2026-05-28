@@ -2303,7 +2303,7 @@
   .guide-content h1 {
     font-size: 2.6em;
     color: var(--color-ink-900);
-    margin: 0 0 1em;
+    margin: 1.5em 0 1em;
     text-align: left;
     font-family: var(--font-display);
     font-weight: 600;

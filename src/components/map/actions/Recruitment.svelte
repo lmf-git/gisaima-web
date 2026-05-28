@@ -119,7 +119,12 @@
                     cost: unit.cost || {},
                     timePerUnit: unit.timePerUnit || 60,
                     icon: unit.icon,
-                    power: unit.power,
+                    meleeAttack: unit.meleeAttack ?? 0,
+                    rangedAttack: unit.rangedAttack ?? 0,
+                    magicAttack: unit.magicAttack ?? 0,
+                    meleeDefense: unit.meleeDefense ?? 0,
+                    rangedDefense: unit.rangedDefense ?? 0,
+                    magicDefense: unit.magicDefense ?? 0,
                     requirements: unit.requirements || {},
                     sortOrder: unit.recruitment?.sortOrder || 999,
                     tooltip: unit.recruitment?.tooltip || ''
@@ -693,7 +698,7 @@
                                             {/if}
                                         </div>
                                         <div class="unit-option-power">
-                                            Power: {unit.power}
+                                            ATK {(unit.meleeAttack + unit.rangedAttack + unit.magicAttack).toFixed(1)}
                                             {#if unit.tooltip}
                                                 <span class="unit-tooltip-hint"><Info size="0.9em" /></span>
                                             {/if}
@@ -774,9 +779,27 @@
                             {/if}
 
                             <div class="unit-stats">
+                                {#if selectedUnit.meleeAttack > 0}
+                                    <div class="unit-stat">
+                                        <span class="stat-label">Melee:</span>
+                                        <span class="stat-value">{selectedUnit.meleeAttack}</span>
+                                    </div>
+                                {/if}
+                                {#if selectedUnit.rangedAttack > 0}
+                                    <div class="unit-stat">
+                                        <span class="stat-label">Ranged:</span>
+                                        <span class="stat-value">{selectedUnit.rangedAttack}</span>
+                                    </div>
+                                {/if}
+                                {#if selectedUnit.magicAttack > 0}
+                                    <div class="unit-stat">
+                                        <span class="stat-label">Magic:</span>
+                                        <span class="stat-value">{selectedUnit.magicAttack}</span>
+                                    </div>
+                                {/if}
                                 <div class="unit-stat">
-                                    <span class="stat-label">Power:</span>
-                                    <span class="stat-value">{selectedUnit.power}</span>
+                                    <span class="stat-label">Defense:</span>
+                                    <span class="stat-value">{selectedUnit.meleeDefense}/{selectedUnit.rangedDefense}/{selectedUnit.magicDefense}</span>
                                 </div>
                                 <div class="unit-stat">
                                     <span class="stat-label">Time:</span>

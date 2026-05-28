@@ -99,7 +99,7 @@
                 {#if $user && $game?.worldKey && $game?.player?.alive}
                     <Button variant="primary" href="/map">
                         <Stamp kind="compass" size={14} />
-                        Resume game · <em class="resume-world">{$game.worldKey}</em>
+                        Resume game
                     </Button>
                 {:else if $user}
                     <Button variant="primary" href="/worlds">
@@ -113,7 +113,7 @@
                     </Button>
                 {/if}
                 <a class="ghost-link" href="/guide">
-                    Watch the world
+                    Game guide
                     <Stamp kind="eye" size={14} />
                 </a>
             </div>
@@ -330,16 +330,6 @@
         margin-bottom: 2.4em;
         flex-wrap: wrap;
     }
-    .resume-world {
-        font-family: var(--font-mono);
-        font-style: normal;
-        font-size: 0.85em;
-        letter-spacing: 0.04em;
-        opacity: 0.9;
-        margin-left: 0.15em;
-        text-transform: none;
-    }
-
     .ghost-link {
         font-family: var(--font-display);
         font-size: 0.78rem;

@@ -336,11 +336,11 @@
 </script>
 
 {#if isVisible}
-  {@const R = 110}
+  {@const R = 130}
   {@const r = 50}
   {@const N = availableActions.length || 1}
-  {@const size = (R + 12) * 2}
-  {@const center = R + 12}
+  {@const size = (R + 14) * 2}
+  {@const center = R + 14}
   <div class="peek-container" class:exiting={isExiting} role="dialog" aria-label="Quick actions">
     <svg
       width={size}
@@ -376,6 +376,7 @@
             d={sectorPath}
             class="sector-fill"
             onclick={(e) => handleActionClick(action.id, e)}
+            onpointerdown={(e) => e.preventDefault()}
             onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleActionClick(action.id, e); } }}
             role="button"
             aria-label={action.label}
@@ -400,6 +401,7 @@
         r={r - 4}
         class="center-hub"
         onclick={handleClose}
+        onpointerdown={(e) => e.preventDefault()}
         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); handleClose(); } }}
         role="button"
         aria-label="Close action wheel"
@@ -476,8 +478,8 @@
 
   .sector-label {
     font-family: var(--font-display, 'Cinzel', serif);
-    font-size: 9px;
-    letter-spacing: 0.16em;
+    font-size: 10px;
+    letter-spacing: 0.12em;
     font-weight: 600;
     fill: var(--color-ink-900, #1a2030);
   }
@@ -486,6 +488,9 @@
     fill: transparent;
     cursor: pointer;
     pointer-events: auto;
+  }
+  .center-hub:focus {
+    outline: none;
   }
   .center-tag {
     font-family: var(--font-display, 'Cinzel', serif);

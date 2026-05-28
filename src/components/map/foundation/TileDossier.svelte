@@ -243,7 +243,7 @@
       {:else if panel === 'details' && !selectedUnit}
         <div class="ds-panel"><Details
           onClose={onClose}
-          onShowModal={() => {}}
+          onShowModal={({ type }) => onSwitchPanel(type)}
           onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
         /></div>
 

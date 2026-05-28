@@ -12,16 +12,9 @@
     .bush {
         transform-origin: 50% 100%;
         transform: rotate(var(--rot, 0deg)) scale(var(--scale, 1));
-        animation: bush-breath var(--duration, 6s) ease-in-out infinite alternate;
-        animation-delay: calc(var(--phase, 0s) * -1);
     }
     .lobe { stroke: rgba(20, 30, 18, 0.7); stroke-width: 0.25; }
     .hue-green  .lobe { fill: rgba(54, 80, 46, 0.82); }
     .hue-sage   .lobe { fill: rgba(80, 110, 70, 0.78); }
     .hue-dry    .lobe { fill: rgba(108, 110, 60, 0.78); }
-    @keyframes bush-breath {
-        from { transform: rotate(var(--rot)) scale(calc(var(--scale) * 0.97)); }
-        to   { transform: rotate(var(--rot)) scale(calc(var(--scale) * 1.03)); }
-    }
-    @media (prefers-reduced-motion: reduce) { .bush { animation: none; } }
 </style>

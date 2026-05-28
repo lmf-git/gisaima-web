@@ -3,6 +3,7 @@
 
   // Import unit definitions to get boat capacities
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
+  import Checkbox from '../../ui/Checkbox.svelte';
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore } from '../../../lib/stores/map';
@@ -34,7 +35,7 @@
   // Rule-of-march settings — captured here so they attach to the new group
   // on raise. They round-trip with the action payload so the tick can read them.
   let fleeAtLosses = $state(40);          // 0..100 (%)
-  let joinBattlesInProgress = $state(true);
+  let joinBattlesInProgress = $state(false);
 
   // Set default group name when component loads, based on player's name
   $effect(() => {
@@ -282,10 +283,10 @@
             <span>Flee at losses · <b>{fleeAtLosses}%</b></span>
             <input type="range" min="0" max="100" bind:value={fleeAtLosses} />
           </label>
-          <label class="march-row toggle">
+          <div class="march-row toggle">
             <span>Join battles in progress</span>
-            <input type="checkbox" bind:checked={joinBattlesInProgress} />
-          </label>
+            <Checkbox bind:checked={joinBattlesInProgress} />
+          </div>
         </div>
         
         <div class="options">
@@ -296,30 +297,7 @@
                   Object.values(tileData.players).some(p => p.id === $currentPlayer?.id || p.id === $currentPlayer?.id)
                 )}
             <div class="option-row">
-              <label class="custom-checkbox-label" for="include-player">
-                <div 
-                  class="custom-checkbox" 
-                  class:checked={includePlayer}
-                  onclick={toggleCheckbox}
-                  tabindex="0"
-                  role="checkbox"
-                  aria-checked={includePlayer}
-                  onkeydown={(e) => e.key === 'Enter' || e.key === ' ' ? toggleCheckbox() : null}
-                >
-                  {#if includePlayer}
-                    <svg viewBox="0 0 24 24" class="checkbox-icon">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                    </svg>
-                  {/if}
-                </div>
-                <input 
-                  type="checkbox" 
-                  id="include-player" 
-                  bind:checked={includePlayer} 
-                  class="visually-hidden"
-                />
-                <span class="checkbox-text">Include yourself in mobilization</span>
-              </label>
+              <Checkbox bind:checked={includePlayer} label="Include yourself in mobilization" id="include-player" onchange={toggleCheckbox} />
             </div>
           {/if}
           
@@ -389,20 +367,7 @@
                   aria-pressed={unit.selected}
                   aria-label={`Select ${unit.name || unit.id}`}
                 >
-                  <div class="custom-checkbox" class:checked={unit.selected}>
-                    {#if unit.selected}
-                      <svg viewBox="0 0 24 24" class="checkbox-icon">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                      </svg>
-                    {/if}
-                  </div>
-                  <input 
-                    type="checkbox" 
-                    checked={unit.selected} 
-                    id={`unit-${unit.id}`}
-                    tabindex="-1"
-                    class="visually-hidden"
-                  />
+                  <Checkbox checked={unit.selected} />
                   <div class="unit-icon">
                     {#if unit.race}
                       {#if unit.race.toLowerCase() === 'human'}
@@ -431,8 +396,12 @@
                       {#if unit.race}
                         <span class="race-tag">{_fmt(unit.race)}</span>
                       {/if}
-                      {#if unit.power}
-                        <span class="strength-tag">STR: {unit.power}</span>
+                      {@const uDef = UNITS[unit.unitId] || UNITS[unit.type]}
+                      {#if uDef}
+                        {@const atk = (uDef.meleeAttack||0) + (uDef.rangedAttack||0) + (uDef.magicAttack||0)}
+                        {#if atk > 0}
+                          <span class="strength-tag">ATK: {atk.toFixed(1)}</span>
+                        {/if}
                       {/if}
                       {#if unit.group}
                         <span class="group-tag">From: {unit.group}</span>

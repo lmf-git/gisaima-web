@@ -32,7 +32,8 @@
         hasTileContent,
         entities,
         currentPlayerPosition,
-        loadTargetFromLocalStorage
+        loadTargetFromLocalStorage,
+        clearSavedTargetPosition
     } from "../../lib/stores/map.js";
     
     import { unreadMessages } from "../../lib/stores/chat.js";
@@ -1168,8 +1169,13 @@
         if (browser) {
             localStorage.setItem('follow_player_position', isFollowing.toString());
         }
-        if (isFollowing && $currentPlayerPosition) {
-            moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
+        if (isFollowing) {
+            // Clear any stale saved position so refresh always goes to the
+            // player rather than a previously jumped-to coordinate.
+            if ($game.worldKey) clearSavedTargetPosition($game.worldKey);
+            if ($currentPlayerPosition) {
+                moveTarget($currentPlayerPosition.x, $currentPlayerPosition.y);
+            }
         }
     }
 </script>
@@ -1230,61 +1236,24 @@
         {/if}
         
 
-        <!-- Top map controls (next-tick + follow when overview is open).
-             Minimap/help toggles have moved into the right-side cluster
-             alongside chat + achievements. -->
-        <div class="map-controls">
-            {#if showEntities && $game?.player?.alive && !isTutorialVisible}
-                <NextWorldTick extraClass="control-button-like" compact={window.innerWidth < 768} />
-            {/if}
-
-            {#if showEntities && $game?.player?.alive && !isTutorialVisible}
-                <FollowPlayer
-                    disabled={!$game?.player?.alive || isTutorialVisible}
-                    onFollowToggle={handleFollowToggle}
-                />
-            {/if}
-        </div>
-        
-        {#if $game?.player?.alive && !isTutorialVisible}
-            <div class="left-controls">               
-                {#if !showEntities}
-                    <button 
-                        class="control-button entity-button" 
-                        onclick={toggleEntities}
-                        aria-label="Show entities"
-                        disabled={!$game?.player?.alive || isTutorialVisible}>
-                        <Spyglass extraClass="button-icon" />
-                    </button>
-                {/if}
-
-                <!-- Replace the duplicated Follow button with the component -->
-                {#if !showEntities}
-                    <FollowPlayer 
-                        disabled={!$game?.player?.alive || isTutorialVisible}
-                        onFollowToggle={handleFollowToggle}
-                    />
-                {/if}
-
-            </div>
-        {:else if !showEntities}
-            <div class="left-controls">
-                <button 
-                    class="control-button entity-button" 
-                    onclick={toggleEntities}
-                    aria-label="Show entities"
-                    disabled={!$game?.player?.alive || isTutorialVisible}>
-                    <Spyglass extraClass="button-icon" />
-                </button>
-            </div>
-        {/if}
-
-        <!-- Right-side toggle cluster — chat, achievements, minimap, help.
-             All four sit together by default. When chat or achievements is
-             opened (which itself slides into the bottom-right pane), the
-             remaining toggles relocate to `.controls-middle-right` (just
-             above the open panel) so they don't conflict. -->
+        <!-- Right-side toggle cluster — entities, follow, chat, achievements, minimap, help.
+             When chat is opened the remaining toggles relocate to `.controls-middle-right`
+             so they don't sit on top of the chat panel. -->
         <div class="controls-right">
+            <button
+                class="control-button entity-button"
+                class:active={showEntities}
+                onclick={toggleEntities}
+                aria-label={showEntities ? "Hide entities" : "Show entities"}
+                disabled={!$game?.player?.alive || isTutorialVisible}>
+                <Spyglass extraClass="button-icon" />
+            </button>
+
+            <FollowPlayer
+                disabled={!$game?.player?.alive || isTutorialVisible}
+                onFollowToggle={handleFollowToggle}
+            />
+
             {#if !showChat && $game?.player?.alive && !isTutorialVisible}
                 <button
                     class="control-button chat-button"
@@ -1335,15 +1304,25 @@
 
         {#if showChat && $game?.player?.alive && !isTutorialVisible}
             <div class="controls-middle-right">
-                {#if showChat}
-                    <button
-                        class="control-button achievements-button"
-                        class:active={dossierPanel === 'achievements'}
-                        onclick={toggleAchievements}
-                        aria-label={dossierPanel === 'achievements' ? 'Close achievements' : 'Show achievements'}>
-                        <AchievementIcon extraClass="button-icon" />
-                    </button>
-                {/if}
+                <button
+                    class="control-button entity-button"
+                    class:active={showEntities}
+                    onclick={toggleEntities}
+                    aria-label={showEntities ? "Hide entities" : "Show entities"}
+                    disabled={!$game?.player?.alive || isTutorialVisible}>
+                    <Spyglass extraClass="button-icon" />
+                </button>
+                <FollowPlayer
+                    disabled={!$game?.player?.alive || isTutorialVisible}
+                    onFollowToggle={handleFollowToggle}
+                />
+                <button
+                    class="control-button achievements-button"
+                    class:active={dossierPanel === 'achievements'}
+                    onclick={toggleAchievements}
+                    aria-label={dossierPanel === 'achievements' ? 'Close achievements' : 'Show achievements'}>
+                    <AchievementIcon extraClass="button-icon" />
+                </button>
                 <button
                     class="control-button minimap-button"
                     onclick={toggleMinimap}
@@ -1538,26 +1517,6 @@
         cursor: pointer;
     }
 
-    .map-controls {
-        position: absolute;
-        top: 0.5em;
-        right: 0.5em;
-        display: flex;
-        gap: 0.5em;
-        z-index: 999;
-    }
-    
-    .left-controls {
-        position: fixed;
-        bottom: calc(2em + env(safe-area-inset-bottom));
-        left: 3em;
-        z-index: 998;
-        display: flex;
-        flex-direction: row;
-        gap: 0.5em;
-        align-items: center;
-    }
-
     .controls-right {
         position: fixed;
         bottom: calc(2em + env(safe-area-inset-bottom));
@@ -1739,9 +1698,9 @@
         height: 2em;
     }
 
-    /* On desktop shift controls to clear the 22em dossier when it's open */
+    /* On desktop shift controls to clear the 28em dossier when it's open */
     @media (min-width: 900px) {
-        .map.dossier-open .controls-right { right: calc(22em + 0.75em); }
-        .map.dossier-open .controls-middle-right { right: calc(22em + 0.5em); }
+        .map.dossier-open .controls-right { right: calc(28em + 0.75em); }
+        .map.dossier-open .controls-middle-right { right: calc(28em + 0.5em); }
     }
 </style>

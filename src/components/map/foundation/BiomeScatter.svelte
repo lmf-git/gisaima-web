@@ -61,14 +61,14 @@
         const h01 = Math.max(0, Math.min(1, Number(h) || 0.5));
         const m01 = Math.max(0, Math.min(1, Number(m) || 0.5));
         switch (group) {
-            case 'forest':   return Math.round(3 + m01 * 5);   // 3..8
-            case 'mountain': return Math.round(2 + h01 * 4);   // 2..6
-            case 'water':    return Math.round(3 + (1 - h01) * 3); // 3..6
-            case 'desert':   return Math.round(2 + (1 - m01) * 4); // 2..6
-            case 'wetland':  return Math.round(3 + m01 * 4);   // 3..7
-            case 'snow':     return Math.round(2 + h01 * 4);   // 2..6
-            case 'volcano':  return Math.round(2 + h01 * 3);   // 2..5
-            default:         return Math.round(2 + m01 * 4);   // grass 2..6
+            case 'forest':   return Math.round(8  + m01 * 10);  // 8..18
+            case 'mountain': return Math.round(6  + h01 * 8);   // 6..14
+            case 'water':    return Math.round(6  + (1 - h01) * 6); // 6..12
+            case 'desert':   return Math.round(6  + (1 - m01) * 8); // 6..14
+            case 'wetland':  return Math.round(8  + m01 * 8);   // 8..16
+            case 'snow':     return Math.round(6  + h01 * 8);   // 6..14
+            case 'volcano':  return Math.round(5  + h01 * 6);   // 5..11
+            default:         return Math.round(6  + m01 * 8);   // grass 6..14
         }
     }
 
@@ -98,21 +98,36 @@
         const rng = mulberry32(seed);
         const vocab = VOCAB[biomeGroup] || VOCAB.grass;
         const base = densityFor(biomeGroup, height, moisture);
-        const rarityBoost = rarity === 'rare' ? 1 : rarity === 'epic' ? 2 : rarity === 'legendary' ? 3 : 0;
-        const total = Math.min(10, Math.max(1, base + rarityBoost));
+        const rarityBoost = rarity === 'rare' ? 2 : rarity === 'epic' ? 4 : rarity === 'legendary' ? 6 : 0;
+        const total = Math.min(20, Math.max(1, base + rarityBoost));
 
         const out = [];
-        for (let i = 0; i < total; i++) {
-            const cx = 2.5 + rng() * 27;
-            const cy = 4 + rng() * 25;
-            const scale = 0.6 + rng() * 0.9;
-            const rot = (rng() - 0.5) * 26;
-            const phase = rng() * 6;       // animation start offset
-            const duration = 3.5 + rng() * 4.5; // per-glyph animation period
+        const maxAttempts = total * 12;
+
+        for (let attempt = 0; attempt < maxAttempts && out.length < total; attempt++) {
+            const cx = 3 + rng() * 26;
+            const cy = 4 + rng() * 24;
+            const scale = 0.55 + rng() * 0.8;
+            const rot = (rng() - 0.5) * 28;
             const flip = rng() < 0.5 ? 1 : -1;
             const kind = weightedPick(rng, vocab);
-            out.push({ kind, cx, cy, scale, rot, phase, duration, flip,
-                       key: `${i}-${kind}-${(cx + cy * 32 + scale * 7) | 0}` });
+
+            // Reject if too close to an existing item (prevent overlap).
+            // Min distance scales with the sum of the two items' sizes.
+            const minDistSq = ((scale + 0.9) * 3.2) ** 2;
+            let blocked = false;
+            for (const it of out) {
+                const dx = it.cx - cx;
+                const dy = it.cy - cy;
+                if (dx * dx + dy * dy < ((it.scale + scale) * 3.2) ** 2) {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (blocked) continue;
+
+            out.push({ kind, cx, cy, scale, rot, flip,
+                       key: `${out.length}-${kind}-${(cx + cy * 32 + scale * 7) | 0}` });
         }
         return out;
     });
@@ -128,7 +143,7 @@
         {@const Glyph = GLYPHS[it.kind]}
         {#if Glyph}
             <g transform="translate({it.cx} {it.cy}) scale({it.scale * it.flip} {it.scale}) rotate({it.rot})">
-                <Glyph phase={it.phase} duration={it.duration} />
+                <Glyph />
             </g>
         {/if}
     {/each}

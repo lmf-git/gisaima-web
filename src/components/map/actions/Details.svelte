@@ -841,7 +841,6 @@
                         {#if isOwnedByCurrentPlayer(group)}
                           <span class="entity-badge owner-badge">Yours</span>
                         {/if}
-                        <span class="entity-coords">({formatCoords(group.x, group.y)})</span>
                       </div>
                       
                       <div class="entity-details">
@@ -1128,7 +1127,6 @@
                       {#if player.id === $currentPlayer?.id}
                         <span class="entity-badge owner-badge">You</span>
                       {/if}
-                      <span class="entity-coords">({formatCoords(player.x, player.y)})</span>
                     </div>
                     <div class="entity-details">
                       <div class="entity-details-left">
@@ -1277,7 +1275,6 @@
                   <div class="battle-header">
                     <div class="entity-name">
                       Battle {battle.id.substring(battle.id.lastIndexOf('_') + 1)}
-                      <span class="entity-coords">({formatCoords(battle.x, battle.y)})</span>
                     </div>
                     
                     <div class="battle-status-wrapper">
@@ -1788,7 +1785,34 @@
   }
 
   
-  .entity-action:has(.compass-icon) {
+  .entity-action {
+    padding: 0.4em 0.7em;
+    background-color: rgba(176, 141, 74, 0.12);
+    border: 1px solid rgba(176, 141, 74, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.82em;
+    color: var(--color-parchment-200, rgba(232, 228, 210, 0.85));
+    font-family: var(--font-body);
+    transition: background-color 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    white-space: nowrap;
+  }
+
+  .entity-action:hover:not(:disabled) {
+    background-color: rgba(176, 141, 74, 0.22);
+    border-color: rgba(176, 141, 74, 0.5);
+    color: var(--color-parchment-100, #fbf6e7);
+  }
+
+  .entity-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .entity-action:has(.rally-icon) {
     background-color: rgba(63, 90, 78, 0.22);
     border-color: rgba(76, 175, 80, 0.3);
   }
@@ -2117,9 +2141,9 @@
   }
 
   .structure-name {
-    color: rgba(0, 0, 0, 1); 
+    color: var(--color-parchment-100, #fbf6e7);
     font-weight: 500;
-       display: flex;
+    display: flex;
     align-items: center;
     gap: 0.5em;
   }

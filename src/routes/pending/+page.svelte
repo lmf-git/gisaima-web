@@ -187,11 +187,6 @@
             <h1>Pending Events</h1>
             <p class="lede">Every order your house has set in motion, in the queue the tick will resolve. Cancel before the bell — after, no.</p>
         </div>
-        <div class="tick-chip">
-            <span class="dot"></span>
-            <span class="lbl">NEXT TICK</span>
-            <span class="val">{nextTickIn}</span>
-        </div>
     </header>
 
     <Flourish extraClass="page-flourish" />
@@ -255,20 +250,9 @@
     .page { position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
     .eyebrow.wax { color: var(--color-wax-red); }
     .eyebrow.gold { color: var(--color-gold-pale); }
-    .head { display: grid; grid-template-columns: 1fr auto; gap: 1em; align-items: start; margin-bottom: 1em; }
+    .head { margin-bottom: 1em; }
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0; max-width: 640px; }
-    .tick-chip {
-        display: inline-flex; align-items: center; gap: 0.6em;
-        padding: 0.6em 0.9em;
-        background: rgba(176, 141, 74, 0.12);
-        border: 1px solid var(--color-aged-gold);
-        font-family: var(--font-mono);
-        font-size: 0.85em;
-        color: var(--color-aged-gold);
-    }
-    .tick-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-aged-gold); }
-    .tick-chip .lbl { font-size: 0.78em; letter-spacing: 0.18em; opacity: 0.7; }
     .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.6em; margin-top: 1.5em; }
     .timeline { display: grid; gap: 0.7em; }
     .event { display: grid; grid-template-columns: 56px 1fr auto; gap: 1em; align-items: center; padding: 0.85em 1.1em; background: var(--color-parchment-100); border: 1px solid var(--color-ink-900); border-left: 4px solid var(--color-ink-900); }

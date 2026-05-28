@@ -45,18 +45,14 @@
     const def = unitDef();
     if (!def) return { meleeAtk: 0, rangedAtk: 0, magicAtk: 0, meleeDef: 0, rangedDef: 0, magicDef: 0 };
     const sf = 1 + ((unit.level || 1) - 1) * 0.15;
-    if (def.meleeAttack !== undefined) {
-      return {
-        meleeAtk: (def.meleeAttack || 0) * sf,
-        rangedAtk: (def.rangedAttack || 0) * sf,
-        magicAtk:  (def.magicAttack  || 0) * sf,
-        meleeDef:  (def.meleeDefense  || 0) * sf,
-        rangedDef: (def.rangedDefense || 0) * sf,
-        magicDef:  (def.magicDefense  || 0) * sf,
-      };
-    }
-    const p = (def.power || 1) * sf;
-    return { meleeAtk: p, rangedAtk: 0, magicAtk: 0, meleeDef: 1 * sf, rangedDef: 1 * sf, magicDef: 1 * sf };
+    return {
+      meleeAtk: (def.meleeAttack  || 0) * sf,
+      rangedAtk: (def.rangedAttack || 0) * sf,
+      magicAtk:  (def.magicAttack  || 0) * sf,
+      meleeDef:  (def.meleeDefense  || 0) * sf,
+      rangedDef: (def.rangedDefense || 0) * sf,
+      magicDef:  (def.magicDefense  || 0) * sf,
+    };
   });
 
   // Equipment attack/defense bonuses (shown alongside base stats)
@@ -324,7 +320,6 @@
                 {#if def.stats?.attack}  <span class="pi-stat atk">+{def.stats.attack} ATK</span>{/if}
                 {#if def.stats?.defense} <span class="pi-stat def">+{def.stats.defense} DEF</span>{/if}
                 {#if def.stats?.speed}   <span class="pi-stat spd">+{def.stats.speed} SPD</span>{/if}
-                {#if def.power}          <span class="pi-stat pwr">PWR {def.power}</span>{/if}
                 <span class="pi-qty">×{qty}</span>
               </div>
             </button>

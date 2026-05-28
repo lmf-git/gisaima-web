@@ -56,7 +56,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
+    right: 0;
     width: 1.5em;
     display: grid;
     grid-template-rows: repeat(var(--cell-count), 1fr);
@@ -76,9 +76,9 @@
   }
   
   .y-axis .tick {
-    flex-direction: row;
+    flex-direction: row-reverse;
     justify-content: flex-start;
-    padding-left: 0.25em;
+    padding-right: 0.25em;
   }
   
   .tick.center {
@@ -101,7 +101,7 @@
   }
   
   .y-axis .tick-mark {
-    margin-left: 4px;
+    margin-right: 4px;
   }
 
   .tick-label {

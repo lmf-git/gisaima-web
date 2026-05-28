@@ -735,8 +735,9 @@ export const highlightedStore = derived(
   }
 );
 
-// Simplified moveTarget function with improved debouncing
-export function moveTarget(newX, newY, updateUrl = false) {
+// moveTarget — move the viewport centre.
+// persist=false skips localStorage (use for transient jumps like search).
+export function moveTarget(newX, newY, updateUrl = false, persist = true) {
   if (newX === undefined || newY === undefined) {
     console.warn('Invalid coordinates passed to moveTarget:', { newX, newY });
     return;
@@ -744,25 +745,23 @@ export function moveTarget(newX, newY, updateUrl = false) {
 
   const x = Math.round(newX);
   const y = Math.round(newY);
-  
-  // Quick check to avoid unnecessary updates
+
   const currentState = get(map);
   if (currentState.target.x === x && currentState.target.y === y) {
-    return; // No change needed
+    return;
   }
 
-  // Update map position immediately for responsive UI
   map.update(prev => ({
     ...prev,
     target: { x, y },
   }));
 
-  // Only update URL if explicitly requested
   if (updateUrl && !isInternalUrlUpdate) updateUrlWithCoordinates(x, y);
 
-  // Save target position to localStorage
-  const worldId = get(game).worldKey;
-  if (worldId) saveTargetToLocalStorage(worldId, x, y);
+  if (persist) {
+    const worldId = get(game).worldKey;
+    if (worldId) saveTargetToLocalStorage(worldId, x, y);
+  }
 }
 
 // Set highlighted coordinates
