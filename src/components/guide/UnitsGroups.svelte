@@ -33,7 +33,9 @@
     .filter(([_, u]) => u.category === 'player' && u.type !== 'player')
     .sort((a, b) => {
       const levelDiff = (a[1].requirements?.structureLevel || 0) - (b[1].requirements?.structureLevel || 0);
-      return levelDiff !== 0 ? levelDiff : (a[1].power || 0) - (b[1].power || 0);
+      const aTotAtk = (a[1].meleeAttack||0) + (a[1].rangedAttack||0) + (a[1].magicAttack||0);
+      const bTotAtk = (b[1].meleeAttack||0) + (b[1].rangedAttack||0) + (b[1].magicAttack||0);
+      return levelDiff !== 0 ? levelDiff : aTotAtk - bTotAtk;
     })
     .slice(0, 3)
     .map(([id, u]) => ({
@@ -42,7 +44,9 @@
       description: u.description || `A ${u.type} unit`,
       subtitle: getUnitCategory(u),
       icon: getUnitIconEmoji(u),
-      power: u.power,
+      meleeAttack: u.meleeAttack || 0,
+      rangedAttack: u.rangedAttack || 0,
+      magicAttack: u.magicAttack || 0,
       time: u.timePerUnit,
       cost: u.cost || {},
       requirements: u.requirements || {},
@@ -74,10 +78,24 @@
           <div class="element-body">
             <p class="element-desc">{unit.description}</p>
             <div class="attributes-grid">
-              <div class="attribute">
-                <span class="attribute-label">Power</span>
-                <span class="attribute-value battle-stat">{unit.power}</span>
-              </div>
+              {#if unit.meleeAttack > 0}
+                <div class="attribute">
+                  <span class="attribute-label">Melee</span>
+                  <span class="attribute-value battle-stat melee">{unit.meleeAttack.toFixed(1)}</span>
+                </div>
+              {/if}
+              {#if unit.rangedAttack > 0}
+                <div class="attribute">
+                  <span class="attribute-label">Ranged</span>
+                  <span class="attribute-value battle-stat ranged">{unit.rangedAttack.toFixed(1)}</span>
+                </div>
+              {/if}
+              {#if unit.magicAttack > 0}
+                <div class="attribute">
+                  <span class="attribute-label">Magic</span>
+                  <span class="attribute-value battle-stat magic">{unit.magicAttack.toFixed(1)}</span>
+                </div>
+              {/if}
               <div class="attribute">
                 <span class="attribute-label">Time</span>
                 <span class="attribute-value">{unit.time} ticks</span>

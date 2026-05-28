@@ -356,8 +356,9 @@
             <h3>Available Units</h3>
             <div class="units-list">
               {#each availableUnits as unit}
-                <div 
-                  class="unit-item" 
+                {@const uDef = UNITS[unit.unitId] || UNITS[unit.type]}
+                <div
+                  class="unit-item"
                   class:selected={unit.selected}
                   class:boat-unit={isBoatUnit(unit)}
                   onclick={() => toggleUnit(unit.id)}
@@ -396,12 +397,10 @@
                       {#if unit.race}
                         <span class="race-tag">{_fmt(unit.race)}</span>
                       {/if}
-                      {@const uDef = UNITS[unit.unitId] || UNITS[unit.type]}
                       {#if uDef}
-                        {@const atk = (uDef.meleeAttack||0) + (uDef.rangedAttack||0) + (uDef.magicAttack||0)}
-                        {#if atk > 0}
-                          <span class="strength-tag">ATK: {atk.toFixed(1)}</span>
-                        {/if}
+                        {#if (uDef.meleeAttack||0) > 0}<span class="stat-tag melee-tag">M·{uDef.meleeAttack.toFixed(1)}</span>{/if}
+                        {#if (uDef.rangedAttack||0) > 0}<span class="stat-tag ranged-tag">R·{uDef.rangedAttack.toFixed(1)}</span>{/if}
+                        {#if (uDef.magicAttack||0) > 0}<span class="stat-tag magic-tag">Mg·{uDef.magicAttack.toFixed(1)}</span>{/if}
                       {/if}
                       {#if unit.group}
                         <span class="group-tag">From: {unit.group}</span>
@@ -699,18 +698,23 @@
     font-size: 0.8em;
   }
 
-  .race-tag, .strength-tag, .group-tag {
+  .race-tag, .group-tag {
     padding: 0.1em 0.4em;
     background-color: rgba(176, 141, 74, 0.08);
     border: 0.075em solid rgba(176, 141, 74, 0.18);
     color: var(--color-parchment-200);
   }
 
-  .strength-tag {
+  .stat-tag {
+    padding: 0.1em 0.4em;
+    background-color: rgba(176, 141, 74, 0.08);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
     color: var(--color-parchment-200);
-    background-color: rgba(91, 26, 31, 0.15);
-    border-color: rgba(91, 26, 31, 0.3);
+    font-family: var(--font-mono);
   }
+  .melee-tag { background-color: rgba(91, 26, 31, 0.12); border-color: rgba(91, 26, 31, 0.28); }
+  .ranged-tag { background-color: rgba(40, 70, 40, 0.14); border-color: rgba(60, 110, 60, 0.28); }
+  .magic-tag { background-color: rgba(50, 40, 90, 0.18); border-color: rgba(90, 70, 160, 0.3); }
 
   .group-tag {
     color: var(--color-parchment-200);

@@ -698,7 +698,7 @@
                                             {/if}
                                         </div>
                                         <div class="unit-option-power">
-                                            ATK {(unit.meleeAttack + unit.rangedAttack + unit.magicAttack).toFixed(1)}
+                                            {#if unit.meleeAttack > 0}<span class="stat-chip melee">M·{unit.meleeAttack.toFixed(1)}</span>{/if}{#if unit.rangedAttack > 0}<span class="stat-chip ranged">R·{unit.rangedAttack.toFixed(1)}</span>{/if}{#if unit.magicAttack > 0}<span class="stat-chip magic">Mg·{unit.magicAttack.toFixed(1)}</span>{/if}
                                             {#if unit.tooltip}
                                                 <span class="unit-tooltip-hint"><Info size="0.9em" /></span>
                                             {/if}
@@ -1143,7 +1143,20 @@
         font-size: 0.75rem;
         color: var(--color-parchment-200);
         font-family: var(--font-mono);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        align-items: center;
     }
+
+    .stat-chip {
+        padding: 0.05em 0.35em;
+        border: 0.075em solid rgba(176, 141, 74, 0.2);
+        font-size: 0.95em;
+    }
+    .stat-chip.melee { background: rgba(91, 26, 31, 0.12); border-color: rgba(91, 26, 31, 0.28); }
+    .stat-chip.ranged { background: rgba(40, 70, 40, 0.14); border-color: rgba(60, 110, 60, 0.28); }
+    .stat-chip.magic { background: rgba(50, 40, 90, 0.18); border-color: rgba(90, 70, 160, 0.3); }
 
     .unit-details {
         padding: 1rem;

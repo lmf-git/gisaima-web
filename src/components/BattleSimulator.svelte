@@ -693,15 +693,23 @@
                 <div class="unit-list">
                   <strong>Units: {Object.keys(group.units).length}</strong>
                   {#each Object.entries(group.units) as [unitId, unit]}
+                    {@const uDef = UNITS[unit.type]}
                     <div class="unit-item">
                       <span class="unit-name">
                         {unit.displayName || getUnitName(unit.type)}
                         {unit.level > 1 ? ` (Lvl ${unit.level})` : ''}
                       </span>
+                      {#if uDef}
+                        <span class="unit-stats-row">
+                          {#if (uDef.meleeAttack||0) > 0}<span class="unit-stat-chip melee">M·{uDef.meleeAttack.toFixed(1)}</span>{/if}
+                          {#if (uDef.rangedAttack||0) > 0}<span class="unit-stat-chip ranged">R·{uDef.rangedAttack.toFixed(1)}</span>{/if}
+                          {#if (uDef.magicAttack||0) > 0}<span class="unit-stat-chip magic">Mg·{uDef.magicAttack.toFixed(1)}</span>{/if}
+                        </span>
+                      {/if}
                     </div>
                   {/each}
                 </div>
-                
+
                 <div class="item-list">
                   <strong>Items: {Object.keys(group.items).length}</strong>
                   {#each Object.entries(group.items) as [itemId, quantity]}
@@ -716,17 +724,17 @@
               </div>
             </div>
           {/each}
-          
+
           <button class="add-group-btn" on:click={() => addGroup('side1')}>
             + Add Group
           </button>
         </div>
       </div>
-      
+
       <div class="side-config">
         <h3>Side 2: {side2.name}</h3>
         <div class="side-power">Power: {side2.power.toFixed(1)}</div>
-        
+
         <div class="groups-container">
           {#each Object.entries(side2.groups) as [groupId, group]}
             <div class="group-card" class:selected={selectedGroupId === groupId && selectedSide === 'side2'}>
@@ -740,16 +748,24 @@
                   ✕
                 </button>
               </div>
-              
+
               <div class="group-content">
                 <div class="unit-list">
                   <strong>Units: {Object.keys(group.units).length}</strong>
                   {#each Object.entries(group.units) as [unitId, unit]}
+                    {@const uDef = UNITS[unit.type]}
                     <div class="unit-item">
                       <span class="unit-name">
                         {unit.displayName || getUnitName(unit.type)}
                         {unit.level > 1 ? ` (Lvl ${unit.level})` : ''}
                       </span>
+                      {#if uDef}
+                        <span class="unit-stats-row">
+                          {#if (uDef.meleeAttack||0) > 0}<span class="unit-stat-chip melee">M·{uDef.meleeAttack.toFixed(1)}</span>{/if}
+                          {#if (uDef.rangedAttack||0) > 0}<span class="unit-stat-chip ranged">R·{uDef.rangedAttack.toFixed(1)}</span>{/if}
+                          {#if (uDef.magicAttack||0) > 0}<span class="unit-stat-chip magic">Mg·{uDef.magicAttack.toFixed(1)}</span>{/if}
+                        </span>
+                      {/if}
                     </div>
                   {/each}
                 </div>
@@ -1202,6 +1218,29 @@
     background: rgba(158, 158, 158, 0.1);
     border-color: rgba(158, 158, 158, 0.3);
   }
+
+  .unit-item {
+    flex-wrap: wrap;
+    gap: 0.3em;
+  }
+
+  .unit-stats-row {
+    display: flex;
+    gap: 0.2em;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .unit-stat-chip {
+    font-size: 0.72em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.2em;
+    font-family: monospace;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .unit-stat-chip.melee { background: rgba(180, 30, 30, 0.1); border-color: rgba(180, 30, 30, 0.3); color: #a02020; }
+  .unit-stat-chip.ranged { background: rgba(30, 100, 30, 0.1); border-color: rgba(30, 100, 30, 0.3); color: #1a6020; }
+  .unit-stat-chip.magic { background: rgba(80, 30, 140, 0.1); border-color: rgba(80, 30, 140, 0.3); color: #5020a0; }
   
   .item-name.uncommon {
     background: rgba(76, 175, 80, 0.1);

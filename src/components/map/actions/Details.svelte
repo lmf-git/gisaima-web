@@ -907,8 +907,13 @@
                                         <span class="unit-race-tag">{_fmt(unit.race)}</span>
                                       {/if}
                                       <span class="unit-type-tag">{_fmt(unit.type)}</span>
-                                      {#if unit.power !== undefined || UNITS[unit.type]?.power}
-                                        <span class="unit-stat-tag">PWR {unit.power ?? UNITS[unit.type]?.power}</span>
+                                      {#if unit.type !== 'player'}
+                                        {@const uDef = UNITS[unit.type]}
+                                        {#if uDef}
+                                          {#if (uDef.meleeAttack||0) > 0}<span class="unit-stat-tag melee">M·{uDef.meleeAttack.toFixed(1)}</span>{/if}
+                                          {#if (uDef.rangedAttack||0) > 0}<span class="unit-stat-tag ranged">R·{uDef.rangedAttack.toFixed(1)}</span>{/if}
+                                          {#if (uDef.magicAttack||0) > 0}<span class="unit-stat-tag magic">Mg·{uDef.magicAttack.toFixed(1)}</span>{/if}
+                                        {/if}
                                       {/if}
                                       {#if unit.type !== 'player'}
                                         <span
@@ -2493,10 +2498,13 @@
   .unit-stat-tag {
     font-size: 0.75em;
     padding: 0.1em 0.35em;
-    border-radius: 0.2em;
-    background-color: rgba(183, 28, 28, 0.08);
-    color: #b71c1c;
+    font-family: var(--font-mono);
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    color: var(--color-parchment-200);
   }
+  .unit-stat-tag.melee { background: rgba(91, 26, 31, 0.12); border-color: rgba(91, 26, 31, 0.28); }
+  .unit-stat-tag.ranged { background: rgba(40, 70, 40, 0.14); border-color: rgba(60, 110, 60, 0.28); }
+  .unit-stat-tag.magic { background: rgba(50, 40, 90, 0.18); border-color: rgba(90, 70, 160, 0.3); }
 
   .unit-level-tag {
     font-size: 0.75em;
