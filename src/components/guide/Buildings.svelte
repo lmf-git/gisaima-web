@@ -1,5 +1,6 @@
 <script>
   import { BUILDINGS } from "gisaima-shared/definitions/BUILDINGS.js";
+  import BuildingIcon from "../icons/BuildingIcon.svelte";
 
   function getBuildingCategory(type) {
     const categories = {
@@ -21,7 +22,6 @@
       id,
       name: b.name,
       description: b.description,
-      icon: b.icon,
       subtitle: getBuildingCategory(id),
       resources: b.baseRequirements || [],
       benefits: {
@@ -45,7 +45,7 @@
       {#each buildingExamples as building}
         <div class="element-card">
           <div class="element-header">
-            <div class="element-icon">{building.icon}</div>
+            <div class="element-icon"><BuildingIcon type={building.id} size="1.6em" /></div>
             <div class="element-title">
               <h5>{building.name}</h5>
               <div class="element-subtitle">{building.subtitle}</div>
@@ -94,3 +94,15 @@
     <li>Some buildings have race-specific variations with unique bonuses</li>
   </ul>
 </section>
+
+<style>
+  .element-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4em;
+    height: 2.4em;
+    flex-shrink: 0;
+    color: inherit;
+  }
+</style>

@@ -1,5 +1,6 @@
 <script>
   import UNITS from "gisaima-shared/definitions/UNITS.js";
+  import Unit from "../icons/Unit.svelte";
 
   function getUnitCategory(unit) {
     const typeMap = {
@@ -19,16 +20,6 @@
     return typeMap[unit.type] || "Military Unit";
   }
 
-  function getUnitIconEmoji(unit) {
-    const iconMap = {
-      'sword': '⚔️', 'bow': '🏹', 'shield': '🛡️', 'axe': '🪓',
-      'dagger': '🗡️', 'blades': '⚔️', 'eye': '👁️', 'wing': '🧚',
-      'thorn': '🌵', 'hammer': '🔨', 'pick': '⛏️', 'cross': '➕',
-      'staff': '🪄', 'gear': '⚙️', 'boots': '👢', 'pickaxe': '⛏️'
-    };
-    return iconMap[unit.icon] || "⚔️";
-  }
-
   const unitExamples = Object.entries(UNITS)
     .filter(([_, u]) => u.category === 'player' && u.type !== 'player')
     .sort((a, b) => {
@@ -43,7 +34,6 @@
       name: u.name,
       description: u.description || `A ${u.type} unit`,
       subtitle: getUnitCategory(u),
-      icon: getUnitIconEmoji(u),
       meleeAttack: u.meleeAttack || 0,
       rangedAttack: u.rangedAttack || 0,
       magicAttack: u.magicAttack || 0,
@@ -69,7 +59,7 @@
       {#each unitExamples as unit}
         <div class="element-card unit-card {unit.requirements && Object.keys(unit.requirements).length > 0 ? 'elite' : ''}">
           <div class="element-header">
-            <div class="element-icon">{unit.icon}</div>
+            <div class="element-icon"><Unit unitIconKey={unit.id} extraClass="guide-element-icon" /></div>
             <div class="element-title">
               <h5>{unit.race ? `${unit.race.charAt(0).toUpperCase() + unit.race.slice(1)} ` : ''}{unit.name}</h5>
               <div class="element-subtitle">{unit.subtitle}</div>
@@ -147,3 +137,15 @@
     </div>
   </div>
 </section>
+
+<style>
+  .element-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4em;
+    height: 2.4em;
+    flex-shrink: 0;
+    color: inherit;
+  }
+</style>

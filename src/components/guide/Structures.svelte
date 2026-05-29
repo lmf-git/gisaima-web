@@ -1,17 +1,6 @@
 <script>
   import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
-
-  function getStructureIcon(type) {
-    const icons = {
-      'watchtower': '🏰',
-      'storage': '📦',
-      'workshop': '🔨',
-      'outpost': '🏕️',
-      'basic_shelter': '🏠',
-      'fortress': '🏰'
-    };
-    return icons[type] || '🏛️';
-  }
+  import StructureIcon from "../icons/StructureIcon.svelte";
 
   function getStructureCategory(type) {
     const categories = {
@@ -33,7 +22,6 @@
       name: s.name,
       description: s.description,
       type: s.type,
-      icon: getStructureIcon(s.type),
       subtitle: getStructureCategory(s.type),
       durability: s.durability,
       capacity: s.capacity,
@@ -57,7 +45,7 @@
       {#each structureExamples as structure}
         <div class="element-card">
           <div class="element-header">
-            <div class="element-icon">{structure.icon}</div>
+            <div class="element-icon"><StructureIcon type={structure.type} size="1.6em" /></div>
             <div class="element-title">
               <h5>{structure.name}</h5>
               <div class="element-subtitle">{structure.subtitle}</div>
@@ -161,3 +149,15 @@
     <li><strong>Building Materials:</strong> Resources dedicated to structure improvements</li>
   </ul>
 </section>
+
+<style>
+  .element-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4em;
+    height: 2.4em;
+    flex-shrink: 0;
+    color: inherit;
+  }
+</style>
