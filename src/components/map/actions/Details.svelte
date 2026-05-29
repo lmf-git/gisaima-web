@@ -182,7 +182,7 @@
 
     switch (action) {
       case 'mobilise':
-        onShowModal({ type: 'mobilise', data: tile });
+        onShowModal({ type: 'mobilise', data: tileData });
         onClose(); // Close details panel when opening another modal
         break;
         

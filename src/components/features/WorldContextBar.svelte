@@ -156,6 +156,13 @@
     }
 
     function onInputFocus() {
+        if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
+        dropdownOpen = true;
+    }
+
+    function onInput() {
+        // Reopen the dropdown when the user types — focus may already be on the
+        // input (e.g. after clicking a result kept focus), so onfocus won't fire.
         dropdownOpen = true;
     }
 
@@ -245,6 +252,7 @@
                     placeholder="Find player/structure…"
                     bind:value={search}
                     aria-label="Search structures or players, or enter x,y coordinates"
+                    oninput={onInput}
                     onfocus={onInputFocus}
                     onblur={onInputBlur}
                 />

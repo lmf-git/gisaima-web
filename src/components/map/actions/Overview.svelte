@@ -1707,7 +1707,7 @@
   }
 
   .entity.player.current {
-    background-color: rgba(176, 141, 74, 0.22);
+    background-color: rgba(224, 198, 142, 0.75);
     border-color: rgba(176, 141, 74, 0.7);
     border-left: 3px solid var(--color-aged-gold, #b08d4a);
   }
