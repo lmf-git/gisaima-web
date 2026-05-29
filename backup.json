@@ -24,6 +24,13 @@
             "structure": {
               "description": "A fairy settlement where the ancient spirits still speak",
               "id": "structure_al_fairy_spawn",
+              "buildings": {
+                "building_barracks_structure_al_fairy_spawn": { "id": "building_barracks_structure_al_fairy_spawn", "type": "barracks", "name": "Barracks", "level": 1, "subRow": 0, "subCol": 0, "race": "fairy" },
+                "building_smithy_structure_al_fairy_spawn": { "id": "building_smithy_structure_al_fairy_spawn", "type": "smithy", "name": "Smithy", "level": 1, "subRow": 0, "subCol": 2, "race": "fairy" },
+                "building_farm_structure_al_fairy_spawn": { "id": "building_farm_structure_al_fairy_spawn", "type": "farm", "name": "Farm", "level": 1, "subRow": 2, "subCol": 0, "race": "fairy" },
+                "building_market_structure_al_fairy_spawn": { "id": "building_market_structure_al_fairy_spawn", "type": "market", "name": "Market", "level": 1, "subRow": 2, "subCol": 2, "race": "fairy" },
+                "building_academy_structure_al_fairy_spawn": { "id": "building_academy_structure_al_fairy_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "fairy" }
+              },
               "items": {
                 "WOODEN_STICKS": 3,
                 "STONE_PIECES": 3
@@ -55,6 +62,13 @@
             "structure": {
               "description": "A resourceful goblin settlement built from the remains of ancient beasts",
               "id": "structure_al_goblin_spawn",
+              "buildings": {
+                "building_barracks_structure_al_goblin_spawn": { "id": "building_barracks_structure_al_goblin_spawn", "type": "barracks", "name": "Barracks", "level": 1, "subRow": 0, "subCol": 0, "race": "goblin" },
+                "building_smithy_structure_al_goblin_spawn": { "id": "building_smithy_structure_al_goblin_spawn", "type": "smithy", "name": "Smithy", "level": 1, "subRow": 0, "subCol": 2, "race": "goblin" },
+                "building_farm_structure_al_goblin_spawn": { "id": "building_farm_structure_al_goblin_spawn", "type": "farm", "name": "Farm", "level": 1, "subRow": 2, "subCol": 0, "race": "goblin" },
+                "building_market_structure_al_goblin_spawn": { "id": "building_market_structure_al_goblin_spawn", "type": "market", "name": "Market", "level": 1, "subRow": 2, "subCol": 2, "race": "goblin" },
+                "building_academy_structure_al_goblin_spawn": { "id": "building_academy_structure_al_goblin_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "goblin" }
+              },
               "items": {
                 "WOODEN_STICKS": 5
               },
@@ -69,6 +83,13 @@
             "structure": {
               "description": "An elven city built around the oldest living trees in the realm",
               "id": "structure_al_elf_spawn",
+              "buildings": {
+                "building_barracks_structure_al_elf_spawn": { "id": "building_barracks_structure_al_elf_spawn", "type": "barracks", "name": "Barracks", "level": 1, "subRow": 0, "subCol": 0, "race": "elf" },
+                "building_smithy_structure_al_elf_spawn": { "id": "building_smithy_structure_al_elf_spawn", "type": "smithy", "name": "Smithy", "level": 1, "subRow": 0, "subCol": 2, "race": "elf" },
+                "building_farm_structure_al_elf_spawn": { "id": "building_farm_structure_al_elf_spawn", "type": "farm", "name": "Farm", "level": 1, "subRow": 2, "subCol": 0, "race": "elf" },
+                "building_market_structure_al_elf_spawn": { "id": "building_market_structure_al_elf_spawn", "type": "market", "name": "Market", "level": 1, "subRow": 2, "subCol": 2, "race": "elf" },
+                "building_academy_structure_al_elf_spawn": { "id": "building_academy_structure_al_elf_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "elf" }
+              },
               "name": "Ancient Arborium",
               "race": "elf",
               "type": "spawn"
@@ -87,6 +108,13 @@
             "structure": {
               "description": "The ancestral mountain home of the dwarf clans",
               "id": "structure_al_dwarf_spawn",
+              "buildings": {
+                "building_barracks_structure_al_dwarf_spawn": { "id": "building_barracks_structure_al_dwarf_spawn", "type": "barracks", "name": "Barracks", "level": 1, "subRow": 0, "subCol": 0, "race": "dwarf" },
+                "building_smithy_structure_al_dwarf_spawn": { "id": "building_smithy_structure_al_dwarf_spawn", "type": "smithy", "name": "Smithy", "level": 1, "subRow": 0, "subCol": 2, "race": "dwarf" },
+                "building_farm_structure_al_dwarf_spawn": { "id": "building_farm_structure_al_dwarf_spawn", "type": "farm", "name": "Farm", "level": 1, "subRow": 2, "subCol": 0, "race": "dwarf" },
+                "building_market_structure_al_dwarf_spawn": { "id": "building_market_structure_al_dwarf_spawn", "type": "market", "name": "Market", "level": 1, "subRow": 2, "subCol": 2, "race": "dwarf" },
+                "building_academy_structure_al_dwarf_spawn": { "id": "building_academy_structure_al_dwarf_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "dwarf" }
+              },
               "name": "Deepforge Stronghold",
               "race": "dwarf",
               "type": "spawn"
@@ -116,6 +144,13 @@
             "structure": {
               "description": "A rugged frontier settlement where hardy humans carve out a living",
               "id": "structure_al_human_spawn",
+              "buildings": {
+                "building_barracks_structure_al_human_spawn": { "id": "building_barracks_structure_al_human_spawn", "type": "barracks", "name": "Barracks", "level": 1, "subRow": 0, "subCol": 0, "race": "human" },
+                "building_smithy_structure_al_human_spawn": { "id": "building_smithy_structure_al_human_spawn", "type": "smithy", "name": "Smithy", "level": 1, "subRow": 0, "subCol": 2, "race": "human" },
+                "building_farm_structure_al_human_spawn": { "id": "building_farm_structure_al_human_spawn", "type": "farm", "name": "Farm", "level": 1, "subRow": 2, "subCol": 0, "race": "human" },
+                "building_market_structure_al_human_spawn": { "id": "building_market_structure_al_human_spawn", "type": "market", "name": "Market", "level": 1, "subRow": 2, "subCol": 2, "race": "human" },
+                "building_academy_structure_al_human_spawn": { "id": "building_academy_structure_al_human_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "human" }
+              },
               "items": {
                 "WOODEN_STICKS": 41,
                 "STONE_PIECES": 14,

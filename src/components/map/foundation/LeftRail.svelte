@@ -7,6 +7,7 @@
         { href: '/map',       glyph: 'compass', label: 'World' },
         { href: '/profile',   glyph: 'banner',  label: 'Realm' },
         { href: '/diplomacy', glyph: 'shield',  label: 'Diplomacy' },
+        { href: '/friends',   glyph: 'plus',    label: 'Friends' },
         { href: '/rankings',  glyph: 'crown',   label: 'Roll' },
         { href: '/bounties',  glyph: 'skull',   label: 'Bounty' },
         { href: '/trade',     glyph: 'coin',    label: 'Trade' },

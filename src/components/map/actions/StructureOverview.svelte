@@ -3,8 +3,9 @@
 
   import { BUILDINGS, ITEMS } from "gisaima-shared";
 
-  import { currentPlayer } from "../../../lib/stores/game.js";
+  import { currentPlayer, game } from "../../../lib/stores/game.js";
   import { targetStore, coordinates } from "../../../lib/stores/map.js";
+  import { apiPost } from "../../../lib/api.js";
 
   import Structure from '../../icons/Structure.svelte';
   import Torch from '../../icons/Torch.svelte';
@@ -31,8 +32,51 @@
     items: false,
     building: false,
     buildings: false,
-    availableBuildings: false  // Add this line
+    availableBuildings: false,  // Add this line
+    access: true
   });
+
+  // Per-structure access settings (owner-only, non-spawn structures)
+  const ACCESS_TIERS = [
+    { value: 'owner',   label: 'Only me' },
+    { value: 'friends', label: 'Friends' },
+    { value: 'tribe',   label: 'Tribe' },
+    { value: 'public',  label: 'Everyone' },
+  ];
+  const ACCESS_ROWS = [
+    { key: 'build',   label: 'Build / upgrade buildings' },
+    { key: 'recruit', label: 'Recruit & craft' },
+    { key: 'deposit', label: 'Deposit to shared storage' },
+  ];
+  let accessDraft = $state({ build: 'owner', recruit: 'owner', deposit: 'owner' });
+  let accessSaving = $state(false);
+
+  // Keep the draft in sync with the structure currently in view.
+  $effect(() => {
+    const a = tileData?.structure?.access || {};
+    accessDraft = {
+      build:   a.build   || 'owner',
+      recruit: a.recruit || 'owner',
+      deposit: a.deposit || 'owner',
+    };
+  });
+
+  async function saveAccess() {
+    if (!tileData?.structure) return;
+    accessSaving = true;
+    try {
+      await apiPost('/actions/setStructureAccess', {
+        worldId: $game.worldKey,
+        tileX: x,
+        tileY: y,
+        access: { ...accessDraft },
+      });
+    } catch (e) {
+      console.error('Failed to save structure access', e);
+    } finally {
+      accessSaving = false;
+    }
+  }
   
   // Add state for storage tab selection
   let activeTab = $state('shared');
@@ -708,9 +752,23 @@
     return BUILDINGS.getBuildingDescription(buildingType);
   }
 
-  // Function to build a new building
-  function buildNewBuilding(buildingType) {
-    executeAction('add-building', { buildingType });
+  // Function to build a new building. Posts directly to the API; the server
+  // assigns a free subgrid cell. The new building appears on the next world tick.
+  let addingBuilding = $state(null);
+  async function buildNewBuilding(buildingType) {
+    if (addingBuilding) return;
+    addingBuilding = buildingType;
+    try {
+      await apiPost('/actions/addBuilding', {
+        worldId: $game.worldKey,
+        x, y,
+        buildingType,
+      });
+    } catch (e) {
+      console.error('Failed to add building', e);
+    } finally {
+      addingBuilding = null;
+    }
   }
 
   // Set buildings section to be expanded by default since it now contains more content
@@ -987,9 +1045,9 @@
                         <button 
                           class="build-building-button"
                           onclick={() => buildNewBuilding(building.type)}
-                          disabled={!hasResourcesForBuilding(building.type)}
+                          disabled={!hasResourcesForBuilding(building.type) || addingBuilding !== null}
                         >
-                          Build Now
+                          {addingBuilding === building.type ? 'Building…' : 'Build Now'}
                         </button>
                       {/if}
                     {:else if building.upgradeInProgress}
@@ -1030,6 +1088,43 @@
           </div>
         {/if}
       </div>
+
+      <!-- Access settings — owner only, non-spawn structures -->
+      {#if isOwnedByCurrentPlayer(tileData?.structure) && tileData?.structure?.type !== 'spawn'}
+        <div class="entities-section">
+          <div
+            class="section-header"
+            onclick={() => toggleSection('access')}
+            onkeydown={(e) => { if (e.key === 'Enter') { toggleSection('access'); e.preventDefault(); } }}
+            role="button"
+            tabindex="0"
+            aria-expanded={!collapsedSections.access}
+          >
+            <h4>Access</h4>
+            <button class="collapse-button">{collapsedSections.access ? '▼' : '▲'}</button>
+          </div>
+
+          {#if !collapsedSections.access}
+            <div class="section-content" transition:slide|local={{duration: 300}}>
+              <div class="access-grid">
+                {#each ACCESS_ROWS as row}
+                  <label class="access-row">
+                    <span class="access-label">{row.label}</span>
+                    <select class="access-select" bind:value={accessDraft[row.key]} disabled={accessSaving}>
+                      {#each ACCESS_TIERS as tier}
+                        <option value={tier.value}>{tier.label}</option>
+                      {/each}
+                    </select>
+                  </label>
+                {/each}
+              </div>
+              <button class="save-access-button" onclick={saveAccess} disabled={accessSaving}>
+                {accessSaving ? 'Saving…' : 'Save access settings'}
+              </button>
+            </div>
+          {/if}
+        </div>
+      {/if}
 
       <!-- Storage section - Clean version without debug elements -->
       {#if showStorageTabs}
@@ -1760,6 +1855,49 @@
     border-color: rgba(255, 255, 255, 0.08);
     cursor: not-allowed;
   }
+
+  .access-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+  .access-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6em;
+  }
+  .access-label {
+    font-size: 0.8em;
+    color: rgba(232, 228, 210, 0.85);
+  }
+  .access-select {
+    flex: 0 0 auto;
+    min-width: 7.5em;
+    padding: 0.3em 0.5em;
+    font-size: 0.8em;
+    color: #e8e4d2;
+    background: rgba(0, 0, 0, 0.3);
+    border: 0.075em solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.2em;
+  }
+  .access-select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .save-access-button {
+    width: 100%;
+    margin-top: 0.7em;
+    padding: 0.45em 0.8em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.65em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: rgba(76, 175, 80, 0.15);
+    color: #6ecf72;
+    border: 0.075em solid rgba(76, 175, 80, 0.35);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .save-access-button:not(:disabled):hover { background: rgba(76, 175, 80, 0.25); }
+  .save-access-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* Upgrade structure button (action-button) */
   .action-button {

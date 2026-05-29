@@ -1567,6 +1567,17 @@
     return data?.color || null;
   }
 
+  // Find the building (if any) a structure has placed on a given subgrid cell.
+  function buildingAt(structure, row, col) {
+    const buildings = structure?.buildings;
+    if (!buildings) return null;
+    for (const key in buildings) {
+      const b = buildings[key];
+      if (b && b.subRow === row && b.subCol === col) return b;
+    }
+    return null;
+  }
+
   function handleSubCellClick(index) {
     selectedSubCell = index;
     onSubCellSelect?.(index);
@@ -1908,6 +1919,7 @@
                     {@const isPlaceable = buildingPlacementMode && cell.isCenter && (allowedSubCells === null || allowedSubCells.has(index))}
                     {@const iconRow = cell.structure.subRow ?? subCenter}
                     {@const iconCol = cell.structure.subCol ?? subCenter}
+                    {@const cellBuilding = buildingAt(cell.structure, row, col)}
                     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
                     <div
                       class="subgrid-cell"
@@ -1923,7 +1935,12 @@
                       onclick={isPlaceable ? () => handleSubCellClick(index) : undefined}
                       onkeydown={isPlaceable ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleSubCellClick(index); } : undefined}
                     >
-                      {#if !cell.isCenter && row === iconRow && col === iconCol}
+                      {#if cellBuilding && cell.structure.status !== 'building'}
+                        {@const BIcon = STRUCTURE_ICONS[cellBuilding.type] ?? Structure}
+                        <div class="subgrid-structure-icon subgrid-building-icon" title={cellBuilding.name || cellBuilding.type}>
+                          <BIcon size="85%" extraClass="structure-icon {cellBuilding.type}-icon" />
+                        </div>
+                      {:else if !cell.isCenter && row === iconRow && col === iconCol}
                         {@const Icon = STRUCTURE_ICONS[cell.structure.type] ?? Structure}
                         <div class="subgrid-structure-icon">
                           {#if cell.structure.status === 'building'}
