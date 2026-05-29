@@ -277,17 +277,9 @@
     transition: z-index 0s;
   }
 
-  .join-battle-modal.active {
-    z-index: 1001;
-  }
-
-  h2, h3 {
-    margin: 0;
-    font-family: var(--font-heading);
-  }
-
   h3 {
-    margin-bottom: 0.8em;
+    margin: 0 0 0.8em;
+    font-family: var(--font-heading);
     font-size: 1.1em;
     font-weight: 500;
     color: #333;

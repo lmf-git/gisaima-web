@@ -697,7 +697,6 @@
   .pi-stat.atk { background: rgba(91, 26, 31, 0.15); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
   .pi-stat.def { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.2); }
   .pi-stat.spd { background: rgba(63, 90, 78, 0.12); color: #6fcf79; border: 0.075em solid rgba(76, 175, 80, 0.2); }
-  .pi-stat.pwr { background: rgba(176, 141, 74, 0.08); color: var(--color-parchment-200); border: 0.075em solid rgba(176, 141, 74, 0.2); }
 
   .pi-qty {
     font-size: 0.72em;

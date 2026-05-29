@@ -259,6 +259,7 @@
                             aria-selected="false"
                             onmousedown={onResultMousedown}
                             onclick={() => jumpTo(r.x, r.y)}
+                            onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && jumpTo(r.x, r.y)}
                         >
                             <span class="result-kind">{r.kind === 'player' ? '⚔' : '⬛'}</span>
                             <span class="result-label">{r.label}</span>

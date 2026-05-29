@@ -14,19 +14,18 @@
     }
 </script>
 
-<label class="checkbox-label" class:disabled>
-    <div
-        class="checkbox"
-        class:checked
-        class:disabled
-        onclick={toggle}
-        onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggle()}
-        role="checkbox"
-        aria-checked={checked}
-        aria-disabled={disabled}
-        tabindex={disabled ? -1 : 0}
-        {id}
-    >
+<div
+    class="checkbox-label"
+    class:disabled
+    onclick={toggle}
+    onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggle()}
+    role="checkbox"
+    aria-checked={checked}
+    aria-disabled={disabled}
+    tabindex={disabled ? -1 : 0}
+    {id}
+>
+    <div class="checkbox" class:checked class:disabled aria-hidden="true">
         {#if checked}
             <svg viewBox="0 0 24 24" class="check-icon" aria-hidden="true">
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -36,7 +35,7 @@
     {#if label}
         <span class="checkbox-text">{label}</span>
     {/if}
-</label>
+</div>
 
 <style>
     .checkbox-label {
@@ -62,11 +61,13 @@
         background-color: rgba(26, 32, 48, 0.55);
         transition: background-color 0.15s, border-color 0.15s;
         flex-shrink: 0;
-        cursor: pointer;
     }
 
-    .checkbox:focus {
+    .checkbox-label:focus {
         outline: none;
+    }
+
+    .checkbox-label:focus-visible .checkbox {
         border-color: var(--color-aged-gold, #b08d4a);
     }
 

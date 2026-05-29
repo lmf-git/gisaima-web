@@ -499,7 +499,7 @@
     font-family: var(--font-body);
   }
 
-  h2, h3 {
+  h3 {
     margin: 0;
     font-family: var(--font-display);
   }

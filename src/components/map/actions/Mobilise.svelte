@@ -488,14 +488,6 @@
     text-transform: uppercase;
     font-size: 0.75em;
   }
-  .march-row select {
-    padding: 0.3em 0.6em;
-    font-family: var(--font-display);
-    font-size: 0.85em;
-    background: rgba(14, 19, 32, 0.6);
-    color: var(--color-parchment-100);
-    border: 0.075em solid rgba(176, 141, 74, 0.4);
-  }
   .march-row input[type="range"] { flex: 1; }
   .march-row b { color: var(--color-wax-red); }
 
@@ -585,59 +577,6 @@
     border-color: var(--color-aged-gold);
   }
 
-  .visually-hidden {
-    border: 0;
-    clip: rect(0 0 0 0);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
-  }
-
-  .custom-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .custom-checkbox {
-    width: 1.2em;
-    height: 1.2em;
-    border: 0.075em solid rgba(176, 141, 74, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    background-color: rgba(26, 32, 48, 0.55);
-    position: relative;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-
-  .custom-checkbox:focus {
-    outline: none;
-    border-color: var(--color-aged-gold);
-  }
-
-  .custom-checkbox.checked {
-    background-color: var(--color-aged-gold);
-    border-color: var(--color-aged-gold);
-  }
-
-  .checkbox-icon {
-    width: 100%;
-    height: 100%;
-    fill: var(--color-ink-900);
-  }
-
-  .checkbox-text {
-    color: var(--color-parchment-100);
-    font-weight: 500;
-  }
 
   .units-section {
     display: flex;
