@@ -34,7 +34,17 @@
         out.push({ x: s.x, y: s.y, r });
       }
 
-      return out;
+      // Collapse sources that sit on the same tile into a single max-radius
+      // circle. Without this, a player standing inside their own group (player
+      // sight + group sight at identical coords) paints two overlapping reveal
+      // gradients, producing a visible doubled/banded fog ring.
+      const byTile = new Map();
+      for (const s of out) {
+        const key = `${s.x},${s.y}`;
+        const existing = byTile.get(key);
+        if (!existing || s.r > existing.r) byTile.set(key, s);
+      }
+      return [...byTile.values()];
     }
   );
 

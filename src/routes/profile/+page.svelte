@@ -7,6 +7,7 @@
     import Flourish from '../../components/ui/Flourish.svelte';
     import Stamp from '../../components/ui/Stamp.svelte';
     import Button from '../../components/ui/Button.svelte';
+    import FamilyTree from '../../components/features/FamilyTree.svelte';
 
     const player = $derived($currentPlayer);
     const worldId = $derived($game.worldKey);
@@ -69,6 +70,13 @@
                     <li><Stamp kind="compass" size={16} /> <a href="/map">Return to the map</a></li>
                 </ul>
             </div>
+        </section>
+
+        <div class="rule-deco"></div>
+
+        <section class="block">
+            <div class="eyebrow">Lineage</div>
+            <FamilyTree {worldId} currentLifeId={player?.controlledLifeId ?? player?.currentLifeId} />
         </section>
 
         <div class="rule-deco"></div>

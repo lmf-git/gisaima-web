@@ -2,11 +2,13 @@
     import { derived } from 'svelte/store';
     import { entities, currentPlayerPosition } from '$lib/stores/map.js';
     import { user } from '$lib/stores/user.js';
+    import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
     import Stamp from '../../ui/Stamp.svelte';
 
-    // Top resource strip — shows the four primary resources visible at the
-    // player's current location's sink (their group or structure on the tile).
-    // Aligns to the reference HudA top bar.
+    // Top resource strip — shows the four primary resources held *personally* at
+    // the player's current location: the items in their own unit group on the
+    // tile, or — if standing at a structure — their personal bank there. Shared
+    // structure storage is intentionally excluded.
     const totals = derived(
         [entities, currentPlayerPosition, user],
         ([$ent, $pos, $user]) => {
@@ -15,20 +17,28 @@
             const struct = $ent.structure?.[key];
             const groups = $ent.groups?.[key] || [];
 
-            // Prefer the player's own group's items, otherwise the structure
-            // if they own it, otherwise the structure they're standing on (read-only).
+            // Player's own group items take priority; otherwise their personal
+            // bank at the structure (never the structure's shared pool).
             const myGroup = groups.find((g) => g?.owner === $user.uid);
             let items = null;
             if (myGroup?.items) items = myGroup.items;
-            else if (struct) items = struct.items || {};
+            else if (struct?.banks?.[$user.uid]) items = struct.banks[$user.uid];
 
-            if (!items) return null;
+            if (!items || !Object.keys(items).length) return null;
+
+            // Full breakdown for the hover title — formatted item names + qty.
+            const breakdown = Object.entries(items)
+                .filter(([code, qty]) => code && !code.startsWith('_') && Number(qty) > 0)
+                .sort((a, b) => Number(b[1]) - Number(a[1]))
+                .map(([code, qty]) => `${ITEMS[code]?.name || code}: ${Number(qty).toLocaleString()}`)
+                .join('\n');
+
             return {
                 gold:  Number(items.GOLD || items.COINS || 0),
                 wheat: Number(items.WHEAT || items.GRAIN || 0),
                 wood:  Number(items.WOOD || items.WOODEN_STICKS || items.LOG || 0),
                 stone: Number(items.STONE || items.STONE_PIECES || items.IRON_ORE || 0),
-                source: myGroup?.items ? 'group' : 'structure'
+                breakdown: breakdown || 'No items'
             };
         }
     );
@@ -40,7 +50,7 @@
 </script>
 
 {#if $totals}
-    <div class="bar">
+    <div class="bar" title={$totals.breakdown}>
         <div class="cell">
             <Stamp kind="coin" size={14} />
             <span class="qty">{fmt($totals.gold)}</span>
@@ -61,7 +71,6 @@
             <span class="qty">{fmt($totals.stone)}</span>
             <span class="lbl">STONE</span>
         </div>
-        <div class="source">@ {$totals.source}</div>
     </div>
 {/if}
 
@@ -78,7 +87,10 @@
         font-family: var(--font-mono);
         color: var(--color-parchment-200);
         backdrop-filter: blur(0.5em);
-        pointer-events: none;
+        /* Capture hover so the breakdown title tooltip appears. The bar is a
+           small strip, so this doesn't meaningfully block map dragging. */
+        pointer-events: auto;
+        cursor: default;
     }
     .cell {
         display: inline-flex;
@@ -101,21 +113,9 @@
         letter-spacing: 0.18em;
         opacity: 0.55;
     }
-    .source {
-        display: inline-flex;
-        align-items: center;
-        padding: 0 0.85em;
-        border-left: 0.075em solid rgba(176, 141, 74, 0.18);
-        font-family: var(--font-display);
-        font-size: 0.62em;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: rgba(232, 228, 210, 0.5);
-    }
-
     @media (max-width: 900px) {
         .bar { left: 8px; top: 60px; }
-        .lbl, .source { display: none; }
+        .lbl { display: none; }
         .cell { padding: 0.35em 0.6em; }
     }
 </style>

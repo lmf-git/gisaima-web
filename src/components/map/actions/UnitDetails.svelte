@@ -6,6 +6,10 @@
   import { game, currentPlayer } from '../../../lib/stores/game.js';
   import Race from '../../icons/Race.svelte';
   import Unit from '../../icons/Unit.svelte';
+  import Back from '../../icons/Back.svelte';
+  import Sword from '../../icons/Sword.svelte';
+  import Shield from '../../icons/Shield.svelte';
+  import EquipmentSlot from '../../icons/EquipmentSlot.svelte';
 
   const {
     unit,
@@ -165,6 +169,10 @@
 
 <div class="unit-details-modal">
   <header class="modal-header">
+    <button class="unit-back-btn" onclick={onClose} aria-label="Back to details">
+      <Back size="1.1em" />
+      <span>Back</span>
+    </button>
     <div class="unit-header-info">
       <div class="unit-header-icon">
         {#if unit.type === 'player'}
@@ -176,7 +184,7 @@
       <div>
         <div class="unit-header-name">
           {unit.displayName || unit.name || _fmt(unit.type)}
-          {#if unit.id === $currentPlayer?.id}
+          {#if unit.type === 'player' && unit.uid === $currentPlayer?.id}
             <span class="badge you-badge">You</span>
           {/if}
         </div>
@@ -251,11 +259,17 @@
               >
                 {#if equipped && itemDef}
                   <div class="slot-item-icon" title={itemDef.name}>
-                    {itemDef.stats?.attack ? '⚔️' : itemDef.stats?.defense ? '🛡️' : slotDef.icon}
+                    {#if itemDef.stats?.attack}
+                      <Sword size="1.4em" />
+                    {:else if itemDef.stats?.defense}
+                      <Shield size="1.4em" />
+                    {:else}
+                      <EquipmentSlot slot={slotKey} size="1.4em" />
+                    {/if}
                   </div>
                   <div class="slot-item-name">{itemDef.name}</div>
                 {:else}
-                  <div class="slot-empty-icon">{slotDef.icon}</div>
+                  <div class="slot-empty-icon"><EquipmentSlot slot={slotKey} size="1.4em" /></div>
                   <div class="slot-label">{slotDef.name}</div>
                 {/if}
               </button>
@@ -348,6 +362,27 @@
     background: rgba(176, 141, 74, 0.08);
     border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
     gap: 0.5em;
+  }
+
+  .unit-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    background: transparent;
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    color: var(--color-gold-pale);
+    font-family: var(--font-display);
+    font-size: 0.65em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.4em 0.6em;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .unit-back-btn:hover {
+    background: rgba(176, 141, 74, 0.12);
+    color: var(--color-parchment-100);
   }
 
   .unit-header-info {
@@ -530,6 +565,7 @@
   .slot-empty-icon {
     font-size: 1.4em;
     opacity: 0.3;
+    color: var(--color-parchment-200);
   }
 
   .slot-label {
@@ -542,6 +578,7 @@
 
   .slot-item-icon {
     font-size: 1.3em;
+    color: var(--color-gold-pale);
   }
 
   .slot-item-name {

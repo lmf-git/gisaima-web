@@ -780,7 +780,9 @@
 
   function isCurrentPlayer(playerEntity) {
     if (!playerEntity || !$currentPlayer) return false;
-    return $currentPlayer?.id === playerEntity.id;
+    // Entities are keyed by lifeId and carry uid; any of the player's
+    // characters counts as "current player" for marker purposes.
+    return playerEntity.uid === $currentPlayer?.id;
   }
 
   function hasCurrentPlayerEntity(cell) {

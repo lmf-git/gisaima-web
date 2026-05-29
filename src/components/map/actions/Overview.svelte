@@ -400,9 +400,9 @@
   function isOwnedByCurrentPlayer(entity) {
     if (!$currentPlayer || !entity) return false;
     
-    // For player entities, compare the ID directly 
+    // For player entities (keyed by lifeId, carrying uid), match on uid.
     if (entity.displayName !== undefined && entity.id !== undefined && !entity.owner) {
-      return entity.id === $currentPlayer.id;
+      return entity.uid === $currentPlayer.id;
     }
     
     // For other entities like groups or structures, check the owner property
@@ -978,7 +978,7 @@
                             <div class="unit-info">
                               <div class="unit-name">
                                 {unit.displayName || unit.name || unit.type || unitId.slice(-5)}
-                                {#if unit.id === $currentPlayer?.id}
+                                {#if unit.type === 'player' && unit.uid === $currentPlayer?.id}
                                   <span class="entity-badge owner-badge">You</span>
                                 {/if}
                               </div>

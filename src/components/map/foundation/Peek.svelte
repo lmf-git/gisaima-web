@@ -35,7 +35,7 @@
     if (!currentTileData || !$currentPlayer) return false;
     
     // Check if player is on the tile
-    const playerOnTile = currentTileData.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = currentTileData.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is not already in a mobilizing/demobilising group
     const inProcessGroup = currentTileData.groups?.some(g => 
@@ -126,7 +126,7 @@
     
     // Check if player is at a structure
     const hasStructure = !!currentTileData.structure;
-    const playerOnTile = currentTileData.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = currentTileData.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is in an idle group
     const playerInIdleGroup = currentTileData.groups?.some(g => 
@@ -143,7 +143,7 @@
     if (!currentTileData || !$currentPlayer || !currentTileData.structure) return false;
     
     // Player must be on tile as an entity
-    const playerOnTile = currentTileData.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = currentTileData.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is in ANY group (not just mobilizing/demobilizing)
     const isInAnyGroup = currentTileData.groups?.some(g => 

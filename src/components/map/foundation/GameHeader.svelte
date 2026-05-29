@@ -1,12 +1,15 @@
 <script>
   import { page } from '$app/stores';
   import { unreadReports } from '../../../lib/stores/reports.js';
+  import CharacterSwitcher from './CharacterSwitcher.svelte';
 
   // Reference: Diplomacy / Rankings / Reports are top-level world surfaces,
   // not transient popups on the map. They route to dedicated pages
   // (/diplomacy, /rankings, /chronicle) so they get the full WorldContextBar
   // chrome and bookmarkable URLs.
 </script>
+
+<div class="game-header-switcher"><CharacterSwitcher /></div>
 
 <nav class="game-header-nav">
   <a class="header-link" class:active={$page.url?.pathname === '/diplomacy'} href="/diplomacy">
@@ -24,6 +27,13 @@
 </nav>
 
 <style>
+  .game-header-switcher {
+    position: absolute;
+    top: 0.6em;
+    right: 0.6em;
+    z-index: 500;
+  }
+
   .game-header-nav {
     position: absolute;
     top: 0.6em;

@@ -266,7 +266,7 @@
     }
     
     // Check if player is present at the tile
-    const isPlayerAtTile = tileData?.players?.some(p => p.id === $currentPlayer.id);
+    const isPlayerAtTile = tileData?.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player has a group at the tile
     const hasGroupAtTile = tileData?.groups?.some(g => g.owner === $currentPlayer.id);

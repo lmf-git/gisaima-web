@@ -6,7 +6,7 @@
   import Checkbox from '../../ui/Checkbox.svelte';
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
-  import { targetStore } from '../../../lib/stores/map';
+  import { targetStore, entities } from '../../../lib/stores/map';
 
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
@@ -46,16 +46,20 @@
     }
   });
 
-  function isPlayerOnTile(tile, playerId) {
+  // The player's character entity on this tile. Entities are keyed by lifeId
+  // and carry `uid`, so "mine" means uid match; the entity id is the lifeId we
+  // mobilise.
+  const myEntity = $derived(
+    Array.isArray(tileData?.players)
+      ? tileData.players.find(p => p.uid === $currentPlayer?.id)
+      : Object.values(tileData?.players || {}).find(p => p.uid === $currentPlayer?.id)
+  );
+  const myLifeId = $derived(myEntity?.id ?? $currentPlayer?.lifeId ?? null);
+
+  function isPlayerOnTile(tile, uid) {
     if (!tile || !tile.players) return false;
-    
-    if (Array.isArray(tile.players)) {
-      return tile.players.some(p => p.id === playerId);
-    } else if (typeof tile.players === 'object') {
-      return Object.values(tile.players).some(p => p.id === playerId);
-    }
-    
-    return false;
+    const list = Array.isArray(tile.players) ? tile.players : Object.values(tile.players);
+    return list.some(p => p.uid === uid);
   }
 
   $effect(() => {
@@ -197,6 +201,7 @@
         tileY: tileData.y,
         units: selectedUnits.map(u => u.id),
         includePlayer,
+        lifeId: myLifeId,
         name: groupName,
         fleeAtLosses,
         joinBattlesInProgress,
@@ -205,7 +210,44 @@
 
       console.log('Mobilization result:', result);
       mobilizeSuccess = true; // Set success state
-      
+
+      // Optimistic update — no chunk_update is broadcast until the next world
+      // tick, so reflect the new mobilizing group locally. This drops the
+      // player off the tile (so Mobilise leaves the action wheel) and surfaces
+      // the group's 'mobilizing' status in the dossier/details immediately.
+      const tileKey = `${tileData.x},${tileData.y}`;
+      const newGroupId = result?.groupId || `group_optimistic_${Date.now()}`;
+      const optimisticUnits = {};
+      for (const u of selectedUnits) optimisticUnits[u.id] = { ...u };
+      if (includePlayer && $currentPlayer && myLifeId) {
+        optimisticUnits[myLifeId] = {
+          id: myLifeId,
+          uid: $currentPlayer.id,
+          type: 'player',
+          race: $currentPlayer.race,
+          displayName: $currentPlayer.displayName
+        };
+      }
+      const optimisticGroup = {
+        id: newGroupId,
+        name: groupName.trim(),
+        owner: $currentPlayer?.id,
+        status: 'mobilizing',
+        x: tileData.x,
+        y: tileData.y,
+        race: $currentPlayer?.race || null,
+        units: optimisticUnits
+      };
+      entities.update(current => {
+        const groups = { ...current.groups };
+        const players = { ...current.players };
+        groups[tileKey] = [...(groups[tileKey] || []), optimisticGroup];
+        if (includePlayer && $currentPlayer && myLifeId) {
+          players[tileKey] = (players[tileKey] || []).filter(p => p.id !== myLifeId);
+        }
+        return { ...current, groups, players };
+      });
+
       onClose();
     } catch (error) {
       console.error('Error during mobilization:', error);
@@ -221,21 +263,10 @@
   }
   
   let canMobilize = $derived(
-    ((selectedUnits.length > 0) || 
-    (includePlayer && (
-      Array.isArray(tileData?.players)
-        ? tileData.players.some(p => p.id === $currentPlayer?.id || p.id === $currentPlayer?.id)
-        : tileData?.players && (
-            tileData.players[$currentPlayer?.id] !== undefined || 
-            Object.values(tileData.players).some(p => p.id === $currentPlayer?.id || p.id === $currentPlayer?.id)
-          )
-    ))) 
+    ((selectedUnits.length > 0) || (includePlayer && !!myEntity))
     && !capacityExceeded // Add capacity check
   );
 
-  function toggleCheckbox() {
-    includePlayer = !includePlayer;
-  }
 </script>
 
 <div
@@ -290,14 +321,9 @@
         </div>
         
         <div class="options">
-          {#if Array.isArray(tileData?.players)
-              ? tileData.players.some(p => p.id === $currentPlayer?.id || p.id === $currentPlayer?.id)
-              : tileData?.players && (
-                  tileData.players[$currentPlayer?.id] !== undefined || 
-                  Object.values(tileData.players).some(p => p.id === $currentPlayer?.id || p.id === $currentPlayer?.id)
-                )}
+          {#if myEntity}
             <div class="option-row">
-              <Checkbox bind:checked={includePlayer} label="Include yourself in mobilization" id="include-player" onchange={toggleCheckbox} />
+              <Checkbox bind:checked={includePlayer} label="Include yourself in mobilization" id="include-player" />
             </div>
           {/if}
           
@@ -424,7 +450,7 @@
             {#if selectedBoatUnits.length > 0}
               (including {selectedBoatUnits.length} {selectedBoatUnits.length > 1 ? 'boats' : 'boat'})
             {/if}
-            {#if includePlayer && tileData?.players?.some(p => p.id === $currentPlayer?.id)}
+            {#if includePlayer && myEntity}
               + You
             {/if}
           </p>

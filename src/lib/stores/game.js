@@ -52,7 +52,9 @@ export const currentWorldCenter = derived([game, currentWorldInfo], ([$g, $w]) =
 
 export const currentPlayer = derived([user, game], ([$u, $g]) => {
   if (!$u || !$g.worldKey || !$g.player) return null;
-  return { id: $u.uid, ...$g.player };
+  // `id` stays the uid (groups/structures are owned per-user). `lifeId` is the
+  // character the map currently follows — entities are keyed by lifeId.
+  return { id: $u.uid, lifeId: $g.player.controlledLifeId ?? null, ...$g.player };
 });
 
 export const worldInfo = writable({
@@ -309,6 +311,33 @@ export async function cancelMove(groupId, x, y) {
   if (!$game.worldKey)  return { success: false, error: 'No world selected' };
   try {
     const r = await apiPost('/actions/cancelMovement', { worldId: $game.worldKey, groupId, x, y });
+    return { success: true, data: r };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// Characters — list the player's living, on-map characters and switch which
+// one the map follows (the "controlled" character).
+export async function listCharacters() {
+  if (!browser) return [];
+  const $game = get(game);
+  if (!$game.worldKey) return [];
+  const r = await apiGet(`/worlds/${encodeURIComponent($game.worldKey)}/characters`).catch(() => null);
+  return r?.items || [];
+}
+
+export async function switchCharacter(lifeId) {
+  if (!browser) return { success: false, error: 'Not in browser' };
+  const $game = get(game);
+  if (!$game.worldKey) return { success: false, error: 'No world selected' };
+  try {
+    const r = await apiPost(`/worlds/${encodeURIComponent($game.worldKey)}/lives/control`, { lifeId });
+    // Reflect the switch locally so the map follows the new character at once.
+    game.update(g => {
+      if (!g.player) return g;
+      return { ...g, player: { ...g.player, controlledLifeId: lifeId, displayName: r?.name ?? g.player.displayName } };
+    });
     return { success: true, data: r };
   } catch (e) {
     return { success: false, error: e.message };

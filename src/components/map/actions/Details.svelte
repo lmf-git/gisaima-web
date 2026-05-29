@@ -6,6 +6,7 @@
   
   import { calculateGroupPower } from 'gisaima-shared/war/battles.js';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
+  import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
 
   import { coordinates, targetStore, entities } from "../../../lib/stores/map.js";
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
@@ -102,8 +103,8 @@
     return [...entities].sort((a, b) => {
       // First check if either entity is the current player (highest priority)
       if (section === 'players') {
-        if (a.id === $currentPlayer?.id) return -1;
-        if (b.id === $currentPlayer?.id) return 1;
+        if (a.uid === $currentPlayer?.id) return -1;
+        if (b.uid === $currentPlayer?.id) return 1;
       }
       
       // Then check if either entity is owned by the current player
@@ -183,22 +184,18 @@
     switch (action) {
       case 'mobilise':
         onShowModal({ type: 'mobilise', data: tileData });
-        onClose(); // Close details panel when opening another modal
         break;
         
       case 'move':
         onShowModal({ type: 'move', data: data ? { ...tileData, group: data.group } : tileData });
-        onClose(); // Close details panel
         break;
 
       case 'build':
         onShowModal({ type: 'build', data: tileData });
-        onClose(); // Close details panel
         break;
         
       case 'attack':
         onShowModal({ type: 'attack', data: tileData });
-        onClose(); // Close details panel
         break;
         
       case 'gather':
@@ -211,17 +208,14 @@
           : { ...tileData };
           
         onShowModal({ type: 'gather', data: gatherData });
-        onClose(); // Close details panel
         break;
         
       case 'demobilise':
         onShowModal({ type: 'demobilise', data: tileData });
-        onClose(); // Close details panel
         break;
         
       case 'joinBattle':
         onShowModal({ type: 'joinBattle', data: data ? { ...tileData, group: data.group } : tileData });
-        onClose(); // Close details panel
         break;
         
       case 'inspect':
@@ -240,13 +234,11 @@
             tile: tileData 
           } 
         });
-        onClose(); // Close details panel
         break;
         
       // Change 'recruit' to 'recruitment' to match what +page.svelte expects
       case 'recruit':
         onShowModal({ type: 'recruitment', data: tileData });
-        onClose(); // Close details panel
         break;
         
       case 'craft':
@@ -259,7 +251,6 @@
             tile: tileData
           } 
         });
-        onClose(); // Close details panel
         break;
         
       default:
@@ -291,7 +282,7 @@
     if (!tile || !$currentPlayer) return false;
     
     // Check if player is on the tile
-    const playerOnTile = tile.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = tile.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is not already in a mobilizing/demobilising group
     const inProcessGroup = tile.groups?.some(g => 
@@ -368,7 +359,7 @@
     
     // Check if player is at a structure
     const hasStructure = !!tile.structure;
-    const playerOnTile = tile.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = tile.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is in an idle group
     const playerInIdleGroup = tile.groups?.some(g => 
@@ -396,7 +387,7 @@
     if (!tile || !$currentPlayer || !tile.structure) return false;
     
     // Player must be on tile as an entity
-    const playerOnTile = tile.players?.some(p => p.id === $currentPlayer.id);
+    const playerOnTile = tile.players?.some(p => p.uid === $currentPlayer.id);
     
     // Check if player is in ANY group (not just mobilizing/demobilizing)
     const isInAnyGroup = tile.groups?.some(g => 
@@ -411,7 +402,7 @@
   
   // Add function to check if player can be mobilized
   function canMobilizePlayer(player) {
-    if (!player || !$currentPlayer || player.id !== $currentPlayer.id) return false;
+    if (!player || !$currentPlayer || player.uid !== $currentPlayer.id) return false;
     
     // Check if player is not already in a mobilizing/demobilising group
     const inProcessGroup = detailsData?.groups?.some(g => 
@@ -698,12 +689,28 @@
       });
       
       if (result.success) {
-        console.log('Gathering cancelled successfully:', result);
+        // Optimistically flip the group to idle — the server cancels
+        // immediately but ops.flush() does not broadcast, so without this the
+        // group keeps showing "gathering" until the next page load.
+        const tileKey = `${group.x},${group.y}`;
+        entities.update(current => {
+          const tileGroups = current.groups[tileKey];
+          if (!tileGroups) return current;
+          return {
+            ...current,
+            groups: {
+              ...current.groups,
+              [tileKey]: tileGroups.map(g =>
+                g.id === group.id
+                  ? { ...g, status: 'idle', gatheringBiome: null, gatheringTicksRemaining: null }
+                  : g
+              )
+            }
+          };
+        });
       } else {
         console.error('Failed to cancel gathering:', result.data.error);
       }
-      
-      // No need to update UI here as Firebase will trigger changes via subscription
     } catch (error) {
       console.error('Error cancelling gathering:', error);
     }
@@ -895,7 +902,7 @@
                                   <div class="unit-info">
                                     <div class="unit-name">
                                       {unit.displayName || unit.name || unit.type || unitId.slice(-5)}
-                                      {#if unit.id === $currentPlayer?.id}
+                                      {#if unit.type === 'player' && unit.uid === $currentPlayer?.id}
                                         <span class="entity-badge owner-badge">You</span>
                                       {/if}
                                       {#if isOwned}
@@ -959,9 +966,10 @@
                                 {#each Object.entries(group.items) as [itemId, item]}
                                   {@const qty = typeof item === 'number' ? item : (item.quantity || 1)}
                                   {@const itemObj = typeof item === 'object' ? item : null}
-                                  <div class="group-item {getRarityClass(itemObj?.rarity)}">
+                                  {@const itemDef = ITEMS[itemId] || ITEMS[String(itemId).toUpperCase()]}
+                                  <div class="group-item {getRarityClass(itemObj?.rarity || itemDef?.rarity)}">
                                     <div class="item-name">
-                                      {itemObj?.name || _fmt(itemObj?.type) || _fmt(itemId) || "Unknown Item"}
+                                      {itemObj?.name || itemDef?.name || _fmt(itemObj?.type) || _fmt(itemId) || "Unknown Item"}
                                       {#if qty > 1}
                                         <span class="item-quantity">×{qty}</span>
                                       {/if}
@@ -1110,7 +1118,7 @@
           {#if !collapsedSections.players}
             <div class="section-content" transition:slide|local={{ duration: 300 }}>
               {#each sortedPlayers as player}
-                <div class="entity player {player.id === $currentPlayer?.id ? 'current' : ''} {isOwnedByCurrentPlayer(player) ? 'player-owned' : ''}">
+                <div class="entity player {player.uid === $currentPlayer?.id ? 'current' : ''} {player.uid === $currentPlayer?.id ? 'player-owned' : ''}">
                   <div class="entity-icon">
                     {#if player.race}
                       {#if player.race.toLowerCase() === 'human'}
@@ -1129,7 +1137,7 @@
                   <div class="entity-info">
                     <div class="entity-name">
                       {player.displayName || 'Player'}
-                      {#if player.id === $currentPlayer?.id}
+                      {#if player.uid === $currentPlayer?.id}
                         <span class="entity-badge owner-badge">You</span>
                       {/if}
                     </div>

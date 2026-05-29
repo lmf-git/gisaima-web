@@ -131,11 +131,20 @@ export const currentPlayerPosition = derived(
     const uid = $user?.uid;
     if (!uid) return null;
 
-    // Search live chunk data for the current user's player entity
+    // Entities are keyed by lifeId now. Follow the controlled character first;
+    // otherwise any of this user's characters; finally fall back to lastLocation.
+    const controlledLifeId = $game.player.controlledLifeId?.toString();
+    let anyMine = null;
     for (const players of Object.values($entities.players)) {
-      const match = players?.find(p => p.id?.toString() === uid.toString());
-      if (match) return { x: match.x, y: match.y };
+      if (!players) continue;
+      for (const p of players) {
+        const isMine = p.uid?.toString() === uid.toString() || p.id?.toString() === uid.toString();
+        if (!isMine) continue;
+        if (controlledLifeId && p.id?.toString() === controlledLifeId) return { x: p.x, y: p.y };
+        if (!anyMine) anyMine = { x: p.x, y: p.y };
+      }
     }
+    if (anyMine) return anyMine;
 
     // Fall back to the last known location from the initial API load
     const loc = $game.player.lastLocation;
