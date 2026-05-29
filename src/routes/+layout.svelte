@@ -207,7 +207,7 @@
                         <a href="/" class="footer-logo">
                             <Logo extraClass="footer-logo-icon" />
                         </a>
-                        <h2 class="footer-title">Gisaima Realm</h2>
+                        <h2 class="footer-title">isaima Realm</h2>
                     </div>
                     <p class="footer-tagline">Explore and create worlds together</p>
                 </div>
