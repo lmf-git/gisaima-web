@@ -25,6 +25,10 @@ export function getToken() {
 export function setToken(token) {
   if (!browser) return;
   localStorage.setItem('gisaima_token', token);
+  // The socket may already be open from app startup (e.g. the user just logged
+  // in mid-session). Re-authenticate it now so user-targeted server pushes
+  // (achievement_unlocked, etc.) are delivered to this socket.
+  if (_ws && _ws.readyState === 1) _ws.send(JSON.stringify({ type: 'authenticate', token }));
 }
 
 export function clearToken() {
@@ -43,7 +47,14 @@ function authHeaders() {
     : { 'Content-Type': 'application/json' };
 }
 
+// Invoked when an authenticated request comes back 401 — the token is no longer
+// valid (expired, or the account was removed). Registered by the user store to
+// tear down the session. Kept as a callback to avoid an import cycle.
+let _onUnauthorized = null;
+export function setUnauthorizedHandler(fn) { _onUnauthorized = fn; }
+
 export async function apiFetch(path, { method = 'GET', body } = {}) {
+  const hadToken = !!getToken();
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: authHeaders(),
@@ -52,7 +63,13 @@ export async function apiFetch(path, { method = 'GET', body } = {}) {
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.error || `HTTP ${res.status}`), { status: res.status });
+  if (!res.ok) {
+    // We sent a token but the server rejected it → the session is dead. Sign out
+    // so the UI stops pretending a ghost account is logged in. Auth endpoints
+    // handle their own 401s (e.g. bad login credentials), so exclude them.
+    if (res.status === 401 && hadToken && !path.startsWith('/auth/')) _onUnauthorized?.();
+    throw Object.assign(new Error(data.error || `HTTP ${res.status}`), { status: res.status });
+  }
   return data;
 }
 
@@ -67,6 +84,7 @@ let _ws = null;
 let _wsListeners = new Map();   // channel → Set<callback>
 let _reconnectTimer = null;
 let _pingTimer = null;          // client-side keepalive
+let _wsClosedIntentionally = false; // set by closeWs() to suppress auto-reconnect
 
 /**
  * Connect (or reconnect) the WebSocket.
@@ -74,6 +92,7 @@ let _pingTimer = null;          // client-side keepalive
  */
 export function connectWs() {
   if (!browser) return;
+  _wsClosedIntentionally = false;
   if (_ws && _ws.readyState <= 1) return; // already open or connecting
 
   const wsUrl = API_BASE.replace(/^http/, 'ws');
@@ -108,13 +127,26 @@ export function connectWs() {
   });
 
   _ws.addEventListener('close', () => {
-    console.log('[ws] disconnected — reconnecting in 3s');
     if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; }
     _ws = null;
+    if (_wsClosedIntentionally) {
+      console.log('[ws] disconnected (intentional)');
+      return;
+    }
+    console.log('[ws] disconnected — reconnecting in 3s');
     _reconnectTimer = setTimeout(connectWs, 3000);
   });
 
   _ws.addEventListener('error', (e) => console.error('[ws] error', e));
+}
+
+/** Close the socket and suppress auto-reconnect (e.g. on sign-out / dead session). */
+export function closeWs() {
+  if (!browser) return;
+  _wsClosedIntentionally = true;
+  if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
+  if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; }
+  if (_ws) { try { _ws.close(); } catch { /* ignore */ } _ws = null; }
 }
 
 // Reconnect immediately when the app returns to foreground (phone unlocked / tab visible).
@@ -123,6 +155,7 @@ export function connectWs() {
 if (browser) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
+    if (_wsClosedIntentionally) return; // stay disconnected after an intentional close
     if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
     // Close any zombie connection (readyState: CLOSING=2 or CLOSED=3)
     if (_ws && _ws.readyState > 1) { _ws = null; }
