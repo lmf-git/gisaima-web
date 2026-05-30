@@ -6,7 +6,8 @@
   
   import { calculateGroupPower } from 'gisaima-shared/war/battles.js';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
-  import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
+  import { ITEMS, getGatherableItems } from 'gisaima-shared/definitions/ITEMS.js';
+  import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
 
   import { coordinates, targetStore, entities } from "../../../lib/stores/map.js";
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
@@ -170,6 +171,77 @@
   const sortedPlayers = $derived(sortEntities(detailsData?.players || [], 'players'));
   const sortedItems   = $derived(sortEntities(detailsData?.items   || [], 'items'));
   const sortedBattles = $derived(sortEntities(detailsData?.battles || [], 'battles'));
+
+  // ─── Empty-tile "potential" overview ────────────────────────────
+  // When a tile has no structure, surface what the biome offers so the tile
+  // still tells the player something useful: gatherable resources and any
+  // build opportunities the terrain unlocks (e.g. harbours next to water).
+  // Mirrors the server's gather resolution in api/events/gatheringTick.js:
+  // base biome items fall back to 'plains' for unknown biomes, plus a set of
+  // biome-substring "special" resources.
+  function isWaterTile(t) {
+    if (!t) return false;
+    if (t.biome?.water) return true;
+    if (t.riverValue > 0.2 || t.lakeValue > 0.2) return true;
+    return false;
+  }
+
+  function specialGatherIds(biomeName) {
+    const bl = (biomeName || '').toLowerCase();
+    if (/forest|woods|grove/.test(bl))        return ['MEDICINAL_HERBS'];
+    if (/mountain|peak|hill/.test(bl))        return ['MOUNTAIN_CRYSTAL', 'METAL_ORE'];
+    if (/desert|sand|dune/.test(bl))          return ['SAND_CRYSTAL', 'CACTUS_FRUIT'];
+    if (/lava|volcanic|magma/.test(bl))       return ['VOLCANIC_GLASS'];
+    if (/lake|river|ocean|water/.test(bl))    return ['FRESH_WATER', 'FISH'];
+    if (/swamp|marsh|bog/.test(bl))           return ['MEDICINAL_HERBS'];
+    if (/plains|grassland|meadow/.test(bl))   return ['WHEAT'];
+    return [];
+  }
+
+  const BASE_GATHER_BIOMES = ['plains', 'forest', 'mountains', 'desert', 'rivers', 'oasis', 'ruins', 'wastes'];
+
+  // Resolve the list of gatherable resources for the current empty tile.
+  const gatherables = $derived.by(() => {
+    const biomeName = detailsData?.biome?.name;
+    if (!biomeName) return [];
+    const base = BASE_GATHER_BIOMES.includes(biomeName.toLowerCase()) ? biomeName.toLowerCase() : 'plains';
+    const out = new Map();
+    for (const g of getGatherableItems(base)) out.set(g.code, g);
+    for (const id of specialGatherIds(biomeName)) {
+      const def = ITEMS[id];
+      if (def && !out.has(id)) out.set(id, { code: id, name: def.name, rarity: def.rarity, type: def.type, food: !!def.food });
+    }
+    return [...out.values()];
+  });
+
+  // Is this tile on or adjacent to water? (unlocks harbours / boats)
+  const nearWater = $derived.by(() => {
+    if (!detailsData) return false;
+    if (isWaterTile(detailsData)) return true;
+    const offsets = [
+      { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 },
+      { x: 1, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }
+    ];
+    const coords = get(coordinates);
+    return offsets.some(o =>
+      isWaterTile(coords.find(c => c.x === detailsData.x + o.x && c.y === detailsData.y + o.y))
+    );
+  });
+
+  const onWater = $derived(detailsData ? isWaterTile(detailsData) : false);
+
+  // Player-buildable structures (exclude monster lairs and spawns).
+  const buildableStructures = $derived(
+    Object.entries(STRUCTURES)
+      .filter(([id, s]) => !s.monster && id !== 'spawn')
+      .map(([id, s]) => ({ id, name: s.name, type: s.type, buildTime: s.buildTime }))
+  );
+
+  // Does the player have an idle group here that could actually build?
+  const canBuildHere = $derived(
+    !detailsData?.structure &&
+    !!detailsData?.groups?.some(g => g.owner === $currentPlayer?.id && g.status === 'idle')
+  );
 
   // Function to execute action
   function executeAction(action, data = null) {
@@ -760,6 +832,55 @@
           </div>
         </div>
       </div>
+      {/if}
+
+      <!-- Empty-tile potential: gatherables + build opportunities -->
+      {#if detailsData && !detailsData.structure}
+        <div class="tile-potential">
+          {#if gatherables.length > 0}
+            <div class="potential-block">
+              <div class="potential-title">
+                <Crop extraClass="potential-icon" />
+                Gatherable here
+                <span class="entity-count items-count">{gatherables.length}</span>
+              </div>
+              <div class="potential-tags">
+                {#each gatherables as g (g.code)}
+                  <span class="resource-chip {getRarityClass(g.rarity)}" title={_fmt(g.rarity)}>
+                    {g.name}{#if g.food}<span class="food-dot" title="Food">●</span>{/if}
+                  </span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+          <div class="potential-block">
+            <div class="potential-title">
+              <Hammer extraClass="potential-icon" />
+              Build opportunities
+            </div>
+            <div class="potential-tags">
+              {#each buildableStructures as s (s.id)}
+                <span class="build-chip">
+                  <Structure size="1em" extraClass="build-chip-icon {s.type}-icon" />
+                  {s.name}
+                </span>
+              {/each}
+              {#if nearWater}
+                <span class="build-chip water">
+                  ⚓ Harbour {onWater ? '(on water)' : '(water adjacent)'}
+                </span>
+              {/if}
+            </div>
+            <div class="potential-hint">
+              {#if canBuildHere}
+                Use an idle group's <strong>Build</strong> action to construct here.
+              {:else}
+                Move an idle group here to build.
+              {/if}
+            </div>
+          </div>
+        </div>
       {/if}
 
       <!-- Groups section with styled count -->
@@ -2521,4 +2642,91 @@
     color: #1565c0;
     cursor: help;
   }
+
+  /* ── Empty-tile potential (gatherables + build opportunities) ── */
+  .tile-potential {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9em;
+    margin-bottom: 1.2em;
+  }
+
+  .potential-block {
+    background-color: rgba(176, 141, 74, 0.05);
+    border: 1px solid rgba(176, 141, 74, 0.15);
+    border-radius: 0.3em;
+    padding: 0.7em 0.8em;
+  }
+
+  .potential-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-aged-gold, #b08d4a);
+    margin-bottom: 0.6em;
+  }
+
+  :global(.potential-icon) {
+    width: 1.1em;
+    height: 1.1em;
+    opacity: 0.85;
+    fill: rgba(212, 177, 112, 0.9);
+  }
+
+  .potential-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4em;
+  }
+
+  .resource-chip,
+  .build-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.8em;
+    padding: 0.25em 0.55em;
+    border-radius: 0.3em;
+    background: rgba(176, 141, 74, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.22);
+    color: var(--color-parchment-200);
+    line-height: 1.2;
+  }
+
+  :global(.build-chip-icon) {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
+  }
+
+  .build-chip.water {
+    background: rgba(45, 102, 147, 0.22);
+    border-color: rgba(93, 153, 184, 0.4);
+    color: #bfe0f0;
+  }
+
+  /* Resource rarity tinting — reuse the palette used elsewhere in this file */
+  .resource-chip.uncommon { border-color: rgba(76, 175, 80, 0.4);  color: #8fd494; }
+  .resource-chip.rare     { border-color: rgba(2, 119, 189, 0.45); color: #7fc4e8; }
+  .resource-chip.epic     { border-color: rgba(156, 39, 176, 0.45); color: #d49ae0; }
+  .resource-chip.legendary{ border-color: rgba(255, 152, 0, 0.5);  color: #f0b96c; }
+  .resource-chip.mythic   { border-color: rgba(233, 30, 99, 0.5);  color: #ef88ad; }
+
+  .food-dot {
+    color: #8fd494;
+    font-size: 0.7em;
+    margin-left: 0.1em;
+  }
+
+  .potential-hint {
+    margin-top: 0.6em;
+    font-size: 0.72em;
+    font-style: italic;
+    color: rgba(232, 228, 210, 0.5);
+    font-family: var(--font-editorial, serif);
+  }
+  .potential-hint strong { color: rgba(212, 177, 112, 0.85); font-style: normal; }
 </style>
