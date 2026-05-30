@@ -204,7 +204,7 @@
       });
 
       console.log('Mobilization result:', result);
-      mobilizeSuccess = true; // Set success state
+      mobilizeSuccess = true;
 
       // Optimistic update — no chunk_update is broadcast until the next world
       // tick, so reflect the new mobilizing group locally. This drops the

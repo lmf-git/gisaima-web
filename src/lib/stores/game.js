@@ -4,7 +4,7 @@
 
 import { writable, readable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
-import { apiGet, apiPost, wsWorld } from '$lib/api.js';
+import { apiGet, apiPost, wsWorld, wsUser } from '$lib/api.js';
 import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 import { user, isAuthReady as userAuthReady } from './user.js';
 // Intentionally not importing from map.js to avoid circular dependency.
@@ -102,6 +102,34 @@ export function timeUntilTick(numTicks = 1) {
 
 let _worldInfoUnsub = null;
 let _worldInfoId    = null;
+
+// Subscribe once to server-pushed user events (achievement_unlocked, etc.).
+// The server targets these directly to the authenticated socket — no explicit
+// server-side subscription message is sent.
+if (browser) {
+  wsUser((msg) => {
+    if (msg.type === 'achievement_unlocked') {
+      const { achievementId, worldId } = msg;
+      const alreadyUnlocked = get(game).player?.achievements?.[achievementId] === true;
+      // Update local player state so the achievement panel reflects it immediately.
+      if (!alreadyUnlocked && worldId) {
+        game.update(s => ({
+          ...s,
+          player: s.player
+            ? { ...s.player, achievements: { ...(s.player.achievements || {}), [achievementId]: true } }
+            : s.player,
+        }));
+      }
+      if (!alreadyUnlocked) {
+        const info = ACHIEVEMENTS[achievementId] || { title: achievementId, description: 'Achievement unlocked!' };
+        recentUnlock.set({ id: achievementId, ...info, date: Date.now() });
+        setTimeout(() => {
+          recentUnlock.update(c => c?.id === achievementId ? null : c);
+        }, 8000);
+      }
+    }
+  });
+}
 
 export function subscribeToWorldInfo(worldId) {
   if (_worldInfoUnsub) { _worldInfoUnsub(); _worldInfoUnsub = null; }

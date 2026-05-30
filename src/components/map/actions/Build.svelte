@@ -715,11 +715,6 @@
     font-size: 0.9em;
   }
 
-  .feature-icon {
-    margin-right: 0.4em;
-    font-size: 1em;
-  }
-
   .required-resources {
     margin: 0.8em 0;
   }

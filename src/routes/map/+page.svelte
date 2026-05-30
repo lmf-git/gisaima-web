@@ -131,6 +131,7 @@
     
     let lastActivePanel = $state('none'); // 'none', 'details', 'overview', 'chat', 'achievements'
     let shouldShowAchievementsAfterSpawn = $state(false); // New state to track if achievements should show after spawn
+    let tutorialAutoShown = $state(false); // Track whether the tutorial was auto-opened this session
 
     const unreadCount = $derived($unreadMessages);
 
@@ -403,9 +404,12 @@
     });
 
     $effect(() => {
-        // Auto-show help panel on first visit (tutorial not yet dismissed)
-        if ($ready && $game?.player?.alive && dossierPanel === null && browser) {
+        // Auto-show help panel once per session on first visit (tutorial not yet dismissed).
+        // Using a flag avoids re-subscribing to dossierPanel, which would cause the panel
+        // to reopen immediately when the close button sets dossierPanel = null.
+        if ($ready && $game?.player?.alive && browser && !tutorialAutoShown) {
             if (localStorage.getItem('tutorial-state') !== 'closed') {
+                tutorialAutoShown = true;
                 dossierPanel = 'help';
             }
         }

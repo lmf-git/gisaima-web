@@ -130,4 +130,4 @@
   const Component = $derived(UNIT_ICONS[type] || UNIT_FALLBACKS[type] || UNIT_FALLBACKS.warrior);
 </script>
 
-<svelte:component this={Component} {size} {extraClass} />
+<Component {size} {extraClass} />

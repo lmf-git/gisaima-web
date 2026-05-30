@@ -25,12 +25,12 @@
 
   const { slot = '', size = '1em', extraClass = '' } = $props();
 
-  const key = slot === 'ring1' || slot === 'ring2' ? 'ring' : slot;
+  const key = $derived(slot === 'ring1' || slot === 'ring2' ? 'ring' : slot);
   const Component = $derived(EQUIPMENT_ICONS[key] || null);
 </script>
 
 {#if Component}
-  <svelte:component this={Component} {size} {extraClass} />
+  <Component {size} {extraClass} />
 {/if}
 
 <style>

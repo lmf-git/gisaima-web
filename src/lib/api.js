@@ -6,7 +6,7 @@
  *
  * WebSocket messages:
  *   Send: { type: 'subscribe_chunk' | 'subscribe_world' | 'subscribe_chat', worldId, chunkKey? }
- *   Receive: { type: 'chunk_update' | 'world_tick' | 'chat_message', worldId, ... }
+ *   Receive: { type: 'chunk_update' | 'world_tick' | 'chat_message' | 'achievement_unlocked', worldId, ... }
  */
 
 import { browser, dev } from '$app/environment';
@@ -131,15 +131,22 @@ if (browser) {
 }
 
 
+// Channel key used locally for server-pushed user-specific events (no subscription needed —
+// the server targets these to the authenticated socket directly).
+const USER_CHANNEL = 'user';
+
 function _messageChannel(msg) {
-  if (msg.type === 'chunk_update') return `chunk:${msg.worldId}:${msg.chunkKey}`;
-  if (msg.type === 'world_tick')   return `world:${msg.worldId}`;
-  if (msg.type === 'chat_message') return `chat:${msg.worldId}`;
+  if (msg.type === 'chunk_update')       return `chunk:${msg.worldId}:${msg.chunkKey}`;
+  if (msg.type === 'world_tick')         return `world:${msg.worldId}`;
+  if (msg.type === 'chat_message')       return `chat:${msg.worldId}`;
+  if (msg.type === 'achievement_unlocked') return USER_CHANNEL;
   return null;
 }
 
 function _sendSubscription(channel) {
   if (!_ws || _ws.readyState !== 1) return;
+  // User channel is server-push only — no subscription message needed.
+  if (channel === USER_CHANNEL) return;
   const [type, worldId, chunkKey] = channel.split(':');
   const msg = { worldId };
   if (type === 'chunk') { msg.type = 'subscribe_chunk'; msg.chunkKey = chunkKey; }
@@ -166,3 +173,5 @@ export function wsSubscribe(channel, callback) {
 export const wsChunk = (worldId, chunkKey, cb) => wsSubscribe(`chunk:${worldId}:${chunkKey}`, cb);
 export const wsWorld = (worldId, cb)             => wsSubscribe(`world:${worldId}`, cb);
 export const wsChat  = (worldId, cb)             => wsSubscribe(`chat:${worldId}`,  cb);
+// Server-pushed user events (achievement_unlocked, etc.) — no server-side subscription needed.
+export const wsUser  = (cb)                      => wsSubscribe(USER_CHANNEL, cb);
