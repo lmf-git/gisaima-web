@@ -82,7 +82,7 @@
     showConfirmation = true;
   }
   
-  async function handleJoinWorld(world, race, name, houseName = '') {
+  async function handleJoinWorld(world, race, name, house = null) {
     if (!$user || !selectedWorld) {
       return;
     }
@@ -102,7 +102,8 @@
         worldId: selectedWorld.id,
         race,
         displayName: name,
-        houseName: houseName || undefined,
+        houseId:   house?.mode === 'join'  ? house.houseId   : undefined,
+        houseName: house?.mode === 'found' ? house.houseName : undefined,
         spawnPosition: selectedWorld.center || worldCenters[selectedWorld.id] || { x: 0, y: 0 }
       });
       

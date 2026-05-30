@@ -1,17 +1,50 @@
 <script>
     import { onMount } from 'svelte';
     import { user } from '$lib/stores/user.js';
-    import { game, currentPlayer } from '$lib/stores/game.js';
+    import { game, currentPlayer, listenToPlayerWorldData } from '$lib/stores/game.js';
+    import { apiPost } from '$lib/api.js';
     import WaxSeal from '../../components/ui/WaxSeal.svelte';
     import CompassRose from '../../components/ui/CompassRose.svelte';
     import Flourish from '../../components/ui/Flourish.svelte';
     import Stamp from '../../components/ui/Stamp.svelte';
     import Button from '../../components/ui/Button.svelte';
     import FamilyTree from '../../components/features/FamilyTree.svelte';
+    import HousePicker from '../../components/specific/worlds/HousePicker.svelte';
 
     const player = $derived($currentPlayer);
     const worldId = $derived($game.worldKey);
     const initial = $derived(($user?.displayName || $user?.email || 'G').slice(0, 1).toUpperCase());
+
+    // House switching ("leave/abandon" = move to another house; never house-less)
+    let showHouseModal = $state(false);
+    let houseSelection = $state(null);
+    let switching = $state(false);
+    let houseError = $state('');
+
+    function openHouseModal() {
+        houseSelection = null;
+        houseError = '';
+        showHouseModal = true;
+    }
+
+    async function confirmHouseSwitch() {
+        if (!houseSelection || !worldId) return;
+        switching = true;
+        houseError = '';
+        try {
+            if (houseSelection.mode === 'join') {
+                await apiPost(`/worlds/${encodeURIComponent(worldId)}/houses/join`, { houseId: houseSelection.houseId });
+            } else {
+                await apiPost(`/worlds/${encodeURIComponent(worldId)}/houses`, { name: houseSelection.houseName });
+            }
+            await listenToPlayerWorldData($user.uid, worldId);
+            showHouseModal = false;
+        } catch (e) {
+            houseError = e?.message || 'Could not change house';
+        } finally {
+            switching = false;
+        }
+    }
 </script>
 
 <svelte:head><title>Player profile — Gisaima</title></svelte:head>
@@ -54,6 +87,17 @@
             </div>
         </section>
 
+        <section class="block">
+            <div class="eyebrow">House</div>
+            <div class="house-row">
+                <div>
+                    <div class="house-name">{player?.houseName || '—'}</div>
+                    <div class="lede italic">Every wanderer answers to a house. You may swear to another, but never to none.</div>
+                </div>
+                <Button variant="ghost" onclick={openHouseModal} disabled={!worldId}>Change house</Button>
+            </div>
+        </section>
+
         <section class="block split">
             <div>
                 <div class="eyebrow">Heraldry</div>
@@ -87,6 +131,29 @@
         </section>
     {/if}
 </div>
+
+{#if showHouseModal}
+    <div
+        class="house-backdrop"
+        onclick={() => !switching && (showHouseModal = false)}
+        onkeydown={(e) => e.key === 'Escape' && !switching && (showHouseModal = false)}
+        role="button"
+        tabindex="0"
+        aria-label="Close"
+    ></div>
+    <div class="house-modal" role="dialog" aria-modal="true">
+        <h2 class="modal-title">Change house</h2>
+        <p class="lede italic modal-lede">Swear to an existing house or found your own. You will leave your current house in doing so.</p>
+        <HousePicker worldId={worldId} bind:selection={houseSelection} currentHouseId={player?.houseId ?? null} disabled={switching} />
+        {#if houseError}<div class="modal-error">{houseError}</div>{/if}
+        <div class="modal-actions">
+            <Button variant="ghost" onclick={() => (showHouseModal = false)} disabled={switching}>Cancel</Button>
+            <Button variant="primary" onclick={confirmHouseSwitch} disabled={!houseSelection || switching}>
+                {switching ? 'Swearing…' : 'Confirm'}
+            </Button>
+        </div>
+    </div>
+{/if}
 
 <style>
     .page {
@@ -163,6 +230,68 @@
     }
     .decrees li:first-child { border-top: none; }
     .rule-deco { margin: 2em 0; }
+    .house-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5em;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--color-ink-900);
+        border-bottom: 1px solid var(--color-ink-900);
+        padding: 1.2em 0;
+    }
+    .house-name {
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.2em;
+    }
+    .house-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(14, 19, 32, 0.55);
+        backdrop-filter: blur(2px);
+        z-index: 999;
+        cursor: pointer;
+    }
+    .house-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 32em;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: var(--color-parchment-100);
+        border: 1px solid var(--color-ink-900);
+        box-shadow: 0 2em 5em rgba(0, 0, 0, 0.35);
+        padding: 1.8em 2em;
+        z-index: 1000;
+        color: var(--color-ink-900);
+    }
+    .modal-title {
+        font-family: var(--font-display);
+        font-size: 1.5em;
+        letter-spacing: 0.04em;
+        margin: 0 0 0.3em;
+        text-align: center;
+    }
+    .modal-lede { text-align: center; max-width: none; margin: 0 auto 1.2em; }
+    .modal-error {
+        color: var(--color-wax-red);
+        font-family: var(--font-editorial);
+        font-style: italic;
+        font-size: 0.9em;
+        margin-top: 0.8em;
+        text-align: center;
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+        margin-top: 1.5em;
+    }
     @media (max-width: 700px) {
         .block.split { grid-template-columns: 1fr; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }

@@ -1,5 +1,6 @@
 <script>
   import { untrack } from 'svelte';
+  import HousePicker from './HousePicker.svelte';
   import Human from '../../icons/Human.svelte';
   import Elf from '../../icons/Elf.svelte';
   import Dwarf from '../../icons/Dwarf.svelte';
@@ -52,13 +53,11 @@
   // Component state
   let selectedRace = $state(null);
   let displayName = $state(untrack(() => initialName));
-  let houseName = $state('');
+  let houseSelection = $state(null); // from HousePicker: { mode, houseId? | houseName? }
   let displayNameError = $state('');
-  let houseNameError = $state('');
   let submitting = $state(false);
   let currentStep = $state(1); // Added step tracker: 1 = race selection, 2 = name input
   let displayNameTouched = $state(false);
-  let houseNameTouched = $state(false);
 
   // Track expanded state for each race on mobile
   let expandedRaces = $state({});
@@ -121,22 +120,6 @@
     return true;
   }
 
-  // Validation for house name (required)
-  function validateHouseName() {
-    if (!houseNameTouched) return true;
-
-    if (!houseName || houseName.trim().length < 2) {
-      houseNameError = 'House name must be at least 2 characters';
-      return false;
-    }
-    if (houseName.trim().length > 24) {
-      houseNameError = 'House name must be less than 24 characters';
-      return false;
-    }
-    houseNameError = '';
-    return true;
-  }
-
   // Separate handlers for input and blur
   function handleInput() {
     if (displayName?.length > 0) {
@@ -151,20 +134,6 @@
     if (displayName?.length > 0) {
       displayNameTouched = true;
       validateDisplayName();
-    }
-  }
-
-  function handleHouseInput() {
-    if (houseName?.length > 0) {
-      houseNameTouched = true;
-      validateHouseName();
-    }
-  }
-
-  function handleHouseBlur() {
-    if (houseName?.length > 0) {
-      houseNameTouched = true;
-      validateHouseName();
     }
   }
 
@@ -184,14 +153,13 @@
   async function handleConfirm() {
     if (!selectedRace) return;
     displayNameTouched = true;
-    houseNameTouched = true;
     if (!validateDisplayName()) return;
-    if (!validateHouseName()) return;
+    if (!houseSelection) return;
 
     submitting = true;
     try {
       // Include spawn information if available
-      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseName.trim());
+      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseSelection);
 
     } catch (error) {
       console.error('Error joining world:', error);
@@ -322,21 +290,10 @@
           <div class="input-error">{displayNameError}</div>
         {/if}
 
-        <label class="field-label" for="house-name">House name</label>
-        <input
-          type="text"
-          id="house-name"
-          placeholder="Name your house"
-          bind:value={houseName}
-          onblur={handleHouseBlur}
-          oninput={handleHouseInput}
-          class:error={houseNameError && houseNameTouched}
-          maxlength="24"
-          disabled={submitting}
-        />
-        {#if houseNameError && houseNameTouched}
-          <div class="input-error">{houseNameError}</div>
-        {/if}
+        <label class="field-label" for="house-picker">House</label>
+        <div id="house-picker">
+          <HousePicker worldId={world.id} bind:selection={houseSelection} disabled={submitting} />
+        </div>
       </div>
       
       <div class="confirmation-actions">
@@ -346,7 +303,7 @@
         <button 
           class="confirm-button" 
           onclick={handleConfirm}
-          disabled={!displayName?.trim() || !houseName?.trim() || submitting}
+          disabled={!displayName?.trim() || !houseSelection || submitting}
         >
           {#if submitting}
             <div class="spinner"></div>
