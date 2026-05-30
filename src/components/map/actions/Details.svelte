@@ -720,13 +720,12 @@
 <div class="details-modal" key={renderKey}>
     <div class="modal-content">
       <!-- Combined terrain and actions in a single core section -->
+      {#if detailsData?.structure}
       <div class="core-section">
         <div class="core-content">
           <!-- Desktop two-column layout container -->
           <div class="tile-info-container">
-            <!-- Left column: Structure information (if available) -->
-            {#if detailsData?.structure}
-              <div class="structure-column">
+            <div class="structure-column">
                 <div class="attribute">
                   <span class="attribute-label">Name</span>
                   <span class="attribute-value structure-name">
@@ -757,12 +756,12 @@
                   </span>
                 </div>
               </div>
-            {/if}
-            
+
           </div>
         </div>
       </div>
-      
+      {/if}
+
       <!-- Groups section with styled count -->
       {#if detailsData.groups?.length > 0}
         <div class="entities-section">

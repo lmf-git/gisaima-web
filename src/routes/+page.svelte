@@ -68,17 +68,17 @@
 
     <section class="hero">
         <div class="hero-text">
-            <div class="eyebrow gold">Realm{worlds.length === 1 ? '' : 's'} of {worlds.length || 'reckoning'} · Open Beta</div>
-            <h1>
+            <div class="eyebrow gold reveal" style="--reveal-delay: 0ms">Realm{worlds.length === 1 ? '' : 's'} of {worlds.length || 'reckoning'} · Open Beta</div>
+            <h1 class="reveal" style="--reveal-delay: 100ms">
                 <span class="line-1">An infinite world.</span>
                 <span class="line-2">Time moves anyway.</span>
             </h1>
-            <p class="lede">
+            <p class="lede reveal" style="--reveal-delay: 220ms">
                 A tick-based real-time MMO. Worlds run continuously — every minute is an in-realm hour.
                 Hold ground, raise walls, recruit hosts, settle a coin upon a head. Free forever, MIT-licensed,
                 cosmetics-only — no pay-to-win.
             </p>
-            <div class="cta">
+            <div class="cta reveal" style="--reveal-delay: 340ms">
                 {#if $user && $game?.worldKey && $game?.player?.alive}
                     <Button variant="primary" href="/map">
                         <Stamp kind="compass" size={14} />
@@ -101,7 +101,7 @@
                 </a>
             </div>
 
-            <div class="stat-row">
+            <div class="stat-row reveal" style="--reveal-delay: 460ms">
                 {#each stats as s}
                     <div class="stat">
                         <div class="n">{s.n}</div>
@@ -111,7 +111,7 @@
             </div>
         </div>
 
-        <div class="astrolabe">
+        <div class="astrolabe reveal reveal-fade" style="--reveal-delay: 200ms">
             <CompassRose size={540} color="var(--color-aged-gold)" opacity={0.5} />
             <!-- The world dial only appears once real world data has loaded, then
                  fades in — no blank blue placeholder while the realm is fetched. -->
@@ -136,14 +136,14 @@
     </section>
 
     <section class="pillars">
-        <header class="pillars-head">
+        <header class="pillars-head reveal reveal-scroll">
             <div class="eyebrow gold">Four laws</div>
             <h2>The Promises of the Realm</h2>
             <div class="flourish-wrap"><Flourish /></div>
         </header>
         <div class="pillar-grid">
-            {#each pillars as p}
-                <div class="pillar">
+            {#each pillars as p, i}
+                <div class="pillar reveal reveal-scroll" style="--reveal-delay: {200 + i * 120}ms">
                     <div class="icon"><Stamp kind={p.kind} size={28} /></div>
                     <h3>{p.t.toUpperCase()}</h3>
                     <p>{p.b}</p>
@@ -153,7 +153,7 @@
     </section>
 
     <section class="tri">
-        <div>
+        <div class="reveal reveal-scroll">
             <div class="eyebrow gold">What comes next</div>
             <h3>Roadmap</h3>
             <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
@@ -173,6 +173,56 @@
 </div>
 
 <style>
+    /* ── Reveal animations ───────────────────────────────────────
+       Pure CSS. Hero content (.reveal) animates up on page load with a
+       staggered --reveal-delay. Below-the-fold blocks (.reveal-scroll)
+       are driven by the scroll position via animation-timeline: view()
+       where supported, and simply shown otherwise. */
+    .reveal {
+        opacity: 0;
+        transform: translate3d(0, 1.5em, 0);
+        animation: reveal-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal-fade {
+        transform: none;
+        animation-name: reveal-fade;
+    }
+    @keyframes reveal-in {
+        from { opacity: 0; transform: translate3d(0, 1.5em, 0); }
+        to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes reveal-fade {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* Scroll-driven reveals: progressive enhancement. Without scroll
+       timeline support the content is simply visible (no hidden state). */
+    .reveal-scroll {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+    @supports (animation-timeline: view()) {
+        .reveal-scroll {
+            opacity: 0;
+            transform: translate3d(0, 2em, 0);
+            animation: reveal-in 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-timeline: view();
+            animation-range: entry 0% cover 30%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .reveal,
+        .reveal-scroll {
+            opacity: 1;
+            transform: none;
+            animation: none;
+        }
+    }
+
     .page {
         position: relative;
         min-height: calc(100vh - 6em);
@@ -216,21 +266,6 @@
         grid-template-columns: 1.1fr 1fr;
         gap: 4em;
         align-items: center;
-    }
-
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 0.8em;
-        margin-bottom: 1.6em;
-    }
-    .logo { width: 56px; height: 56px; display: inline-block; color: var(--color-gold-pale); }
-    .logo :global(svg) { display: block; }
-    .brand-name {
-        font-family: var(--font-display);
-        font-size: 1.2rem;
-        letter-spacing: 0.24em;
-        color: #fbf6e7;
     }
 
     .hero-text h1 {

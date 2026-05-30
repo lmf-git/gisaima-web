@@ -3,6 +3,7 @@
 
   import { currentPlayer, game } from '../../../lib/stores/game';
   import { targetStore, entities } from '../../../lib/stores/map';
+  import Checkbox from '../../ui/Checkbox.svelte';
 
   const {
     onClose = () => {},
@@ -174,10 +175,9 @@
           </div>
         </div>
         
-        <label class="toggle-row">
-          <input type="checkbox" bind:checked={gatherUntilFull} disabled={processing} />
-          <span>Gather until full capacity</span>
-        </label>
+        <div class="toggle-row">
+          <Checkbox bind:checked={gatherUntilFull} disabled={processing} label="Gather until full capacity" />
+        </div>
 
         {#if error}
           <div class="error">{error}</div>

@@ -14,7 +14,7 @@
   const sightSources = derived(
     [user, entities, currentPlayerPosition],
     ([$user, $entities, $pos]) => {
-      const uid = $user?.uid;
+      const uid = $user?.uid?.toString();
       if (!uid) return [];
       const out = [];
 
@@ -23,13 +23,13 @@
       for (const groups of Object.values($entities.groups || {})) {
         if (!Array.isArray(groups)) continue;
         for (const g of groups) {
-          if (g?.owner !== uid) continue;
+          if (g?.owner?.toString() !== uid) continue;
           out.push({ x: g.x, y: g.y, r: g.sightRange ?? GROUP_SIGHT });
         }
       }
 
       for (const s of Object.values($entities.structure || {})) {
-        if (s?.owner !== uid) continue;
+        if (s?.owner?.toString() !== uid) continue;
         const r = s.sightRange ?? STRUCTURE_OVERRIDES[s.type] ?? STRUCTURE_SIGHT;
         out.push({ x: s.x, y: s.y, r });
       }

@@ -169,10 +169,6 @@
 
 <div class="unit-details-modal">
   <header class="modal-header">
-    <button class="unit-back-btn" onclick={onClose} aria-label="Back to details">
-      <Back size="1.1em" />
-      <span>Back</span>
-    </button>
     <div class="unit-header-info">
       <div class="unit-header-icon">
         {#if unit.type === 'player'}
@@ -195,6 +191,10 @@
         </div>
       </div>
     </div>
+    <button class="unit-back-btn" onclick={onClose} aria-label="Back to details">
+      <Back size="1.1em" />
+      <span>Back</span>
+    </button>
   </header>
 
   <!-- Stats section: two rows (attack / defense + carry) -->

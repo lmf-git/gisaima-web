@@ -122,7 +122,13 @@ export const entities = writable({
 export const ready = derived(map, $map => $map.ready);
 
 // Derived store that tracks the player's real-time position.
-// Priority 1: live tile from chunk WebSocket data (entities.players).
+// Priority 1: live tile from chunk WebSocket data — either a standalone player
+//   entity (entities.players) or, when the character is mobilised into a unit
+//   group, the live position of that group (entities.groups). A player riding
+//   inside a group has NO standalone players entry, so without the group scan
+//   currentPlayerPosition would freeze on the stale lastLocation while the
+//   group moves — leaving the fog-of-war player-sight circle anchored to the
+//   old tile and never re-triggering the chunk refetch below.
 // Priority 2: lastLocation from the game store (one-time API fetch, used as fallback).
 export const currentPlayerPosition = derived(
   [entities, game, user],
@@ -135,6 +141,8 @@ export const currentPlayerPosition = derived(
     // otherwise any of this user's characters; finally fall back to lastLocation.
     const controlledLifeId = $game.player.controlledLifeId?.toString();
     let anyMine = null;
+
+    // Standalone player entities (player not currently in a group).
     for (const players of Object.values($entities.players)) {
       if (!players) continue;
       for (const p of players) {
@@ -144,6 +152,24 @@ export const currentPlayerPosition = derived(
         if (!anyMine) anyMine = { x: p.x, y: p.y };
       }
     }
+
+    // Player mobilised into a unit group: find the group carrying a player unit
+    // whose lifeId is one of this user's characters and use the group's tile.
+    for (const groups of Object.values($entities.groups || {})) {
+      if (!Array.isArray(groups)) continue;
+      for (const g of groups) {
+        if (!g?.units) continue;
+        const units = Array.isArray(g.units) ? g.units : Object.values(g.units);
+        for (const u of units) {
+          if (u?.type !== 'player') continue;
+          const mineUnit = u.uid?.toString() === uid.toString() || g.owner?.toString() === uid.toString();
+          if (!mineUnit) continue;
+          if (controlledLifeId && u.id?.toString() === controlledLifeId) return { x: g.x, y: g.y };
+          if (!anyMine) anyMine = { x: g.x, y: g.y };
+        }
+      }
+    }
+
     if (anyMine) return anyMine;
 
     // Fall back to the last known location from the initial API load

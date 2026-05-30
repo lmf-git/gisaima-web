@@ -501,7 +501,7 @@
             disabled={!canMobilize || processing}
             onclick={startMobilization}
           >
-            {processing ? 'Processing...' : 'Mobilise Forces'}
+            {processing ? 'Processing...' : 'Mobilise Force'}
           </button>
         </div>
       </div>

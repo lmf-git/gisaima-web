@@ -2672,15 +2672,14 @@
     bottom: 1.5em;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.85);
+    background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
     border-radius: 0.5em;
-    box-shadow: 0 0.2em 1em rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(176, 141, 74, 0.15);
     backdrop-filter: blur(0.5em);
     -webkit-backdrop-filter: blur(0.5em);
     z-index: 1000;
     padding: 0.6em 0.8em;
-    border: 0.05em solid rgba(255, 255, 255, 0.2);
-    text-shadow: 0 0 0.15em rgba(255, 255, 255, 0.7);
+    border: 0.075em solid rgba(176, 141, 74, 0.35);
     font-family: var(--font-heading);
     display: flex;
     flex-direction: column;
@@ -2695,7 +2694,7 @@
   .path-point-counter {
     font-weight: 600;
     font-size: 1em;
-    color: rgba(0, 0, 0, 0.8);
+    color: var(--color-gold-pale, #d4b170);
     display: flex;
     align-items: center;
     gap: 0.5em;
@@ -2721,40 +2720,53 @@
   .path-control-btn {
     padding: 0.5em 1em;
     border-radius: 0.3em;
-    border: none;
+    border: 0.075em solid transparent;
     cursor: pointer;
-    font-size: 0.9em;
-    font-weight: 500;
-    transition: all 0.2s;
-    font-family: var(--font-body);
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+    font-family: var(--font-display, 'Cinzel', serif);
   }
-  
+
+  .path-control-btn:focus-visible {
+    outline: 0.12em solid var(--color-gold-pale, #d4b170);
+    outline-offset: 0.12em;
+  }
+
+  /* Cancel — outlined; leans vermilion on hover to read as a discard. */
   .path-control-btn.cancel-btn {
-    background-color: #f1f3f4;
-    color: #3c4043;
-    border: 1px solid #dadce0;
+    background-color: transparent;
+    color: var(--color-parchment-100, #fbf6e7);
+    border-color: rgba(176, 141, 74, 0.6);
   }
-  
+
   .path-control-btn.cancel-btn:hover {
-    background-color: #e8eaed;
+    background-color: rgba(154, 51, 32, 0.25);
+    border-color: var(--color-vermilion-2, #c14a2f);
+    color: #f8d4cc;
   }
-  
+
+  /* Confirm — primary gold with dark ink text for strong contrast
+     (the previous white-on-blue clashed with the realm palette). */
   .path-control-btn.confirm-btn {
-    background-color: rgba(66, 133, 244, 0.9);
-    color: white;
-    border: 1px solid rgba(66, 133, 244, 0.3);
+    background-color: var(--color-aged-gold, #b08d4a);
+    color: var(--color-ink-900, #1a2030);
+    border-color: var(--color-aged-gold, #b08d4a);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5em;
   }
-  
+
   .path-control-btn.confirm-btn:hover {
-    background-color: rgba(66, 133, 244, 1);
+    background-color: var(--color-gold-pale, #d4b170);
+    border-color: var(--color-gold-pale, #d4b170);
     transform: translateY(-1px);
-    box-shadow: 0 0.2em 0.4em rgba(66, 133, 244, 0.2);
+    box-shadow: 0 0.2em 0.4em rgba(0, 0, 0, 0.4);
   }
-  
+
   .path-control-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -2762,15 +2774,16 @@
     box-shadow: none;
   }
 
+  /* Undo — neutral outlined, parchment text on the dark panel. */
   .path-control-btn.undo-btn {
-    background-color: #f8f9fa;
-    color: #3c4043;
-    border: 1px solid #dadce0;
+    background-color: transparent;
+    color: var(--color-parchment-100, #fbf6e7);
+    border-color: rgba(176, 141, 74, 0.6);
   }
-  
+
   .path-control-btn.undo-btn:hover {
-    background-color: #e8eaed;
-    border-color: #c1c1c1;
+    background-color: rgba(176, 141, 74, 0.15);
+    border-color: var(--color-gold-pale, #d4b170);
   }
   
   @keyframes slide-up {
