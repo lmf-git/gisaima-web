@@ -54,9 +54,11 @@
   let displayName = $state(untrack(() => initialName));
   let houseName = $state('');
   let displayNameError = $state('');
+  let houseNameError = $state('');
   let submitting = $state(false);
   let currentStep = $state(1); // Added step tracker: 1 = race selection, 2 = name input
   let displayNameTouched = $state(false);
+  let houseNameTouched = $state(false);
 
   // Track expanded state for each race on mobile
   let expandedRaces = $state({});
@@ -119,6 +121,22 @@
     return true;
   }
 
+  // Validation for house name (required)
+  function validateHouseName() {
+    if (!houseNameTouched) return true;
+
+    if (!houseName || houseName.trim().length < 2) {
+      houseNameError = 'House name must be at least 2 characters';
+      return false;
+    }
+    if (houseName.trim().length > 24) {
+      houseNameError = 'House name must be less than 24 characters';
+      return false;
+    }
+    houseNameError = '';
+    return true;
+  }
+
   // Separate handlers for input and blur
   function handleInput() {
     if (displayName?.length > 0) {
@@ -126,13 +144,27 @@
       validateDisplayName();
     }
   }
-  
+
   function handleBlur() {
     // Only mark as touched on blur if the user entered something and then left
     // or if they tabbed into the field and then out without entering anything
     if (displayName?.length > 0) {
       displayNameTouched = true;
       validateDisplayName();
+    }
+  }
+
+  function handleHouseInput() {
+    if (houseName?.length > 0) {
+      houseNameTouched = true;
+      validateHouseName();
+    }
+  }
+
+  function handleHouseBlur() {
+    if (houseName?.length > 0) {
+      houseNameTouched = true;
+      validateHouseName();
     }
   }
 
@@ -151,8 +183,11 @@
   // Handle confirmation
   async function handleConfirm() {
     if (!selectedRace) return;
+    displayNameTouched = true;
+    houseNameTouched = true;
     if (!validateDisplayName()) return;
-    
+    if (!validateHouseName()) return;
+
     submitting = true;
     try {
       // Include spawn information if available
@@ -287,15 +322,21 @@
           <div class="input-error">{displayNameError}</div>
         {/if}
 
-        <label class="field-label" for="house-name">House name <span class="optional">(optional)</span></label>
+        <label class="field-label" for="house-name">House name</label>
         <input
           type="text"
           id="house-name"
           placeholder="Name your house"
           bind:value={houseName}
+          onblur={handleHouseBlur}
+          oninput={handleHouseInput}
+          class:error={houseNameError && houseNameTouched}
           maxlength="24"
           disabled={submitting}
         />
+        {#if houseNameError && houseNameTouched}
+          <div class="input-error">{houseNameError}</div>
+        {/if}
       </div>
       
       <div class="confirmation-actions">
@@ -304,8 +345,8 @@
         </button>
         <button 
           class="confirm-button" 
-          onclick={handleConfirm} 
-          disabled={!displayName?.trim() || submitting}
+          onclick={handleConfirm}
+          disabled={!displayName?.trim() || !houseName?.trim() || submitting}
         >
           {#if submitting}
             <div class="spinner"></div>
@@ -605,12 +646,6 @@
     color: var(--color-ink-700);
   }
   .field-label:first-child { margin-top: 0; }
-  .field-label .optional {
-    text-transform: none;
-    letter-spacing: 0;
-    font-style: italic;
-    color: var(--color-ink-500);
-  }
 
   .name-input-container input {
     width: 100%;
