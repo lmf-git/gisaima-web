@@ -65,12 +65,12 @@
   const { code = '', size = '1em', extraClass = '' } = $props();
 
   const ICONS = {
-    WOODEN_STICKS: WoodenSticks,
+    WOOD: WoodenSticks,
     OAK_WOOD: OakWood,
     ANCIENT_WOOD: AncientWood,
-    STONE_PIECES: StonePieces,
-    IRON_ORE: IronOre,
-    IRON: Iron,
+    STONE: StonePieces,
+    METAL_ORE: IronOre,
+    METAL: Iron,
     RARE_METALS: RareMetals,
     SCRAP_METAL: ScrapMetal,
     BOG_IRON: BogIron,
@@ -129,7 +129,7 @@
     MYSTERIOUS_ARTIFACT: MysteriousArtifact,
   };
 
-  const Icon = $derived(ICONS[code] ?? ICONS['WOODEN_STICKS']);
+  const Icon = $derived(ICONS[code] ?? ICONS['WOOD']);
 </script>
 
 <svelte:component this={Icon} {size} {extraClass} />

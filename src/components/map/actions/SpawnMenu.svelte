@@ -7,7 +7,7 @@
   import { user } from '../../../lib/stores/user';
   import { game } from '../../../lib/stores/game';
   import {
-    moveTarget, map, targetStore, clearSavedTargetPosition, entities
+    moveTarget, map, targetStore, clearSavedTargetPosition, entities, refetchLoadedChunks
   } from '../../../lib/stores/map';
 
   import Torch from '../../icons/Torch.svelte';
@@ -223,6 +223,12 @@
           [tileKey]: [...(e.players[tileKey] || []).filter(p => p.id !== $user.uid), spawnedPlayer]
         }
       }));
+
+      // The spawn-area chunks were loaded before this character had any sight, so
+      // the server filtered out structures/buildings the new spawn sight now covers.
+      // Re-pull the loaded chunks (server visibility was invalidated on spawn) so
+      // those structures appear immediately instead of only after a page refresh.
+      refetchLoadedChunks();
 
       // Notify about spawn completion
       onSpawnComplete();

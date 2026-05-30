@@ -36,8 +36,8 @@
             return {
                 gold:  Number(items.GOLD || items.COINS || 0),
                 wheat: Number(items.WHEAT || items.GRAIN || 0),
-                wood:  Number(items.WOOD || items.WOODEN_STICKS || items.LOG || 0),
-                stone: Number(items.STONE || items.STONE_PIECES || items.IRON_ORE || 0),
+                wood:  Number(items.WOOD || items.WOOD || items.LOG || 0),
+                stone: Number(items.STONE || items.STONE || items.METAL_ORE || 0),
                 breakdown: breakdown || 'No items'
             };
         }

@@ -12,7 +12,7 @@
       <div class="element-card item-card common">
         <div class="element-header">
           <div class="element-title">
-            <h5>Wooden Sticks</h5>
+            <h5>Wood</h5>
             <div class="element-subtitle">Common Resource</div>
           </div>
         </div>
@@ -55,11 +55,11 @@
             <h6>Crafting Recipe</h6>
             <div class="resources-list">
               <div class="resource-item">
-                <span class="resource-name">Wooden Sticks</span>
+                <span class="resource-name">Wood</span>
                 <span class="resource-amount">2</span>
               </div>
               <div class="resource-item">
-                <span class="resource-name">Iron Ore</span>
+                <span class="resource-name">Metal Ore</span>
                 <span class="resource-amount">3</span>
               </div>
             </div>

@@ -153,6 +153,24 @@ export const currentPlayerPosition = derived(
   }
 );
 
+// When the controlled player's position changes (e.g. the group they're in moved
+// a tile), re-pull loaded chunks so tiles newly within sight refresh at once.
+// The server only broadcasts chunks that actually changed during a tick — chunks
+// that merely came into view are not rebroadcast, so without this they'd stay
+// hidden until the next change or a page refresh. Mirrors the spawn refetch.
+if (typeof window !== 'undefined') {
+  let _lastControlledKey = null;
+  currentPlayerPosition.subscribe(pos => {
+    if (!pos) return;
+    const key = `${pos.x},${pos.y}`;
+    if (_lastControlledKey === null) { _lastControlledKey = key; return; } // skip initial value
+    if (key !== _lastControlledKey) {
+      _lastControlledKey = key;
+      refetchLoadedChunks();
+    }
+  });
+}
+
 // Create a derived store that efficiently tracks target position changes
 export const targetPosition = derived(map, ($map) => {
   return {
@@ -465,6 +483,24 @@ function processChunkData(data = {}, chunkKey) {
 
       return newState;
     });
+  }
+}
+
+// Force-refetch HTTP chunk data for every currently subscribed chunk. Chunks are
+// otherwise HTTP-fetched only once (when first subscribed) and thereafter refreshed
+// solely by tick-driven WS chunk_update messages. After an action that changes the
+// player's OWN fog-of-war visibility — notably the first spawn, which grants sight
+// the player lacked when the surrounding chunks first loaded — those already-loaded
+// chunks were filtered against empty visibility and have no structures/groups. This
+// pulls them again so newly-visible entities appear at once instead of only after a
+// full page refresh. The server-side visibility cache is invalidated on spawn, so
+// the refetch reflects the new sight radius.
+export function refetchLoadedChunks() {
+  const worldId = get(game)?.worldKey || 'default';
+  for (const chunkKey of chunkSubscriptions.keys()) {
+    apiGet(`/worlds/${worldId}/chunks/${chunkKey}`)
+      .then(tiles => { if (tiles) processChunkData(tiles, chunkKey); })
+      .catch(e => console.error(`Error refetching chunk ${chunkKey}:`, e));
   }
 }
 

@@ -5,6 +5,7 @@
   import { targetStore, ready, entities, currentPlayerPosition } from '../../../lib/stores/map.js';
   import { game, currentPlayer, savePlayerAchievement } from '../../../lib/stores/game.js';
   import { user } from '../../../lib/stores/user.js';
+  import { getGatherableItems } from 'gisaima-shared/definitions/ITEMS.js';
 
   import Mobilise        from '../actions/Mobilise.svelte';
   import Move            from '../actions/Move.svelte';
@@ -51,6 +52,12 @@
   const groups = $derived(tile?.groups  ?? []);
   const struct = $derived(tile?.structure ?? null);
   const battles= $derived(tile?.battles  ?? []);
+
+  // What can be gathered on this tile, by biome — shown when the tile is empty
+  // (no groups, structure, or battles) so an otherwise-bare tile still tells the
+  // player what its biome offers.
+  const tileEmpty   = $derived(!groups.length && !struct && !battles.length);
+  const gatherables = $derived(tile?.biome?.name ? getGatherableItems(tile.biome.name) : []);
 
   // ─── Player's current-location info (former CurrentLocationHud) ─
   const place = derived(
@@ -150,7 +157,7 @@
     const k = (key || '').toUpperCase();
     if (k === 'GOLD' || k.includes('COIN'))  return 'coin';
     if (k.includes('WOOD') || k.includes('STICK')) return 'wood';
-    if (k.includes('STONE') || k.includes('IRON') || k.includes('ORE') || k.includes('CRYSTAL')) return 'stone';
+    if (k.includes('STONE') || k.includes('METAL') || k.includes('ORE') || k.includes('CRYSTAL')) return 'stone';
     if (k.includes('WHEAT') || k.includes('GRAIN') || k.includes('BERRY') || k.includes('HERB')) return 'wheat';
     if (k.includes('SWORD') || k.includes('WEAPON')) return 'sword';
     if (k.includes('SHIELD') || k.includes('BODY') || k.includes('HELM')) return 'shield';
@@ -293,6 +300,25 @@
                   </li>
                 {/each}
               {/if}
+            </ul>
+          </section>
+        {/if}
+
+        {#if tileEmpty && gatherables.length}
+          <section class="ds-section ds-gather">
+            <div class="ds-section-hd">
+              <Stamp kind="wheat" size={12} />
+              <span class="ds-label" style="margin-left:0.4em">GATHERABLE HERE</span>
+              <span class="ds-count">{gatherables.length}</span>
+            </div>
+            <ul class="ds-items-list">
+              {#each gatherables as g (g.code)}
+                <li>
+                  <Stamp kind={glyphFor(g.code)} size={12} />
+                  <span class="ds-item-name">{g.name}</span>
+                  <span class="ds-row-meta">{g.rarity}</span>
+                </li>
+              {/each}
             </ul>
           </section>
         {/if}

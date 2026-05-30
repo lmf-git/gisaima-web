@@ -7,6 +7,7 @@
     import { entities, coordinates, currentPlayerPosition, moveTarget } from '$lib/stores/map.js';
     import WaxSeal from '../ui/WaxSeal.svelte';
     import Stamp from '../ui/Stamp.svelte';
+    import { isFood } from 'gisaima-shared/definitions/ITEMS.js';
 
     // HudA top bar — house crest, resources at current location, search,
     // next tick, player avatar. Mirrors reference/jsx/map-hud.jsx HudA.
@@ -14,32 +15,42 @@
     const onMap = $derived($page.url?.pathname === '/map');
 
     const houseName = $derived.by(() => {
-        const n = $user?.displayName || $user?.email?.split('@')[0] || 'guest';
+        // Prefer the house name chosen for this world; fall back to the account name.
+        const chosen = $game?.player?.houseName?.trim();
+        const n = chosen || $user?.displayName || $user?.email?.split('@')[0] || 'guest';
         return `HOUSE ${n.toString().toUpperCase()}`;
     });
     const initial = $derived(($user?.displayName || $user?.email || 'G')[0].toUpperCase());
 
-    // Resources read from the player's current-location sink (group preferred
-    // over structure) so the bar shows what's actually to hand.
+    // Resources to hand for the player at their current location. Only the
+    // player's OWN holdings count: the group they're in (preferred), or the
+    // bank of a structure they own here. A structure owned by someone else is
+    // shared storage the player can't freely draw on, so it's never shown.
     const resources = $derived.by(() => {
-        if (!$currentPlayerPosition || !$user) return { GOLD: 0, WHEAT: 0, WOOD: 0, STONE: 0 };
+        if (!$currentPlayerPosition || !$user) return { GOLD: 0, FOOD: 0, WOOD: 0, STONE: 0, METAL: 0 };
         const key = `${$currentPlayerPosition.x},${$currentPlayerPosition.y}`;
         const struct = $entities.structure?.[key];
         const groups = $entities.groups?.[key] || [];
         const mine = groups.find((g) => g?.owner === $user.uid);
         const items = (mine?.items && Object.keys(mine.items).length ? mine.items : null)
             || (struct?.owner === $user.uid ? struct?.items : null)
-            || (struct?.items || {});
+            || {};
         const pick = (...keys) => {
             let n = 0;
-            for (const k of keys) n += Number(items[k] || 0);
+            for (const k of new Set(keys)) n += Number(items[k] || 0);
             return n;
         };
+        // Food is the sum of every food-flagged item present, not just one crop.
+        let food = 0;
+        for (const [code, qty] of Object.entries(items)) {
+            if (!code.startsWith('_') && isFood(code)) food += Number(qty || 0);
+        }
         return {
             GOLD:  pick('GOLD', 'COINS'),
-            WHEAT: pick('WHEAT', 'GRAIN', 'BERRIES'),
-            WOOD:  pick('WOOD', 'WOODEN_STICKS', 'TIMBER'),
-            STONE: pick('STONE', 'STONE_PIECES', 'IRON_ORE', 'IRON')
+            FOOD:  food,
+            WOOD:  pick('WOOD', 'TIMBER', 'OAK_WOOD', 'ANCIENT_WOOD'),
+            STONE: pick('STONE'),
+            METAL: pick('METAL', 'METAL_ORE')
         };
     });
 
@@ -212,28 +223,35 @@
                 <span class="res-icon coin"><Stamp kind="coin" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.GOLD)}</span>
-                    <span class="r">@here</span>
+                    <span class="r">Gold</span>
                 </span>
             </li>
             <li>
                 <span class="res-icon sage"><Stamp kind="wheat" size={16} /></span>
                 <span class="res-val">
-                    <span class="n">{fmt(resources.WHEAT)}</span>
-                    <span class="r">@here</span>
+                    <span class="n">{fmt(resources.FOOD)}</span>
+                    <span class="r">Food</span>
                 </span>
             </li>
             <li>
                 <span class="res-icon gold"><Stamp kind="wood" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.WOOD)}</span>
-                    <span class="r">@here</span>
+                    <span class="r">Wood</span>
                 </span>
             </li>
             <li>
                 <span class="res-icon hill"><Stamp kind="stone" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.STONE)}</span>
-                    <span class="r">@here</span>
+                    <span class="r">Stone</span>
+                </span>
+            </li>
+            <li>
+                <span class="res-icon iron"><Stamp kind="hammer" size={16} /></span>
+                <span class="res-val">
+                    <span class="n">{fmt(resources.METAL)}</span>
+                    <span class="r">Metal</span>
                 </span>
             </li>
         </ul>
@@ -400,6 +418,7 @@
     .res-icon.sage  { color: var(--color-sage-pale, #b8c9b3); }
     .res-icon.gold  { color: var(--color-aged-gold); }
     .res-icon.hill  { color: #a89567; }
+    .res-icon.iron  { color: #9fb0bd; }
     .res-val { line-height: 1; }
     .res-val .n { display: block; font-size: 0.82em; font-weight: 500; color: var(--color-parchment-100); }
     .res-val .r { display: block; font-size: 0.55em; opacity: 0.5; letter-spacing: 0.04em; margin-top: 0.15em; }

@@ -3,11 +3,29 @@
   import { fade } from 'svelte/transition';
 
   import { BUILDINGS } from 'gisaima-shared';
-  import { 
-    getItemCategories, 
-    getAllRecipes
+  import {
+    getItemCategories,
+    getAllRecipes,
+    ITEMS
   } from 'gisaima-shared/definitions/ITEMS.js';
   import { game, currentPlayer } from '../../../lib/stores/game.js';
+
+  // Recipe materials are keyed by item code; resolve display names from ITEMS and
+  // match inventory items by code (tolerating items keyed by code, id, or name).
+  const codeName = (code) => ITEMS[code]?.name || code;
+  function itemCodeOf(item) {
+    if (!item) return '';
+    if (item.code && ITEMS[item.code]) return item.code;
+    if (item.id && ITEMS[item.id]) return item.id;
+    if (item.name) {
+      const k = Object.keys(ITEMS).find(c => ITEMS[c].name === item.name);
+      if (k) return k;
+    }
+    return (item.code || item.id || item.name || '').toString().toUpperCase().replace(/ /g, '_');
+  }
+  const haveQty = (code) => playerInventory
+    .filter(i => itemCodeOf(i) === code)
+    .reduce((s, i) => s + (i.quantity || 0), 0);
 
   import Back from '../../icons/Back.svelte';
   import CraftingCategoryIcon from '../../icons/CraftingCategoryIcon.svelte';
@@ -134,15 +152,10 @@
   function hasRequiredResources(recipe) {
     if (!recipe?.materials) return false;
     
-    // Convert object materials to array format for checking
-    const materialsList = Object.entries(recipe.materials).map(([name, quantity]) => ({ 
-      name, quantity 
-    }));
-    
-    return materialsList.every(material => {
-      const playerItem = playerInventory.find(item => item.name === material.name);
-      return playerItem && playerItem.quantity >= material.quantity;
-    });
+    // Materials are keyed by item code; match inventory by resolved code.
+    return Object.entries(recipe.materials).every(
+      ([code, quantity]) => haveQty(code) >= quantity
+    );
   }
   
   function meetsBuildingLevelRequirements(recipe) {
@@ -197,18 +210,22 @@
       });
 
       if (result?.success) {
-        // Update local inventory
+        // Update local inventory (match by item code)
         if (selectedRecipe.materials) {
-          Object.entries(selectedRecipe.materials).forEach(([name, quantity]) => {
-            const inventoryItem = playerInventory.find(item => item.name === name);
-            if (inventoryItem) {
-              inventoryItem.quantity -= quantity;
+          Object.entries(selectedRecipe.materials).forEach(([code, quantity]) => {
+            let left = quantity;
+            for (const item of playerInventory) {
+              if (left <= 0) break;
+              if (itemCodeOf(item) !== code) continue;
+              const use = Math.min(left, item.quantity || 0);
+              item.quantity -= use;
+              left -= use;
             }
           });
         }
-        
+
         // Use ticksRequired from the response for the success message
-        const ticksRequired = result.ticksRequired || selectedRecipe.craftingTime;
+        const ticksRequired = result.ticksRequired || selectedRecipe.ticksRequired;
         successMessage = `Successfully started crafting ${selectedRecipe.name}! Will complete in ${formatCraftingTicks(ticksRequired)}.`;
         
         // Trigger any achievement tracking
@@ -350,16 +367,14 @@
             <h4>Required Materials:</h4>
             <div class="materials-list">
               {#if typeof selectedRecipe.materials === 'object'}
-                {#each Object.entries(selectedRecipe.materials) as [name, quantity]}
-                  <div 
+                {#each Object.entries(selectedRecipe.materials) as [code, quantity]}
+                  <div
                     class="material-item"
-                    class:insufficient={
-                      !playerInventory.find(item => item.name === name && item.quantity >= quantity)
-                    }
+                    class:insufficient={haveQty(code) < quantity}
                   >
-                    <span class="material-name">{name}</span>
+                    <span class="material-name">{codeName(code)}</span>
                     <span class="material-quantity">
-                      {(playerInventory.find(item => item.name === name)?.quantity || 0)} / {quantity}
+                      {haveQty(code)} / {quantity}
                     </span>
                   </div>
                 {/each}

@@ -2,7 +2,7 @@
  * Game store — backed by the custom HTTP API + WebSocket
  */
 
-import { writable, derived, get } from 'svelte/store';
+import { writable, readable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import { apiGet, apiPost, wsWorld } from '$lib/api.js';
 import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
@@ -67,10 +67,21 @@ export const nextWorldTick = derived(worldInfo, $w => {
   return $w.lastTick + Math.round(60000 / ($w.speed || 1));
 });
 
-export const timeUntilNextTick = derived(nextWorldTick, $next => {
+// A clock that emits the current time once a second while subscribed. Used to
+// drive live countdowns — without it, anything derived purely from worldInfo
+// only recomputes when a tick message arrives, so a "time until next tick"
+// readout would freeze at its initial value (e.g. a static "60s") instead of
+// counting down. The interval only runs while there is at least one subscriber.
+const now = readable(Date.now(), set => {
+  const id = setInterval(() => set(Date.now()), 1000);
+  return () => clearInterval(id);
+});
+
+export const timeUntilNextTick = derived([nextWorldTick, now], ([$next, $now]) => {
   if (!$next) return 'Unknown';
-  const rem = $next - Date.now();
-  if (rem <= 60000) return `${Math.ceil(rem / 1000)}s`;
+  const rem = $next - $now;
+  if (rem <= 0) return 'Pending';
+  if (rem <= 60000) return `${Math.max(0, Math.ceil(rem / 1000))}s`;
   return `${Math.floor(rem / 60000)}m`;
 });
 

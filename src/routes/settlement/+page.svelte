@@ -75,7 +75,7 @@
         { type: 'smithy',   icon: 'hammer', level: 2, pct: 0,    status: 'idle',      desc: 'Crafts weapons, tools & armor' },
         { type: 'barracks', icon: 'shield', level: 2, pct: 0.42, status: 'upgrading', desc: 'Train troops · → L3 unlocks Archer' },
         { type: 'wall',     icon: 'tower',  level: 1, pct: 0,    status: 'idle',      desc: 'Defensive structure' },
-        { type: 'mine',     icon: 'stone',  level: 2, pct: 0,    status: 'producing', desc: '+10% yield · Iron Ore +14/h' },
+        { type: 'mine',     icon: 'stone',  level: 2, pct: 0,    status: 'producing', desc: '+10% yield · Metal Ore +14/h' },
         { type: 'farm',     icon: 'wheat',  level: 1, pct: 0,    status: 'producing', desc: 'Wheat +22/h · Berries +6/h' },
         { type: 'academy',  icon: 'scroll', level: 0, pct: 0,    status: 'locked',    desc: 'Needs workshop first' },
         { type: 'market',   icon: 'coin',   level: 1, pct: 0,    status: 'idle',      desc: '+10% trade rates' },
@@ -91,15 +91,15 @@
     ];
 
     const recruitQueue = [
-        { unit: 'Footman',    q: 8, pct: 0.78, eta: '1m',  cost: '16 Wooden Sticks · 8 Iron Shards' },
-        { unit: 'Pathfinder', q: 4, pct: 0.34, eta: '5m',  cost: '4 Wooden Sticks · 8 Leather' },
+        { unit: 'Footman',    q: 8, pct: 0.78, eta: '1m',  cost: '16 Wood · 8 Iron Shards' },
+        { unit: 'Pathfinder', q: 4, pct: 0.34, eta: '5m',  cost: '4 Wood · 8 Leather' },
         { unit: 'Healer',     q: 2, pct: 0.04, eta: '12m', cost: '4 Herb · 2 Water' }
     ];
 
     const stores = [
-        ['WOODEN_STICKS', 144, 'common'],
-        ['STONE_PIECES',   88, 'common'],
-        ['IRON_ORE',       24, 'uncommon'],
+        ['WOOD', 144, 'common'],
+        ['STONE',   88, 'common'],
+        ['METAL_ORE',       24, 'uncommon'],
         ['LEATHER',        32, 'common'],
         ['MEDICINAL_HERBS', 12, 'uncommon'],
         ['WHEAT',          62, 'common'],

@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import { fade } from 'svelte/transition';
     import { user } from '$lib/stores/user.js';
     import { game } from '$lib/stores/game.js';
     import { apiGet } from '$lib/api.js';
@@ -10,7 +11,6 @@
     import Button from '../components/ui/Button.svelte';
 
     let worlds = $state([]);
-    let topPlayers = $state([]);
     let loading = $state(true);
 
     // Pull real worlds (their seeds drive the live previews)
@@ -22,15 +22,6 @@
             worlds = [];
         }
         loading = false;
-
-        // best-effort: pick the first live world and fetch its rankings
-        const first = worlds.find((w) => w?.info?.status !== 'archive') || worlds[0];
-        if (first?._id) {
-            try {
-                const r = await apiGet(`/worlds/${encodeURIComponent(first._id)}/rankings`);
-                topPlayers = (r?.points || []).slice(0, 5);
-            } catch { /* ignore */ }
-        }
     });
 
     function seedOf(w, fallback = 1) {
@@ -48,7 +39,6 @@
     }
 
     const featured = $derived(worlds[0]);
-    const scenes = $derived(worlds.slice(0, 4));
 
     const stats = $derived([
         { n: worlds.length || '∞', l: 'Realms' },
@@ -62,13 +52,6 @@
         { kind: 'hammer',  t: 'Real-time, tick-based', b: 'Strategy unfolds in hours, not in clicks.' },
         { kind: 'coin',    t: 'No pay-to-win',         b: 'Cosmetics only. Every player stands on equal ground.' },
         { kind: 'scroll',  t: 'Open source',           b: 'MIT-licensed. Read it, run it, fork it.' }
-    ];
-
-    const roadmap = [
-        ['Q1', 'Naval movement & rivers',  'done'],
-        ['Q2', 'Diplomatic treaties v2',   'now'],
-        ['Q3', 'Faction events & seasons', 'next'],
-        ['Q4', 'Religious orders',         'planned']
     ];
 </script>
 
@@ -130,9 +113,11 @@
 
         <div class="astrolabe">
             <CompassRose size={540} color="var(--color-aged-gold)" opacity={0.5} />
-            <div class="dial">
-                <div class="dial-inner">
-                    {#if featured}
+            <!-- The world dial only appears once real world data has loaded, then
+                 fades in — no blank blue placeholder while the realm is fetched. -->
+            {#if featured}
+                <div class="dial" transition:fade={{ duration: 400 }}>
+                    <div class="dial-inner">
                         <WorldPreview
                             seed={seedOf(featured, 87)}
                             center={centerOf(featured)}
@@ -140,15 +125,13 @@
                             rows={44}
                             tile={10}
                         />
-                    {:else if !loading}
-                        <WorldPreview seed={87} cols={44} rows={44} tile={10} />
-                    {/if}
+                    </div>
                 </div>
-            </div>
-            <div class="tick-chip">
-                <Stamp kind="compass" size={11} />
-                {featured ? nameOf(featured) : 'awaiting realm'}
-            </div>
+                <div class="tick-chip" transition:fade={{ duration: 400 }}>
+                    <Stamp kind="compass" size={11} />
+                    {nameOf(featured)}
+                </div>
+            {/if}
         </div>
     </section>
 
@@ -171,63 +154,9 @@
 
     <section class="tri">
         <div>
-            <div class="eyebrow gold">From the field</div>
-            <h3>Scenes from the realm</h3>
-            <div class="scenes">
-                {#if scenes.length === 0}
-                    {#each [31, 41, 51, 61] as s}
-                        <div class="scene"><WorldPreview seed={s} cols={24} rows={14} tile={10} /></div>
-                    {/each}
-                {:else}
-                    {#each scenes as w}
-                        <div class="scene">
-                            <WorldPreview
-                                seed={seedOf(w)}
-                                center={centerOf(w)}
-                                cols={24}
-                                rows={14}
-                                tile={10}
-                            />
-                            <div class="scene-tag">{nameOf(w)}</div>
-                        </div>
-                    {/each}
-                {/if}
-            </div>
-        </div>
-
-        <div>
-            <div class="eyebrow gold">Standings</div>
-            <h3>Top of the Roll</h3>
-            <ol class="roll">
-                {#if topPlayers.length > 0}
-                    {#each topPlayers as r, i}
-                        <li>
-                            <span class="rank">{String(i + 1).padStart(2, '0')}</span>
-                            <span class="name">{r.displayName}</span>
-                            <span class="score">{Number(r.structurePoints || 0).toLocaleString()}</span>
-                        </li>
-                    {/each}
-                {:else}
-                    <li class="empty"><span class="rank">—</span><span class="name">awaiting standings</span></li>
-                {/if}
-            </ol>
-            <a class="see-more" href="/rankings">See the Chronicle →</a>
-        </div>
-
-        <div>
             <div class="eyebrow gold">What comes next</div>
-            <h3>The Chronicle</h3>
-            <ol class="chron">
-                {#each roadmap as [when, what, state]}
-                    <li>
-                        <span class="dot dot-{state}"></span>
-                        <div>
-                            <div class="when">{when}</div>
-                            <div class="what">{what}</div>
-                        </div>
-                    </li>
-                {/each}
-            </ol>
+            <h3>Roadmap</h3>
+            <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
         </div>
     </section>
 
@@ -446,68 +375,13 @@
         gap: 2.4em;
     }
     .tri h3 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.4em 0 1em; color: #fbf6e7; }
-    .scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
-    .scene {
-        position: relative;
-        height: 130px;
-        overflow: hidden;
-        border: 1px solid var(--color-aged-gold);
-        background: #88b7c4;
+    .roadmap-note {
+        margin: 0.6em 0 0;
+        font-family: var(--font-editorial);
+        font-style: italic;
+        font-size: 0.95rem;
+        color: rgba(232, 228, 210, 0.6);
     }
-    .scene-tag {
-        position: absolute;
-        left: 8px;
-        bottom: 8px;
-        background: var(--color-parchment-100);
-        color: var(--color-ink-900);
-        padding: 3px 7px;
-        font-family: var(--font-display);
-        font-size: 9px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-    }
-    .roll { list-style: none; padding: 0; margin: 0; font-family: var(--font-body); font-size: 0.95rem; }
-    .roll li {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.7em 0;
-        border-top: 1px solid rgba(176, 141, 74, 0.25);
-    }
-    .roll li.empty { color: rgba(232, 228, 210, 0.5); font-style: italic; font-family: var(--font-editorial); }
-    .roll .rank {
-        font-family: var(--font-display);
-        color: var(--color-gold-pale);
-        margin-right: 1em;
-        min-width: 1.6em;
-        display: inline-block;
-    }
-    .roll .name { flex: 1; }
-    .roll .score { font-family: var(--font-mono); color: rgba(232, 228, 210, 0.7); }
-    .see-more {
-        display: inline-block;
-        margin-top: 1em;
-        font-family: var(--font-display);
-        font-size: 0.7rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--color-gold-pale);
-        text-decoration: none;
-    }
-    .see-more:hover { color: #fbf6e7; }
-
-    .chron { list-style: none; padding: 0; margin: 0; }
-    .chron li {
-        display: flex;
-        gap: 0.8em;
-        padding: 0.7em 0;
-        border-top: 1px solid rgba(176, 141, 74, 0.25);
-    }
-    .dot { flex: 0 0 10px; margin-top: 7px; width: 10px; height: 10px; border-radius: 50%; background: rgba(232, 228, 210, 0.2); }
-    .dot-now { background: var(--color-vermilion-2); }
-    .dot-done { background: var(--color-sage); }
-    .when { font-family: var(--font-mono); font-size: 10px; color: rgba(232, 228, 210, 0.55); }
-    .what { font-family: var(--font-display); font-size: 0.95rem; color: #fbf6e7; }
 
     .page-foot {
         position: relative;

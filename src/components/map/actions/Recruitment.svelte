@@ -343,7 +343,7 @@
                             resources[upperCaseId] = (resources[upperCaseId] || 0) + (item.quantity || 1);
                         }
                         
-                        // Also normalize name as fallback (e.g., "Wooden Sticks" -> "WOODEN_STICKS")
+                        // Also normalize name as fallback (e.g., "Wood" -> "WOOD")
                         if (item.name) {
                             const normalizedName = item.name.toUpperCase().replace(/ /g, '_');
                             resources[normalizedName] = (resources[normalizedName] || 0) + (item.quantity || 1);

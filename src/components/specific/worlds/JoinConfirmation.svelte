@@ -52,6 +52,7 @@
   // Component state
   let selectedRace = $state(null);
   let displayName = $state(untrack(() => initialName));
+  let houseName = $state('');
   let displayNameError = $state('');
   let submitting = $state(false);
   let currentStep = $state(1); // Added step tracker: 1 = race selection, 2 = name input
@@ -153,9 +154,9 @@
     if (!validateDisplayName()) return;
     
     submitting = true;
-    try {     
+    try {
       // Include spawn information if available
-      await onConfirm(world.id, selectedRace.id, displayName.trim());
+      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseName.trim());
 
     } catch (error) {
       console.error('Error joining world:', error);
@@ -271,11 +272,12 @@
       </h2>
       
       <div class="name-input-container">
-        <input 
-          type="text" 
-          id="display-name" 
-          placeholder="Enter your display name" 
-          bind:value={displayName} 
+        <label class="field-label" for="display-name">Display name</label>
+        <input
+          type="text"
+          id="display-name"
+          placeholder="Enter your display name"
+          bind:value={displayName}
           onblur={handleBlur}
           oninput={handleInput}
           class:error={displayNameError && displayNameTouched}
@@ -284,6 +286,16 @@
         {#if displayNameError && displayNameTouched}
           <div class="input-error">{displayNameError}</div>
         {/if}
+
+        <label class="field-label" for="house-name">House name <span class="optional">(optional)</span></label>
+        <input
+          type="text"
+          id="house-name"
+          placeholder="Name your house"
+          bind:value={houseName}
+          maxlength="24"
+          disabled={submitting}
+        />
       </div>
       
       <div class="confirmation-actions">
@@ -579,6 +591,25 @@
     margin: 1em 0;
     text-align: center;
     padding: 0 1em;
+  }
+
+  .field-label {
+    display: block;
+    text-align: left;
+    max-width: 400px;
+    margin: 0.9em auto 0.3em;
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-700);
+  }
+  .field-label:first-child { margin-top: 0; }
+  .field-label .optional {
+    text-transform: none;
+    letter-spacing: 0;
+    font-style: italic;
+    color: var(--color-ink-500);
   }
 
   .name-input-container input {

@@ -87,7 +87,7 @@
         const k = (key || '').toUpperCase();
         if (k === 'GOLD' || k.includes('COIN')) return 'coin';
         if (k.includes('WOOD') || k.includes('STICK')) return 'wood';
-        if (k.includes('STONE') || k.includes('IRON') || k.includes('ORE') || k.includes('CRYSTAL')) return 'stone';
+        if (k.includes('STONE') || k.includes('METAL') || k.includes('ORE') || k.includes('CRYSTAL')) return 'stone';
         if (k.includes('WHEAT') || k.includes('GRAIN') || k.includes('BERRY') || k.includes('HERB')) return 'wheat';
         if (k.includes('SWORD') || k.includes('WEAPON')) return 'sword';
         if (k.includes('SHIELD') || k.includes('BODY') || k.includes('HELM')) return 'shield';

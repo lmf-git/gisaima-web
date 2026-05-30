@@ -4,15 +4,10 @@
   // Import unit definitions to get boat capacities
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
   import Checkbox from '../../ui/Checkbox.svelte';
+  import UnitIcon from '../../icons/UnitIcon.svelte';
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore, entities } from '../../../lib/stores/map';
-
-  import Human from '../../icons/Human.svelte';
-  import Elf from '../../icons/Elf.svelte';
-  import Dwarf from '../../icons/Dwarf.svelte';
-  import Goblin from '../../icons/Goblin.svelte';
-  import Fairy from '../../icons/Fairy.svelte';
 
   const {
     onClose = () => {},
@@ -267,6 +262,35 @@
     && !capacityExceeded // Add capacity check
   );
 
+  // Rule-of-march (flee at losses, join battles) only matters for a real force.
+  // When the only thing being mobilised is the player alone there are no losses
+  // to flee from, so the section is hidden and a default threshold is kept.
+  let mobilisingPlayerOnly = $derived(
+    selectedUnits.length === 0 && includePlayer && !!myEntity
+  );
+
+  // Group the selected units by kind for the summary, so it shows an icon and a
+  // count per unit type (e.g. "2 Footman") rather than a bare total. The player
+  // is appended separately below when included.
+  let summaryUnits = $derived((() => {
+    const byKind = new Map();
+    for (const u of selectedUnits) {
+      const key = u.unitId || u.type;
+      const qty = u.quantity ?? 1;
+      const existing = byKind.get(key);
+      if (existing) {
+        existing.count += qty;
+      } else {
+        byKind.set(key, {
+          key,
+          count: qty,
+          name: u.name || UNITS[u.unitId]?.name || UNITS[u.type]?.name || _fmt(key)
+        });
+      }
+    }
+    return [...byKind.values()];
+  })());
+
 </script>
 
 <div
@@ -307,21 +331,26 @@
         </div>
 
         <!-- Rule of march — retreat threshold + whether the new banner is
-             allowed to join battles in progress. -->
-        <div class="rule-of-march">
-          <div class="row-of-march eyebrow">Rule of march</div>
-          <label class="march-row">
-            <span>Flee at losses · <b>{fleeAtLosses}%</b></span>
-            <input type="range" min="0" max="100" bind:value={fleeAtLosses} />
-          </label>
-          <div class="march-row toggle">
-            <span>Join battles in progress</span>
-            <Checkbox bind:checked={joinBattlesInProgress} />
+             allowed to join battles in progress. Hidden when mobilising the
+             player alone, since a lone unit has no losses to flee from. -->
+        {#if !mobilisingPlayerOnly}
+          <div class="rule-of-march">
+            <div class="row-of-march eyebrow">Rule of march</div>
+            <label class="march-row">
+              <span>Flee at losses · <b>{fleeAtLosses}%</b></span>
+              <input type="range" min="0" max="100" bind:value={fleeAtLosses} />
+            </label>
+            <div class="march-row toggle">
+              <span>Join battles in progress</span>
+              <Checkbox bind:checked={joinBattlesInProgress} />
+            </div>
           </div>
-        </div>
+        {/if}
         
         <div class="options">
-          {#if myEntity}
+          <!-- Only offer the choice when there are other units to mobilise. If the
+               player is the only unit available, including them is assumed. -->
+          {#if myEntity && availableUnits.length > 0}
             <div class="option-row">
               <Checkbox bind:checked={includePlayer} label="Include yourself in mobilization" id="include-player" />
             </div>
@@ -396,19 +425,7 @@
                 >
                   <Checkbox checked={unit.selected} />
                   <div class="unit-icon">
-                    {#if unit.race}
-                      {#if unit.race.toLowerCase() === 'human'}
-                        <Human extraClass="race-icon-small" />
-                      {:else if unit.race.toLowerCase() === 'elf'}
-                        <Elf extraClass="race-icon-small" />
-                      {:else if unit.race.toLowerCase() === 'dwarf'}
-                        <Dwarf extraClass="race-icon-small" />
-                      {:else if unit.race.toLowerCase() === 'goblin'}
-                        <Goblin extraClass="race-icon-small" />
-                      {:else if unit.race.toLowerCase() === 'fairy'}
-                        <Fairy extraClass="race-icon-small" />
-                      {/if}
-                    {/if}
+                    <UnitIcon type={unit.unitId || unit.type} size="1.5em" extraClass="race-icon-small" />
                   </div>
                   <div class="unit-info">
                     <div class="unit-name">
@@ -445,15 +462,25 @@
         
         <div class="summary">
           <h3>Summary</h3>
-          <p>
-            Units selected: {selectedUnits.length}
-            {#if selectedBoatUnits.length > 0}
-              (including {selectedBoatUnits.length} {selectedBoatUnits.length > 1 ? 'boats' : 'boat'})
-            {/if}
-            {#if includePlayer && myEntity}
-              + You
-            {/if}
-          </p>
+          {#if summaryUnits.length > 0 || (includePlayer && myEntity)}
+            <div class="summary-units">
+              {#if includePlayer && myEntity}
+                <span class="summary-unit">
+                  <UnitIcon type="player" size="1.2em" extraClass="summary-unit-icon" />
+                  <span class="summary-unit-name">You</span>
+                </span>
+              {/if}
+              {#each summaryUnits as su (su.key)}
+                <span class="summary-unit">
+                  <UnitIcon type={su.key} size="1.2em" extraClass="summary-unit-icon" />
+                  <span class="summary-unit-count">{su.count}×</span>
+                  <span class="summary-unit-name">{su.name}</span>
+                </span>
+              {/each}
+            </div>
+          {:else}
+            <p>No units selected.</p>
+          {/if}
           {#if selectedBoatUnits.length > 0}
             <p class="transport-note">
               This group will be water-based and can only traverse water tiles.
@@ -644,6 +671,12 @@
     align-items: center;
     justify-content: center;
     margin: 0 0.6em;
+    color: var(--color-gold-pale);
+  }
+
+  :global(.race-icon-small) {
+    color: var(--color-gold-pale);
+    flex-shrink: 0;
   }
 
   .unit-info {
@@ -706,6 +739,33 @@
   .summary p {
     margin: 0;
     font-weight: 500;
+  }
+
+  .summary-units {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+  }
+
+  .summary-unit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.25em 0.55em;
+    background: rgba(176, 141, 74, 0.1);
+    border: 0.075em solid rgba(176, 141, 74, 0.25);
+    font-size: 0.85em;
+    color: var(--color-parchment-100);
+  }
+
+  :global(.summary-unit-icon) {
+    color: var(--color-gold-pale);
+    flex-shrink: 0;
+  }
+
+  .summary-unit-count {
+    font-family: var(--font-mono, monospace);
+    color: var(--color-aged-gold);
   }
 
   .options {

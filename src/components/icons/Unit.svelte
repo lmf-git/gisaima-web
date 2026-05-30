@@ -62,6 +62,8 @@
         skeleton: Skeleton,
         troll: Troll,
         elemental: Elemental,
+        small_boat: Ship,
+        medium_boat: Ship,
         large_boat: Ship,
         combat_boat: Ship,
         steamboat: Ship,

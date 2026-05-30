@@ -16,10 +16,10 @@
               "MONSTER_TOOTH": 1,
               "MYSTERIOUS_ARTIFACT": 1,
               "RARE_METALS": 2,
-              "STONE_PIECES": 5,
+              "STONE": 5,
               "WHEAT": 3,
               "WILD_BERRIES": 3,
-              "WOODEN_STICKS": 3
+              "WOOD": 3
             },
             "structure": {
               "description": "A fairy settlement where the ancient spirits still speak",
@@ -32,8 +32,8 @@
                 "building_academy_structure_al_fairy_spawn": { "id": "building_academy_structure_al_fairy_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "fairy" }
               },
               "items": {
-                "WOODEN_STICKS": 3,
-                "STONE_PIECES": 3
+                "WOOD": 3,
+                "STONE": 3
               },
               "name": "Whisperwind Circle",
               "race": "fairy",
@@ -54,10 +54,10 @@
               "MOUNTAIN_CRYSTAL": 1,
               "MYSTERIOUS_ARTIFACT": 1,
               "RARE_METALS": 1,
-              "STONE_PIECES": 2,
+              "STONE": 2,
               "WHEAT": 2,
               "WILD_BERRIES": 1,
-              "WOODEN_STICKS": 3
+              "WOOD": 3
             },
             "structure": {
               "description": "A resourceful goblin settlement built from the remains of ancient beasts",
@@ -70,7 +70,7 @@
                 "building_academy_structure_al_goblin_spawn": { "id": "building_academy_structure_al_goblin_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "goblin" }
               },
               "items": {
-                "WOODEN_STICKS": 5
+                "WOOD": 5
               },
               "name": "Boneridge Camp",
               "race": "goblin",
@@ -100,10 +100,10 @@
               "BONE_FRAGMENT": 1,
               "CRUDE_WEAPON": 1,
               "MYSTERIOUS_ARTIFACT": 1,
-              "STONE_PIECES": 2,
+              "STONE": 2,
               "WHEAT": 1,
               "WILD_BERRIES": 2,
-              "WOODEN_STICKS": 5
+              "WOOD": 5
             },
             "structure": {
               "description": "The ancestral mountain home of the dwarf clans",
@@ -136,10 +136,10 @@
               "MYSTERIOUS_ARTIFACT": 1,
               "PRIMAL_ESSENCE": 1,
               "RARE_METALS": 2,
-              "STONE_PIECES": 1,
+              "STONE": 1,
               "WHEAT": 1,
               "WILD_BERRIES": 3,
-              "WOODEN_STICKS": 7
+              "WOOD": 7
             },
             "structure": {
               "description": "A rugged frontier settlement where hardy humans carve out a living",
@@ -152,8 +152,8 @@
                 "building_academy_structure_al_human_spawn": { "id": "building_academy_structure_al_human_spawn", "type": "academy", "name": "Academy", "level": 1, "subRow": 0, "subCol": 1, "race": "human" }
               },
               "items": {
-                "WOODEN_STICKS": 41,
-                "STONE_PIECES": 14,
+                "WOOD": 41,
+                "STONE": 14,
                 "MYSTERIOUS_ARTIFACT": 1
               },
               "name": "Stoneguard Citadel",
@@ -169,10 +169,10 @@
               "MEDICINAL_HERBS": 1,
               "MYSTERIOUS_ARTIFACT": 1,
               "PRIMAL_ESSENCE": 1,
-              "STONE_PIECES": 1,
+              "STONE": 1,
               "WHEAT": 1,
               "WILD_BERRIES": 1,
-              "WOODEN_STICKS": 6
+              "WOOD": 6
             }
           }
         },
@@ -185,10 +185,10 @@
               "MONSTER_HIDE": 2,
               "MYSTERIOUS_ARTIFACT": 1,
               "PRIMAL_ESSENCE": 1,
-              "STONE_PIECES": 2,
+              "STONE": 2,
               "WHEAT": 1,
               "WILD_BERRIES": 2,
-              "WOODEN_STICKS": 4
+              "WOOD": 4
             }
           }
         }

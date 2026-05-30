@@ -331,16 +331,16 @@
     const requirements = [];
     
     if (structureType === 'outpost' || structureType === 'spawn') {
-      addResourceRequirement(requirements, 'WOODEN_STICKS', baseWood);
-      addResourceRequirement(requirements, 'STONE_PIECES', baseStone);
+      addResourceRequirement(requirements, 'WOOD', baseWood);
+      addResourceRequirement(requirements, 'STONE', baseStone);
     } else if (structureType === 'stronghold' || structureType === 'fortress') {
-      addResourceRequirement(requirements, 'WOODEN_STICKS', baseWood * 1.5);
-      addResourceRequirement(requirements, 'STONE_PIECES', baseStone * 1.5);
-      addResourceRequirement(requirements, 'IRON_ORE', currentLevel * 2);
+      addResourceRequirement(requirements, 'WOOD', baseWood * 1.5);
+      addResourceRequirement(requirements, 'STONE', baseStone * 1.5);
+      addResourceRequirement(requirements, 'METAL_ORE', currentLevel * 2);
     } else {
       // Default requirements
-      addResourceRequirement(requirements, 'WOODEN_STICKS', baseWood);
-      addResourceRequirement(requirements, 'STONE_PIECES', baseStone);
+      addResourceRequirement(requirements, 'WOOD', baseWood);
+      addResourceRequirement(requirements, 'STONE', baseStone);
     }
     
     // Higher level upgrades might require special materials
