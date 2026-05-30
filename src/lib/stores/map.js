@@ -808,7 +808,7 @@ export const highlightedStore = derived(
 
 // moveTarget — move the viewport centre.
 // persist=false skips localStorage (use for transient jumps like search).
-export function moveTarget(newX, newY, updateUrl = false, persist = true) {
+export function moveTarget(newX, newY, updateUrl = true, persist = true) {
   if (newX === undefined || newY === undefined) {
     console.warn('Invalid coordinates passed to moveTarget:', { newX, newY });
     return;

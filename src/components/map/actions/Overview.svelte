@@ -1465,6 +1465,34 @@
     position: relative;
   }
 
+  /* Entities owned by the current player (structures, players, groups).
+     Groups previously only inherited a faint border and read poorly; give the
+     same clear contrast the current-player row already has. */
+  .entity.current-player-owned {
+    background-color: rgba(100, 255, 218, 0.12);
+    border-color: rgba(100, 255, 218, 0.55);
+    position: relative;
+  }
+
+  .entity.current-player-owned:hover {
+    background-color: rgba(100, 255, 218, 0.2);
+  }
+
+  .entity.current-player-owned::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: rgba(100, 255, 218, 0.85);
+  }
+
+  .entity.current-player-owned .entity-name {
+    color: #e6fff8;
+    font-weight: 600;
+  }
+
   .is-here {
     background-color: rgba(176, 141, 74, 0.12);
     border-color: rgba(176, 141, 74, 0.45);

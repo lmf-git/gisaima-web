@@ -3,6 +3,8 @@
   import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
 
+  import StructureIcon from '../../icons/StructureIcon.svelte';
+
   import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore, coordinates } from '../../../lib/stores/map';
 
@@ -371,13 +373,15 @@
                   aria-pressed={structure === selectedStructure}
                 >
                   <div class="structure-info">
-                    <div class="structure-name">{structure.name}</div>
+                    <div class="structure-name">
+                      <StructureIcon type={structure.id} size="1.3em" extraClass="structure-card-icon" />
+                      {structure.name}
+                    </div>
                     <div class="structure-description">{structure.description}</div>
-                    
+
                     <div class="structure-features">
                       {#each structure.features as feature}
                         <div class="feature">
-                          <span class="feature-icon">{feature.icon}</span>
                           <span class="feature-name">{feature.name}</span>
                         </div>
                       {/each}
@@ -485,6 +489,18 @@
     background: transparent;
     color: var(--color-parchment-100);
     font-family: var(--font-body);
+  }
+
+  /* Structure cards: show the structure's own icon beside its name. */
+  .structure-name {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  :global(.structure-card-icon) {
+    flex-shrink: 0;
+    color: var(--color-gold-pale, #d4b170);
   }
 
   .location-info {

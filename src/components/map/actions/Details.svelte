@@ -1984,10 +1984,26 @@
 
   .player-owned {
     border-color: var(--color-bright-accent, #64ffda);
-    background-color: rgba(100, 255, 218, 0.05);
+    background-color: rgba(100, 255, 218, 0.12);
     position: relative;
   }
-  
+
+  .player-owned:hover {
+    background-color: rgba(100, 255, 218, 0.18);
+  }
+
+  /* Brighten owned-entity text so player-owned groups read clearly against
+     the tinted background (matches the contrast of the current-player row). */
+  .player-owned .entity-name {
+    color: #e6fff8;
+    font-weight: 600;
+  }
+
+  .player-owned .entity-race,
+  .player-owned .entity-details {
+    color: rgba(230, 255, 248, 0.75);
+  }
+
   .player-owned::after {
     content: '';
     position: absolute;
@@ -2076,46 +2092,51 @@
     z-index: 1;
   }
   
-  /* Change battle sides from column to row layout */
+  /* Stack battle sides vertically — the dossier column is too narrow for
+     two side-by-side group lists, which crammed the content. */
   .battle-sides {
     display: flex;
-    flex-direction: row;
-    gap: 0.3em;
+    flex-direction: column;
+    gap: 0.4em;
     font-size: 0.85em;
     margin-top: 0.4em;
     width: 100%;
     align-items: stretch;
   }
-  
+
   .battle-side {
-    flex: 1;
-    padding: 0.5em;
+    padding: 0.5em 0.6em;
     border-radius: 0.3em;
     display: flex;
     flex-direction: column;
+    min-width: 0;
   }
-  
+
   .battle-side.side1 {
-    background-color: rgba(0, 0, 255, 0.07);
-    border: 1px solid rgba(0, 0, 255, 0.15);
-    color: #00008B;
+    background-color: rgba(120, 170, 255, 0.1);
+    border: 1px solid rgba(120, 170, 255, 0.28);
+    border-left: 3px solid rgba(120, 170, 255, 0.7);
+    color: #cfe0ff;
   }
-  
+
   .battle-side.side2 {
-    background-color: rgba(139, 0, 0, 0.07);
-    border: 1px solid rgba(139, 0, 0, 0.15);
-    color: #8B0000;
+    background-color: rgba(255, 130, 130, 0.1);
+    border: 1px solid rgba(255, 130, 130, 0.28);
+    border-left: 3px solid rgba(255, 130, 130, 0.7);
+    color: #ffd4d4;
   }
-  
-  /* Adjust vs divider for horizontal layout */
+
+  /* vs divider sits between the stacked sides */
   .battle-vs {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.5em;
+    padding: 0.05em 0;
     font-weight: bold;
-    font-size: 1.1em;
-    color: rgba(232, 228, 210, 0.65);
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(232, 228, 210, 0.5);
   }
 
   .battle-timer {
@@ -2131,12 +2152,88 @@
     width: 100%;
   }
   
-  /* Adjust battle groups details for side-by-side layout */
+  /* Battle group / unit breakdown — these were unstyled in the dossier, which
+     made the battle content read as a cramped wall of text. */
   .battle-groups-details {
     margin-top: 0.5em;
     font-size: 0.9em;
     max-height: 12em;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+  }
+
+  .side-name {
+    font-weight: 600;
+    margin-bottom: 0.2em;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .side-units {
+    font-size: 0.85em;
+  }
+
+  .battle-group {
+    padding: 0.4em 0.5em;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.3em;
+  }
+
+  .group-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em 0.55em;
+  }
+
+  .group-power-info {
+    margin-left: auto;
+    font-weight: 600;
+    color: #ffcf8a;
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
+  .item-power-bonus {
+    color: #9fe0a8;
+    font-weight: 400;
+    margin-left: 0.2em;
+  }
+
+  .battle-units {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+    margin-top: 0.4em;
+    padding-top: 0.4em;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .unit-type-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.15em 0.45em;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.3em;
+  }
+
+  .unit-type-name {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-weight: 500;
+  }
+
+  .unit-count-badge {
+    background: rgba(0, 0, 0, 0.28);
+    border-radius: 1em;
+    padding: 0 0.45em;
+    font-size: 0.85em;
+    font-weight: 700;
   }
   
   /* Consolidated entity-badge styles */

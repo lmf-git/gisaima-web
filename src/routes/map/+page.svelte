@@ -908,7 +908,7 @@
             // wheel menu for the clicked tile.
             if (dossierPanel !== null) {
                 dossierPanel = null;
-                moveTarget(coords.x, coords.y, false);
+                moveTarget(coords.x, coords.y, true);
                 // Defer so the dossier-close flows through modalOpen before Grid opens Peek.
                 setTimeout(() => {
                     openPeekTrigger++;
@@ -918,7 +918,7 @@
             }
 
             // Always move to the clicked location, regardless of peek state
-            moveTarget(coords.x, coords.y, false);
+            moveTarget(coords.x, coords.y, true);
 
             // Find the clicked tile
             const clickedTile = $coordinates.find(
