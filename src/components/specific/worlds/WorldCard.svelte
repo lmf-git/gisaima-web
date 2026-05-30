@@ -9,11 +9,16 @@
   import { getWorldCenterCoordinates } from '../../../lib/stores/game.js';
   
   // Combine all props into a single $props() call
-  const { 
-    worldId = '', 
-    seed = 0, 
+  const {
+    worldId = '',
+    seed = 0,
     tileSize = 9,
     summaryFactor = 75,
+    // Upper bound on grid dimensions. Defaults keep the compact worlds-card
+    // look; callers wanting a denser preview (e.g. the home hero) can raise
+    // these to render more of the world.
+    maxCols = 13,
+    maxRows = 9,
     joined = false,
     world = null,
     worldCenter = null,
@@ -114,11 +119,8 @@
     
     console.log(`WorldCard resize: container ${width}x${height}, tileSize=${tileSize}px`);
     
-    // Calculate tile counts based on available space and tile size
-    // Add maximum limits to prevent too many tiles
-    const maxCols = 13; // Maximum number of columns
-    const maxRows = 9;  // Maximum number of rows
-    
+    // Calculate tile counts based on available space and tile size.
+    // maxCols/maxRows (props) cap the count to prevent too many tiles.
     let newCols = Math.max(3, Math.floor(width / tileSize));
     let newRows = Math.max(3, Math.floor(height / tileSize));
     

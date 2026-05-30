@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
+  import { headerRevealed, HEADER_REVEAL_MS } from '$lib/stores/ui.js';
 
   import GuideSidebar from '../../components/guide/GuideSidebar.svelte';
   import GettingStarted from '../../components/guide/GettingStarted.svelte';
@@ -19,6 +21,13 @@
   import FAQ from '../../components/guide/FAQ.svelte';
 
   let activeSection = $state('getting-started');
+
+  // On first load the guide content waits for the header to finish revealing,
+  // then cascades in; once the header has revealed, content reveals with no
+  // offset. Inherited as a CSS var so each section's transition picks it up.
+  // Snapshot once at init (non-reactive) so the offset can't change and snap
+  // the in-flight stagger when the header finishes.
+  const heroBase = get(headerRevealed) ? 0 : HEADER_REVEAL_MS;
 
   function scrollToSection(sectionId) {
     activeSection = sectionId;
@@ -44,7 +53,30 @@
     }, { threshold: 0.6 });
 
     sections.forEach(section => observer.observe(section));
-    return () => sections.forEach(section => observer.unobserve(section));
+
+    // Separate reveal observer: fades + slides each section into view. The
+    // active-section observer above uses a 0.6 threshold, too high to reveal
+    // tall sections, so reveals get their own low-threshold observer.
+    const revealEls = document.querySelectorAll('.guide-content .reveal, .guide-section');
+    let revealObserver;
+    if (typeof IntersectionObserver !== 'undefined') {
+      revealObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            revealObserver.unobserve(entry.target);
+          }
+        }
+      }, { threshold: 0.12 });
+      revealEls.forEach(el => revealObserver.observe(el));
+    } else {
+      revealEls.forEach(el => el.classList.add('in-view'));
+    }
+
+    return () => {
+      sections.forEach(section => observer.unobserve(section));
+      revealObserver?.disconnect();
+    };
   });
 </script>
 
@@ -54,10 +86,10 @@
 </svelte:head>
 
 <div class="guide-container">
-  <GuideSidebar {activeSection} {scrollToSection} />
+  <GuideSidebar {activeSection} {scrollToSection} baseDelay={heroBase} />
 
-  <main class="guide-content">
-    <h1>Game Guide</h1>
+  <main class="guide-content" style="--reveal-delay: {heroBase}ms">
+    <h1 class="reveal">Game Guide</h1>
     <GettingStarted />
     <MapExploration />
     <TerrainBiomes />
@@ -77,6 +109,38 @@
 </div>
 
 <style>
+  /* ── Reveal animations ───────────────────────────────────────
+     Fade-in + slide-up driven by the IntersectionObserver in <script>, which
+     toggles `.in-view`. `--reveal-delay` is inherited from `.guide-content`
+     (the header offset on first load), so above-the-fold content waits for the
+     header to reveal while later scrolled-in sections come in immediately.
+     `.guide-section` is styled :global because it lives inside child
+     components — that also keeps Svelte from tree-shaking the rule. */
+  .reveal,
+  :global(.guide-content .guide-section) {
+    opacity: 0;
+    transform: translate3d(0, 1.5em, 0);
+    transition:
+      opacity 1.4s ease,
+      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .reveal:global(.in-view),
+  :global(.guide-content .guide-section.in-view) {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    :global(.guide-content .guide-section) {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
   .guide-container {
     position: relative;
     z-index: 2;
@@ -101,7 +165,7 @@
   .guide-content h1 {
     font-size: 2.6em;
     color: var(--color-ink-900);
-    margin: 1.5em 0 1em;
+    margin: 0 0 1em;
     text-align: left;
     font-family: var(--font-display);
     font-weight: 600;

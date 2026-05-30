@@ -1,17 +1,27 @@
 <script>
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
+    import { get } from 'svelte/store';
     import { user } from '$lib/stores/user.js';
     import { game } from '$lib/stores/game.js';
     import { apiGet } from '$lib/api.js';
+    import { headerRevealed, HEADER_REVEAL_MS } from '$lib/stores/ui.js';
     import CompassRose from '../components/ui/CompassRose.svelte';
-    import WorldPreview from '../components/ui/WorldPreview.svelte';
+    import WorldCard from '../components/specific/worlds/WorldCard.svelte';
     import Flourish from '../components/ui/Flourish.svelte';
     import Stamp from '../components/ui/Stamp.svelte';
     import Button from '../components/ui/Button.svelte';
 
     let worlds = $state([]);
     let loading = $state(true);
+    let pageEl = $state(null);
+
+    // On first load the above-the-fold hero waits for the header to reveal so
+    // the two cascade in sequence; once the header has revealed (every later
+    // navigation back to home) the hero reveals immediately with no offset.
+    // Snapshot once at init — must NOT be reactive, or the offset would drop
+    // mid-animation when the header finishes and snap the stagger.
+    const heroBase = get(headerRevealed) ? 0 : HEADER_REVEAL_MS;
 
     // Pull real worlds (their seeds drive the live previews)
     onMount(async () => {
@@ -22,6 +32,29 @@
             worlds = [];
         }
         loading = false;
+    });
+
+    // Scroll reveal: a single IntersectionObserver toggles the `.in-view`
+    // class on every `.reveal` element; the fade-in + slide-up itself lives
+    // in CSS. Works in every browser (no animation-timeline dependency).
+    onMount(() => {
+        if (typeof IntersectionObserver === 'undefined') {
+            pageEl?.querySelectorAll('.reveal').forEach((el) => el.classList.add('in-view'));
+            return;
+        }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
+                    }
+                }
+            },
+            { threshold: 0.15 }
+        );
+        pageEl?.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
     });
 
     function seedOf(w, fallback = 1) {
@@ -36,6 +69,10 @@
     function centerOf(w) {
         const c = w?.info?.center || w?.center || { x: 0, y: 0 };
         return { x: c.x ?? 0, y: c.y ?? 0 };
+    }
+
+    function idOf(w) {
+        return w?.id || w?._id || w?.info?.id || null;
     }
 
     const featured = $derived(worlds[0]);
@@ -60,7 +97,7 @@
     <meta name="description" content="Hardcore no P2W strategic MMO. Discover rare terrain, build structures, command unit groups, and forge alliances in an ever-expanding universe." />
 </svelte:head>
 
-<div class="page parchment-dark">
+<div class="page parchment-dark" bind:this={pageEl}>
     <div class="bg-rose">
         <CompassRose size={900} color="var(--color-gold-pale)" opacity={0.06} />
     </div>
@@ -68,17 +105,17 @@
 
     <section class="hero">
         <div class="hero-text">
-            <div class="eyebrow gold reveal" style="--reveal-delay: 0ms">Realm{worlds.length === 1 ? '' : 's'} of {worlds.length || 'reckoning'} · Open Beta</div>
-            <h1 class="reveal" style="--reveal-delay: 100ms">
+            <div class="eyebrow gold reveal" style="--reveal-delay: {heroBase + 0}ms">Realm{worlds.length === 1 ? '' : 's'} of {worlds.length || 'reckoning'} · Open Beta</div>
+            <h1 class="reveal" style="--reveal-delay: {heroBase + 150}ms">
                 <span class="line-1">An infinite world.</span>
                 <span class="line-2">Time moves anyway.</span>
             </h1>
-            <p class="lede reveal" style="--reveal-delay: 220ms">
+            <p class="lede reveal" style="--reveal-delay: {heroBase + 300}ms">
                 A tick-based real-time MMO. Worlds run continuously — every minute is an in-realm hour.
                 Hold ground, raise walls, recruit hosts, settle a coin upon a head. Free forever, MIT-licensed,
                 cosmetics-only — no pay-to-win.
             </p>
-            <div class="cta reveal" style="--reveal-delay: 340ms">
+            <div class="cta reveal" style="--reveal-delay: {heroBase + 450}ms">
                 {#if $user && $game?.worldKey && $game?.player?.alive}
                     <Button variant="primary" href="/map">
                         <Stamp kind="compass" size={14} />
@@ -101,7 +138,7 @@
                 </a>
             </div>
 
-            <div class="stat-row reveal" style="--reveal-delay: 460ms">
+            <div class="stat-row reveal" style="--reveal-delay: {heroBase + 600}ms">
                 {#each stats as s}
                     <div class="stat">
                         <div class="n">{s.n}</div>
@@ -111,19 +148,22 @@
             </div>
         </div>
 
-        <div class="astrolabe reveal reveal-fade" style="--reveal-delay: 200ms">
+        <div class="astrolabe reveal reveal-fade" style="--reveal-delay: {heroBase + 300}ms">
             <CompassRose size={540} color="var(--color-aged-gold)" opacity={0.5} />
             <!-- The world dial only appears once real world data has loaded, then
                  fades in — no blank blue placeholder while the realm is fetched. -->
             {#if featured}
                 <div class="dial" transition:fade={{ duration: 400 }}>
                     <div class="dial-inner">
-                        <WorldPreview
+                        <WorldCard
+                            worldId={idOf(featured)}
                             seed={seedOf(featured, 87)}
-                            center={centerOf(featured)}
-                            cols={44}
-                            rows={44}
-                            tile={10}
+                            world={featured}
+                            worldCenter={centerOf(featured)}
+                            joined={!!$user}
+                            tileSize={6}
+                            maxCols={27}
+                            maxRows={27}
                         />
                     </div>
                 </div>
@@ -136,14 +176,14 @@
     </section>
 
     <section class="pillars">
-        <header class="pillars-head reveal reveal-scroll">
+        <header class="pillars-head reveal">
             <div class="eyebrow gold">Four laws</div>
             <h2>The Promises of the Realm</h2>
             <div class="flourish-wrap"><Flourish /></div>
         </header>
         <div class="pillar-grid">
             {#each pillars as p, i}
-                <div class="pillar reveal reveal-scroll" style="--reveal-delay: {200 + i * 120}ms">
+                <div class="pillar reveal" style="--reveal-delay: {i * 100}ms">
                     <div class="icon"><Stamp kind={p.kind} size={28} /></div>
                     <h3>{p.t.toUpperCase()}</h3>
                     <p>{p.b}</p>
@@ -153,73 +193,56 @@
     </section>
 
     <section class="tri">
-        <div class="reveal reveal-scroll">
+        <div class="reveal">
             <div class="eyebrow gold">What comes next</div>
             <h3>Roadmap</h3>
             <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
         </div>
     </section>
 
-    <footer class="page-foot">
+    <footer class="page-foot reveal">
         <span>© Gisaima · MIT · drawn by hand and code</span>
         <span class="links">
             <a href="https://github.com/lmf-git/gisaima" target="_blank" rel="noopener noreferrer">github</a>
             ·
             <a href="https://discord.gg/ugmRXWNXbA" target="_blank" rel="noopener noreferrer">discord</a>
             ·
-            <a href="/guide">chronicle</a>
+            <a href="/guide">guide</a>
         </span>
     </footer>
 </div>
 
 <style>
     /* ── Reveal animations ───────────────────────────────────────
-       Pure CSS. Hero content (.reveal) animates up on page load with a
-       staggered --reveal-delay. Below-the-fold blocks (.reveal-scroll)
-       are driven by the scroll position via animation-timeline: view()
-       where supported, and simply shown otherwise. */
+       CSS fade-in + slide-up. Each `.reveal` starts hidden; an
+       IntersectionObserver (see <script>) adds `.in-view` as the element
+       scrolls into the viewport, and the CSS transition does the work.
+       The per-element --reveal-delay staggers neighbours. */
     .reveal {
         opacity: 0;
         transform: translate3d(0, 1.5em, 0);
-        animation: reveal-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-        animation-delay: var(--reveal-delay, 0ms);
+        transition:
+            opacity 1.6s ease,
+            transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
     }
-    .reveal-fade {
+    .reveal.reveal-fade {
         transform: none;
-        animation-name: reveal-fade;
     }
-    @keyframes reveal-in {
-        from { opacity: 0; transform: translate3d(0, 1.5em, 0); }
-        to   { opacity: 1; transform: translate3d(0, 0, 0); }
-    }
-    @keyframes reveal-fade {
-        from { opacity: 0; }
-        to   { opacity: 1; }
-    }
-
-    /* Scroll-driven reveals: progressive enhancement. Without scroll
-       timeline support the content is simply visible (no hidden state). */
-    .reveal-scroll {
+    /* `in-view` is toggled by the IntersectionObserver in <script>. It must be
+       :global — Svelte tree-shakes selectors whose classes never appear in the
+       markup, which would otherwise strip this "visible" rule entirely. */
+    .reveal:global(.in-view) {
         opacity: 1;
-        transform: none;
-        animation: none;
-    }
-    @supports (animation-timeline: view()) {
-        .reveal-scroll {
-            opacity: 0;
-            transform: translate3d(0, 2em, 0);
-            animation: reveal-in 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-            animation-timeline: view();
-            animation-range: entry 0% cover 30%;
-        }
+        transform: translate3d(0, 0, 0);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .reveal,
-        .reveal-scroll {
+        .reveal {
             opacity: 1;
             transform: none;
-            animation: none;
+            transition: none;
         }
     }
 

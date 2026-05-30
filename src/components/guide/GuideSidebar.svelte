@@ -1,28 +1,40 @@
 <script>
-  let { activeSection, scrollToSection } = $props();
+  let { activeSection, scrollToSection, baseDelay = 0 } = $props();
+
+  // Table-of-contents entries. Order here is the on-screen order and drives the
+  // staggered reveal (each entry fades in slightly after the previous one).
+  const entries = [
+    { id: 'getting-started',       label: 'Getting Started' },
+    { id: 'map-exploration',       label: 'Map & Exploration' },
+    { id: 'terrain-biomes',        label: 'Terrain & Biomes' },
+    { id: 'units-groups',          label: 'Units & Groups' },
+    { id: 'structures',            label: 'Structures & Building' },
+    { id: 'activities',            label: 'Activities' },
+    { id: 'battles',               label: 'Battles & Combat' },
+    { id: 'trade-economy',         label: 'Trade & Economy' },
+    { id: 'character-development', label: 'Character Development' },
+    { id: 'community-politics',    label: 'Community & Politics' },
+    { id: 'races',                 label: 'Races' },
+    { id: 'items-inventory',       label: 'Items & Inventory' },
+    { id: 'morality-system',       label: 'Morality System' },
+    { id: 'reports-rankings',      label: 'Reports & Rankings' },
+    { id: 'game-mechanics',        label: 'Game Mechanics' },
+    { id: 'strategy-tips',         label: 'Strategy Tips' },
+    { id: 'faq',                   label: 'FAQ' }
+  ];
 </script>
 
 <aside class="sidebar">
   <nav class="toc">
-    <h2>Contents</h2>
+    <h2 class="toc-item" style="animation-delay: {baseDelay}ms">Contents</h2>
     <ul>
-      <li><button class:active={activeSection === 'getting-started'} onclick={() => scrollToSection('getting-started')}>Getting Started</button></li>
-      <li><button class:active={activeSection === 'map-exploration'} onclick={() => scrollToSection('map-exploration')}>Map & Exploration</button></li>
-      <li><button class:active={activeSection === 'terrain-biomes'} onclick={() => scrollToSection('terrain-biomes')}>Terrain & Biomes</button></li>
-      <li><button class:active={activeSection === 'units-groups'} onclick={() => scrollToSection('units-groups')}>Units & Groups</button></li>
-      <li><button class:active={activeSection === 'structures'} onclick={() => scrollToSection('structures')}>Structures & Building</button></li>
-      <li><button class:active={activeSection === 'activities'} onclick={() => scrollToSection('activities')}>Activities</button></li>
-      <li><button class:active={activeSection === 'battles'} onclick={() => scrollToSection('battles')}>Battles & Combat</button></li>
-      <li><button class:active={activeSection === 'trade-economy'} onclick={() => scrollToSection('trade-economy')}>Trade & Economy</button></li>
-      <li><button class:active={activeSection === 'character-development'} onclick={() => scrollToSection('character-development')}>Character Development</button></li>
-      <li><button class:active={activeSection === 'community-politics'} onclick={() => scrollToSection('community-politics')}>Community & Politics</button></li>
-      <li><button class:active={activeSection === 'races'} onclick={() => scrollToSection('races')}>Races</button></li>
-      <li><button class:active={activeSection === 'items-inventory'} onclick={() => scrollToSection('items-inventory')}>Items & Inventory</button></li>
-      <li><button class:active={activeSection === 'morality-system'} onclick={() => scrollToSection('morality-system')}>Morality System</button></li>
-      <li><button class:active={activeSection === 'reports-rankings'} onclick={() => scrollToSection('reports-rankings')}>Reports & Rankings</button></li>
-      <li><button class:active={activeSection === 'game-mechanics'} onclick={() => scrollToSection('game-mechanics')}>Game Mechanics</button></li>
-      <li><button class:active={activeSection === 'strategy-tips'} onclick={() => scrollToSection('strategy-tips')}>Strategy Tips</button></li>
-      <li><button class:active={activeSection === 'faq'} onclick={() => scrollToSection('faq')}>FAQ</button></li>
+      {#each entries as entry, i}
+        <li class="toc-item" style="animation-delay: {baseDelay + 80 + i * 45}ms">
+          <button class:active={activeSection === entry.id} onclick={() => scrollToSection(entry.id)}>
+            {entry.label}
+          </button>
+        </li>
+      {/each}
     </ul>
   </nav>
 </aside>
@@ -55,6 +67,19 @@
     scrollbar-width: none;
   }
   .toc::-webkit-scrollbar { display: none; }
+
+  /* Each contents entry fades + slides in, staggered via its inline
+     animation-delay (set from the entry index plus the header offset). */
+  .toc-item {
+    animation: toc-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes toc-in {
+    from { opacity: 0; transform: translateX(-0.6em); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toc-item { animation: none; }
+  }
 
   .toc h2 {
     color: var(--color-wax-red);

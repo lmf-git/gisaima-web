@@ -1,7 +1,9 @@
 <script>
+    import { onMount } from 'svelte';
     import { page } from '$app/stores';
     import { user, signOut, loading as userLoading } from '$lib/stores/user';
-    import { browser } from '$app/environment'; 
+    import { browser } from '$app/environment';
+    import { headerRevealed, HEADER_REVEAL_MS } from '$lib/stores/ui.js';
     import Logo from '../components/Logo.svelte';
     import SignOut from '../components/icons/SignOut.svelte';
     import XIcon from '../components/icons/XIcon.svelte';
@@ -88,6 +90,14 @@
 
     // Derived state for UI loading conditions
     const headerLoading = $derived($userLoading || !$isAuthReady);
+
+    // The header runs its staggered reveal once on first mount of the layout
+    // (the layout persists across client-side navigation). Mark it done so
+    // pages can skip the header offset on every subsequent navigation.
+    onMount(() => {
+        const t = setTimeout(() => headerRevealed.set(true), HEADER_REVEAL_MS);
+        return () => clearTimeout(t);
+    });
 
     // Show guest warning for anonymous users who haven't seen it yet
     $effect(() => {
@@ -1080,15 +1090,39 @@
         width: 100%;
     }
 
+    /* Each header element fades in + slides down on load, staggered left → right
+       so the logo, nav and auth controls cascade rather than appearing at once.
+       Slow + a leading delay so labels aren't revealed before font-display: swap
+       has had a chance to resolve the display/body fonts. */
+    .header > * {
+        animation: header-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .header > *:nth-child(1) { animation-delay: 150ms; }
+    .header > *:nth-child(2) { animation-delay: 250ms; }
+    .header > *:nth-child(3) { animation-delay: 350ms; }
+    .header > *:nth-child(4) { animation-delay: 450ms; }
+    .header > *:nth-child(5) { animation-delay: 550ms; }
+    /* Last element starts at 550ms + 900ms duration ≈ 1450ms total — kept in
+       sync with HEADER_REVEAL_MS so page content reveals only after the header
+       has finished (not mid-cascade). */
+
+    @keyframes header-reveal {
+        from { opacity: 0; transform: translateY(-1.2em); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .header > * { animation: none; }
+    }
+
     .map .header {
         width: auto;
     }
 
-    /* Logo styling */
+    /* Logo styling — reveal is handled by the staggered `.header > *` rule. */
     .logo {
         display: flex;
         align-items: center;
-        animation: fadeIn 0.15s ease-in-out;
     }
 
     .logo a {
