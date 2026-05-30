@@ -15,10 +15,8 @@
     const onMap = $derived($page.url?.pathname === '/map');
 
     const houseName = $derived.by(() => {
-        // Prefer the house name chosen for this world; fall back to the account name.
-        const chosen = $game?.player?.houseName?.trim();
-        const n = chosen || $user?.displayName || $user?.email?.split('@')[0] || 'guest';
-        return `HOUSE ${n.toString().toUpperCase()}`;
+        const n = $game?.player?.houseName?.trim();
+        return n ? `HOUSE ${n.toUpperCase()}` : '';
     });
     const initial = $derived(($user?.displayName || $user?.email || 'G')[0].toUpperCase());
 
