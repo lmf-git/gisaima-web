@@ -3,21 +3,21 @@
   import { apiGet } from '$lib/api.js';
 
   // `selection` is the picker's output, bound by the parent:
-  //   { mode: 'join',  houseId }   — join an existing house
-  //   { mode: 'found', houseName } — found a new house
+  //   { mode: 'none' }              — no house
+  //   { mode: 'join',  houseId }    — request to join an existing house (needs approval)
+  //   { mode: 'found', houseName }  — found a new house (immediate)
   // It is null while the current choice is incomplete/invalid.
   let {
     worldId,
     selection = $bindable(null),
-    currentHouseId = null,
     disabled = false,
   } = $props();
 
   let houses = $state([]);
   let loading = $state(true);
-  let mode = $state('join');        // 'join' | 'found'
+  let mode = $state('none');        // 'none' | 'join' | 'found'
   let search = $state('');
-  let selectedHouseId = $state(currentHouseId || null);
+  let selectedHouseId = $state(null);
   let newName = $state('');
 
   onMount(async () => {
@@ -27,8 +27,6 @@
       houses = [];
     }
     loading = false;
-    // No houses to join yet — only founding makes sense.
-    if (houses.length === 0) mode = 'found';
   });
 
   const filtered = $derived(
@@ -46,7 +44,9 @@
 
   // Reflect the current choice into the bound `selection`.
   $effect(() => {
-    if (mode === 'found') {
+    if (mode === 'none') {
+      selection = { mode: 'none' };
+    } else if (mode === 'found') {
       const n = newName.trim();
       selection = (n.length >= 2 && n.length <= 24) ? { mode: 'found', houseName: n } : null;
     } else {
@@ -62,6 +62,17 @@
 
 <div class="house-picker">
   <div class="mode-toggle" role="tablist">
+    <button
+      type="button"
+      class="mode-tab"
+      class:active={mode === 'none'}
+      onclick={() => setMode('none')}
+      {disabled}
+      role="tab"
+      aria-selected={mode === 'none'}
+    >
+      No house
+    </button>
     <button
       type="button"
       class="mode-tab"
@@ -86,12 +97,17 @@
     </button>
   </div>
 
-  {#if mode === 'join'}
+  {#if mode === 'none'}
+    <p class="picker-note">
+      Walk alone for now. You can found a house or ask to join one at any time.
+    </p>
+  {:else if mode === 'join'}
     {#if loading}
       <p class="picker-note">Reading the rolls…</p>
     {:else if houses.length === 0}
       <p class="picker-note">No houses exist yet — found the first.</p>
     {:else}
+      <p class="picker-note">Joining a house needs the founder's approval — your request is sent for review.</p>
       {#if houses.length > 6}
         <input
           type="text"
@@ -108,15 +124,15 @@
               type="button"
               class="house-row"
               class:selected={selectedHouseId === house._id}
-              class:current={currentHouseId === house._id}
-              onclick={() => (selectedHouseId = house._id)}
-              {disabled}
+              class:current={house.isMember}
+              onclick={() => !house.isMember && !house.requested && (selectedHouseId = house._id)}
+              disabled={disabled || house.isMember || house.requested}
               aria-pressed={selectedHouseId === house._id}
             >
               <span class="house-row-name">{house.name}</span>
               <span class="house-row-meta">
                 {house.memberCount} {house.memberCount === 1 ? 'member' : 'members'}
-                {#if currentHouseId === house._id}<em> · current</em>{/if}
+                {#if house.isMember}<em> · current</em>{:else if house.requested}<em> · requested</em>{/if}
               </span>
             </button>
           </li>

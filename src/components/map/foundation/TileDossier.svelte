@@ -3,7 +3,7 @@
   import { apiPost } from '../../../lib/api.js';
 
   import { targetStore, ready, entities, currentPlayerPosition } from '../../../lib/stores/map.js';
-  import { game, currentPlayer, savePlayerAchievement } from '../../../lib/stores/game.js';
+  import { game, currentPlayer } from '../../../lib/stores/game.js';
   import { user } from '../../../lib/stores/user.js';
   import { getGatherableItems } from 'gisaima-shared/definitions/ITEMS.js';
 
@@ -233,10 +233,10 @@
         <div class="ds-panel"><Build x={tile.x} y={tile.y} tile={tile} onBuild={handleBuild} onClose={onClose} /></div>
 
       {:else if panel === 'recruitment'}
-        <div class="ds-panel"><Recruitment structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} onRecruitStart={savePlayerAchievement} /></div>
+        <div class="ds-panel"><Recruitment structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} /></div>
 
       {:else if panel === 'craft'}
-        <div class="ds-panel"><Crafting structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} onCraftStart={savePlayerAchievement} /></div>
+        <div class="ds-panel"><Crafting structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} /></div>
 
       {:else if panel === 'achievements'}
         <div class="ds-panel"><Achievements onClose={onClose} /></div>
@@ -245,7 +245,7 @@
         <div class="ds-panel"><Tutorial onClose={onClose} onOpenAchievements={() => onSwitchPanel('achievements')} /></div>
 
       {:else if panel === 'inspect' && tile}
-        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onAchievement={savePlayerAchievement} onShowModal={() => {}} /></div>
+        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} /></div>
 
       {:else if panel === 'details' && !selectedUnit}
         <div class="ds-panel"><Details

@@ -37,7 +37,6 @@
     x = 0,
     y = 0,
     onClose = () => {},
-    onCraftStart = () => {},
   } = $props();
 
   // Use $state() for reactive variables
@@ -227,13 +226,7 @@
         // Use ticksRequired from the response for the success message
         const ticksRequired = result.ticksRequired || selectedRecipe.ticksRequired;
         successMessage = `Successfully started crafting ${selectedRecipe.name}! Will complete in ${formatCraftingTicks(ticksRequired)}.`;
-        
-        // Trigger any achievement tracking
-        onCraftStart(
-          $game.worldKey,
-          'first_craft',
-          true
-        );
+        // The "Artisan" achievement is granted server-side in startCrafting.js.
       } else {
         error = result?.error || 'Unknown crafting error';
       }

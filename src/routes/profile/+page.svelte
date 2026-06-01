@@ -15,11 +15,15 @@
     const worldId = $derived($game.worldKey);
     const initial = $derived(($user?.displayName || $user?.email || 'G').slice(0, 1).toUpperCase());
 
-    // House switching ("leave/abandon" = move to another house; never house-less)
+    // House membership is optional. From here a player can found a house, request
+    // to join one (pending the founder's approval), or leave to have no house.
     let showHouseModal = $state(false);
     let houseSelection = $state(null);
     let switching = $state(false);
     let houseError = $state('');
+    let actioning = $state(false); // approve/reject/cancel in flight
+
+    const houseBase = $derived(`/worlds/${encodeURIComponent(worldId)}/houses`);
 
     function openHouseModal() {
         houseSelection = null;
@@ -27,22 +31,67 @@
         showHouseModal = true;
     }
 
+    async function refreshPlayer() {
+        if ($user?.uid && worldId) await listenToPlayerWorldData($user.uid, worldId);
+    }
+
     async function confirmHouseSwitch() {
         if (!houseSelection || !worldId) return;
         switching = true;
         houseError = '';
         try {
-            if (houseSelection.mode === 'join') {
-                await apiPost(`/worlds/${encodeURIComponent(worldId)}/houses/join`, { houseId: houseSelection.houseId });
+            if (houseSelection.mode === 'none') {
+                await apiPost(`${houseBase}/leave`, {});
+            } else if (houseSelection.mode === 'join') {
+                await apiPost(`${houseBase}/join`, { houseId: houseSelection.houseId });
             } else {
-                await apiPost(`/worlds/${encodeURIComponent(worldId)}/houses`, { name: houseSelection.houseName });
+                await apiPost(houseBase, { name: houseSelection.houseName });
             }
-            await listenToPlayerWorldData($user.uid, worldId);
+            await refreshPlayer();
             showHouseModal = false;
         } catch (e) {
             houseError = e?.message || 'Could not change house';
         } finally {
             switching = false;
+        }
+    }
+
+    async function approveRequest(uid) {
+        if (actioning || !player?.houseId) return;
+        actioning = true;
+        try {
+            await apiPost(`${houseBase}/${player.houseId}/approve`, { uid });
+            await refreshPlayer();
+        } catch (e) {
+            houseError = e?.message || 'Could not approve request';
+        } finally {
+            actioning = false;
+        }
+    }
+
+    async function rejectRequest(uid) {
+        if (actioning || !player?.houseId) return;
+        actioning = true;
+        try {
+            await apiPost(`${houseBase}/${player.houseId}/reject`, { uid });
+            await refreshPlayer();
+        } catch (e) {
+            houseError = e?.message || 'Could not reject request';
+        } finally {
+            actioning = false;
+        }
+    }
+
+    async function cancelOwnRequest() {
+        if (actioning || !player?.pendingHouseRequest) return;
+        actioning = true;
+        try {
+            await apiPost(`${houseBase}/cancel`, { houseId: player.pendingHouseRequest.houseId });
+            await refreshPlayer();
+        } catch (e) {
+            houseError = e?.message || 'Could not cancel request';
+        } finally {
+            actioning = false;
         }
     }
 </script>
@@ -91,11 +140,47 @@
             <div class="eyebrow">House</div>
             <div class="house-row">
                 <div>
-                    <div class="house-name">{player?.houseName || '—'}</div>
-                    <div class="lede italic">Every wanderer answers to a house. You may swear to another, but never to none.</div>
+                    <div class="house-name">{player?.houseName || 'No house'}</div>
+                    {#if player?.isHouseFounder}
+                        <div class="lede italic">You founded this house. Wanderers may petition to join — their fate is yours to seal.</div>
+                    {:else if player?.houseName}
+                        <div class="lede italic">You are sworn to this house.</div>
+                    {:else if player?.pendingHouseRequest}
+                        <div class="lede italic">Your petition to <strong>{player.pendingHouseRequest.houseName}</strong> awaits the founder's seal.</div>
+                    {:else}
+                        <div class="lede italic">You walk alone. Found a house, or petition to join one.</div>
+                    {/if}
                 </div>
-                <Button variant="ghost" onclick={openHouseModal} disabled={!worldId}>Change house</Button>
+                <Button variant="ghost" onclick={openHouseModal} disabled={!worldId}>
+                    {player?.houseName ? 'Change house' : 'Find a house'}
+                </Button>
             </div>
+
+            {#if player?.pendingHouseRequest}
+                <div class="request-pending">
+                    <span class="italic">Petition sent to <strong>{player.pendingHouseRequest.houseName}</strong> — awaiting approval.</span>
+                    <Button variant="ghost" onclick={cancelOwnRequest} disabled={actioning}>Withdraw</Button>
+                </div>
+            {/if}
+
+            {#if player?.isHouseFounder && (player?.houseRequests?.length ?? 0) > 0}
+                <div class="requests">
+                    <div class="eyebrow">Petitions to join</div>
+                    <ul class="request-list">
+                        {#each player.houseRequests as r (r.uid)}
+                            <li class="request-item">
+                                <span class="request-name">{r.displayName || 'A wanderer'}</span>
+                                <span class="request-actions">
+                                    <Button variant="primary" onclick={() => approveRequest(r.uid)} disabled={actioning}>Approve</Button>
+                                    <Button variant="ghost" onclick={() => rejectRequest(r.uid)} disabled={actioning}>Reject</Button>
+                                </span>
+                            </li>
+                        {/each}
+                    </ul>
+                </div>
+            {/if}
+
+            {#if houseError && !showHouseModal}<div class="modal-error">{houseError}</div>{/if}
         </section>
 
         <section class="block split">
@@ -143,8 +228,8 @@
     ></div>
     <div class="house-modal" role="dialog" aria-modal="true">
         <h2 class="modal-title">Change house</h2>
-        <p class="lede italic modal-lede">Swear to an existing house or found your own. You will leave your current house in doing so.</p>
-        <HousePicker worldId={worldId} bind:selection={houseSelection} currentHouseId={player?.houseId ?? null} disabled={switching} />
+        <p class="lede italic modal-lede">Found your own house, petition to join another (the founder must approve), or walk alone. Any change leaves your current house.</p>
+        <HousePicker worldId={worldId} bind:selection={houseSelection} disabled={switching} />
         {#if houseError}<div class="modal-error">{houseError}</div>{/if}
         <div class="modal-actions">
             <Button variant="ghost" onclick={() => (showHouseModal = false)} disabled={switching}>Cancel</Button>
@@ -246,6 +331,36 @@
         letter-spacing: 0.04em;
         margin-bottom: 0.2em;
     }
+    .request-pending {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1em;
+        flex-wrap: wrap;
+        padding: 0.9em 0;
+        border-bottom: 1px solid var(--color-ink-900);
+        font-family: var(--font-editorial);
+        color: var(--color-ink-700);
+    }
+    .requests { margin-top: 1.2em; }
+    .request-list { list-style: none; padding: 0; margin: 0.6em 0 0; display: grid; gap: 0.5em; }
+    .request-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1em;
+        flex-wrap: wrap;
+        padding: 0.7em 0.9em;
+        background: var(--color-parchment-200);
+        border: 1px solid var(--color-parchment-shadow);
+    }
+    .request-name {
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        letter-spacing: 0.02em;
+        color: var(--color-ink-900);
+    }
+    .request-actions { display: flex; gap: 0.5em; }
     .house-backdrop {
         position: fixed;
         inset: 0;

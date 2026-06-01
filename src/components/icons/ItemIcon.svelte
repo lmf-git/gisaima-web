@@ -132,4 +132,4 @@
   const Icon = $derived(ICONS[code] ?? ICONS['WOOD']);
 </script>
 
-<svelte:component this={Icon} {size} {extraClass} />
+<Icon {size} {extraClass} />

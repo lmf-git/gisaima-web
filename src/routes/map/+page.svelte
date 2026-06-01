@@ -15,7 +15,6 @@
       getWorldInfo,
       setCurrentWorld,
       clearCurrentWorld,
-      savePlayerAchievement,
       subscribeToWorldInfo
     } from "../../lib/stores/game.js";
     

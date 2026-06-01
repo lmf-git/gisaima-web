@@ -3,7 +3,7 @@
 
   import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 
-  import { currentPlayer, game, savePlayerAchievement } from '../../../lib/stores/game.js';
+  import { currentPlayer } from '../../../lib/stores/game.js';
 
   import Trophy from '../../icons/Trophy.svelte';
 
@@ -50,11 +50,6 @@
   const totalCount = $derived(
     Object.values(achievementDefinitions).filter(a => !a.hidden).length
   );
-
-  export function unlockAchievement(id) {
-    if (!$currentPlayer || !$game.worldKey || playerAchievements[id] === true) return false;
-    savePlayerAchievement($game.worldKey, id, true).catch(e => console.error('Failed to save achievement:', e));
-  }
 
   function selectCategory(categoryId) { selectedCategory = categoryId; }
 

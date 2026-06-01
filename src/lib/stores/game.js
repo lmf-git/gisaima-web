@@ -261,31 +261,11 @@ export function getWorldCenterCoordinates(worldId) {
 // ---------------------------------------------------------------------------
 // Achievements
 // ---------------------------------------------------------------------------
-
-export async function savePlayerAchievement(worldId, achievementId, value = true) {
-  if (!browser || !worldId || !achievementId) throw new Error('Missing parameters');
-  const $user = get(user);
-  if (!$user?.uid) throw new Error('Not authenticated');
-
-  const $game = get(game);
-  const alreadyUnlocked = $game.player?.achievements?.[achievementId] === true;
-
-  await apiPost('/actions/saveAchievement', { worldId, achievementId, value }).catch(() => {});
-
-  if (value === true && !alreadyUnlocked) {
-    const info = ACHIEVEMENTS[achievementId] || { title: achievementId, description: 'Achievement unlocked!' };
-    recentUnlock.set({ id: achievementId, ...info, date: Date.now() });
-    setTimeout(() => {
-      recentUnlock.update(c => c?.id === achievementId ? null : c);
-    }, 8000);
-  }
-  return true;
-}
-
-export function hasAchievement(worldId, achievementId) {
-  if (!browser || !worldId || !achievementId) return false;
-  return get(game).player?.achievements?.[achievementId] === true;
-}
+//
+// Achievements are granted server-side only (see api/lib/achievements.js) as a
+// verified side-effect of the real action. The client never writes them — it
+// just reflects unlocks pushed over the `achievement_unlocked` WebSocket event
+// (handled in the wsUser subscription above) and shows the popup.
 
 // ---------------------------------------------------------------------------
 // Init
