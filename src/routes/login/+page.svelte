@@ -1,5 +1,5 @@
 <script>
-    import { signIn, signInAnonymously } from '$lib/stores/user';
+    import { signIn, signInAnonymously, sendSignInLink } from '$lib/stores/user';
     import { goto } from '$app/navigation';
     import { user, loading as userLoading } from '$lib/stores/user';
     import { browser } from '$app/environment';
@@ -9,6 +9,7 @@
     let password = $state('');
     let error = $state(null);
     let loading = $state(false);
+    let linkSent = $state(false);
     // Add effect to redirect authenticated users
     $effect(() => {
         if (browser && !$userLoading && $user) {
@@ -32,6 +33,19 @@
         }
     };
     
+    const handleMagicLink = async () => {
+        error = null;
+        if (!email) { error = 'Enter your email to receive a sign-in link.'; return; }
+        loading = true;
+        const result = await sendSignInLink(email);
+        loading = false;
+        if (result.success) {
+            linkSent = true;
+        } else {
+            error = result.error;
+        }
+    };
+
     const handleAnonymousLogin = async () => {
         error = null;
         loading = true;
@@ -56,7 +70,11 @@
         {#if error}
             <div class="error">{error}</div>
         {/if}
-        
+
+        {#if linkSent}
+            <div class="info">A sign-in link is on its way to {email}. Check your inbox to finish logging in.</div>
+        {/if}
+
         <form onsubmit={handleSubmit}>
             <div class="form-group">
                 <label for="email">Email</label>
@@ -82,7 +100,11 @@
                 {loading ? 'Logging in...' : 'Login'}
             </button>
         </form>
-        
+
+        <button type="button" class="secondary" onclick={handleMagicLink} disabled={loading}>
+            {loading ? 'Sending...' : 'Email me a sign-in link'}
+        </button>
+
         <div class="separator">
             <span>or</span>
         </div>
@@ -200,6 +222,16 @@
         padding: 0.75em;
         margin-bottom: 1.4em;
         border-left: 3px solid var(--color-wax-red);
+        font-family: var(--font-editorial);
+        font-style: italic;
+    }
+
+    .info {
+        background-color: rgba(42, 122, 92, 0.12);
+        color: var(--color-ink-700);
+        padding: 0.75em;
+        margin-bottom: 1.4em;
+        border-left: 3px solid var(--color-muted-teal, #2a7a5c);
         font-family: var(--font-editorial);
         font-style: italic;
     }

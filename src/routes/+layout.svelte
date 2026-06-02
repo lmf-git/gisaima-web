@@ -1,7 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
-    import { user, signOut, loading as userLoading } from '$lib/stores/user';
+    import { user, signOut, loading as userLoading, guestConversionDue } from '$lib/stores/user';
     import { browser } from '$app/environment';
     import { headerRevealed, HEADER_REVEAL_MS } from '$lib/stores/ui.js';
     import Logo from '../components/Logo.svelte';
@@ -99,29 +99,29 @@
         return () => clearTimeout(t);
     });
 
-    // Show guest warning for anonymous users who haven't seen it yet
+    // Nudge guests to convert once per day they return. The "should I prompt
+    // today?" decision is made server-side (`guestConversionDue`, backed by
+    // `lastConversionPrompt` on the user doc) so it survives localStorage loss
+    // and can't be gamed by clearing the browser.
     $effect(() => {
         if (!browser) return;
-        const seen = localStorage.getItem('guest-warning-shown') === 'true';
-         if (
-            $user && 
-            $user?.isAnonymous && !seen && 
+        if (
+            $user?.isGuest && $guestConversionDue && !hasShownGuestWarning &&
             !isMapPage && !isLoginPage && !isSignupPage
         ) {
             // Wait a bit before showing the warning to avoid overwhelming new users
             setTimeout(() => showGuestWarning = true, 3000);
         }
     });
-    
+
     function closeGuestWarning() {
         guestWarningAnimatingOut = true;
-        
-        // Mark as shown in localStorage
-        if (browser) {
-            localStorage.setItem('guest-warning-shown', 'true');
-            hasShownGuestWarning = true;
-        }
-        
+
+        // Server already stamped today's prompt; clear the in-session flag so it
+        // doesn't reopen until the next day's /auth/me marks it due again.
+        hasShownGuestWarning = true;
+        guestConversionDue.set(false);
+
         setTimeout(() => {
             showGuestWarning = false;
             guestWarningAnimatingOut = false;
@@ -276,7 +276,7 @@
     {/if}
 
     <!-- Add the Guest Warning component -->
-    {#if (showGuestWarning || guestWarningAnimatingOut) && $user?.isAnonymous}
+    {#if (showGuestWarning || guestWarningAnimatingOut) && $user?.isGuest}
         <GuestWarning 
             onClose={closeGuestWarning}
             animatingOut={guestWarningAnimatingOut}
