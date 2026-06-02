@@ -26,7 +26,6 @@
   import MediumBoat from './units/paths/MediumBoat.svelte';
   import LargeBoat from './units/paths/LargeBoat.svelte';
   import CombatBoat from './units/paths/CombatBoat.svelte';
-  import Steamboat from './units/paths/Steamboat.svelte';
   import ExplorerBoat from './units/paths/ExplorerBoat.svelte';
   import ElvenSwanBoat from './units/paths/ElvenSwanBoat.svelte';
   import DwarfIronclad from './units/paths/DwarfIronclad.svelte';
@@ -88,7 +87,6 @@
     medium_boat:       MediumBoat,
     large_boat:        LargeBoat,
     combat_boat:       CombatBoat,
-    steamboat:         Steamboat,
     explorer_boat:     ExplorerBoat,
     elven_swan_boat:   ElvenSwanBoat,
     dwarf_ironclad:    DwarfIronclad,

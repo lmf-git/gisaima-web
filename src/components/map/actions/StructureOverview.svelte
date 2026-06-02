@@ -345,7 +345,7 @@
     
     // Higher level upgrades might require special materials
     if (currentLevel >= 3) {
-      addResourceRequirement(requirements, 'CRYSTAL_SHARD', 1);
+      addResourceRequirement(requirements, 'CRYSTAL', 1);
     }
     
     return requirements;

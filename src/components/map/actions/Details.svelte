@@ -176,9 +176,8 @@
   // When a tile has no structure, surface what the biome offers so the tile
   // still tells the player something useful: gatherable resources and any
   // build opportunities the terrain unlocks (e.g. harbours next to water).
-  // Mirrors the server's gather resolution in api/events/gatheringTick.js:
-  // base biome items fall back to 'plains' for unknown biomes, plus a set of
-  // biome-substring "special" resources.
+  // Gather resolution is shared with the server (getGatherableItems resolves
+  // any specific biome name to its broad category in ITEMS.js).
   function isWaterTile(t) {
     if (!t) return false;
     if (t.biome?.water) return true;
@@ -186,32 +185,11 @@
     return false;
   }
 
-  function specialGatherIds(biomeName) {
-    const bl = (biomeName || '').toLowerCase();
-    if (/forest|woods|grove/.test(bl))        return ['MEDICINAL_HERBS'];
-    if (/mountain|peak|hill/.test(bl))        return ['MOUNTAIN_CRYSTAL', 'METAL_ORE'];
-    if (/desert|sand|dune/.test(bl))          return ['SAND_CRYSTAL', 'CACTUS_FRUIT'];
-    if (/lava|volcanic|magma/.test(bl))       return ['VOLCANIC_GLASS'];
-    if (/lake|river|ocean|water/.test(bl))    return ['FRESH_WATER', 'FISH'];
-    if (/swamp|marsh|bog/.test(bl))           return ['MEDICINAL_HERBS'];
-    if (/plains|grassland|meadow/.test(bl))   return ['WHEAT'];
-    return [];
-  }
-
-  const BASE_GATHER_BIOMES = ['plains', 'forest', 'mountains', 'desert', 'rivers', 'oasis', 'ruins', 'wastes'];
-
   // Resolve the list of gatherable resources for the current empty tile.
   const gatherables = $derived.by(() => {
     const biomeName = detailsData?.biome?.name;
     if (!biomeName) return [];
-    const base = BASE_GATHER_BIOMES.includes(biomeName.toLowerCase()) ? biomeName.toLowerCase() : 'plains';
-    const out = new Map();
-    for (const g of getGatherableItems(base)) out.set(g.code, g);
-    for (const id of specialGatherIds(biomeName)) {
-      const def = ITEMS[id];
-      if (def && !out.has(id)) out.set(id, { code: id, name: def.name, rarity: def.rarity, type: def.type, food: !!def.food });
-    }
-    return [...out.values()];
+    return getGatherableItems(biomeName);
   });
 
   // Is this tile on or adjacent to water? (unlocks harbours / boats)
@@ -854,32 +832,45 @@
             </div>
           {/if}
 
-          <div class="potential-block">
-            <div class="potential-title">
-              <Hammer extraClass="potential-icon" />
-              Build opportunities
+          {#if onWater}
+            <div class="potential-block">
+              <div class="potential-title">
+                <Hammer extraClass="potential-icon" />
+                Build opportunities
+              </div>
+              <div class="potential-hint">
+                Structures can't be built on water. Build a harbour on adjacent
+                land to put boats to sea.
+              </div>
             </div>
-            <div class="potential-tags">
-              {#each buildableStructures as s (s.id)}
-                <span class="build-chip">
-                  <Structure size="1em" extraClass="build-chip-icon {s.type}-icon" />
-                  {s.name}
-                </span>
-              {/each}
-              {#if nearWater}
-                <span class="build-chip water">
-                  ⚓ Harbour {onWater ? '(on water)' : '(water adjacent)'}
-                </span>
-              {/if}
+          {:else}
+            <div class="potential-block">
+              <div class="potential-title">
+                <Hammer extraClass="potential-icon" />
+                Build opportunities
+              </div>
+              <div class="potential-tags">
+                {#each buildableStructures as s (s.id)}
+                  <span class="build-chip">
+                    <Structure size="1em" extraClass="build-chip-icon {s.type}-icon" />
+                    {s.name}
+                  </span>
+                {/each}
+                {#if nearWater}
+                  <span class="build-chip water">
+                    ⚓ Harbour (water adjacent)
+                  </span>
+                {/if}
+              </div>
+              <div class="potential-hint">
+                {#if canBuildHere}
+                  Use an idle group's <strong>Build</strong> action to construct here.
+                {:else}
+                  Move an idle group here to build.
+                {/if}
+              </div>
             </div>
-            <div class="potential-hint">
-              {#if canBuildHere}
-                Use an idle group's <strong>Build</strong> action to construct here.
-              {:else}
-                Move an idle group here to build.
-              {/if}
-            </div>
-          </div>
+          {/if}
         </div>
       {/if}
 

@@ -189,16 +189,23 @@
     availableResources = resources;
   });
   
-  // Effect to validate water requirement for harbours
+  // Whether the build tile itself is water — nothing can be founded there.
+  const onWater = $derived(isWaterTile(tileData));
+
+  // Effect to validate water requirements.
   $effect(() => {
-    // Reset water validation error when structure changes
+    // Reset water validation error when structure/tile changes
     waterValidationError = null;
-    
-    // If a harbour is selected, validate water requirement
-    if (selectedStructure && isHarbour(selectedStructure)) {
-      if (!hasAdjacentWater()) {
-        waterValidationError = "Harbour must be built on or adjacent to water tiles.";
-      }
+
+    // Structures can never be built on a water tile.
+    if (onWater) {
+      waterValidationError = "Structures cannot be built on water.";
+      return;
+    }
+
+    // A harbour must sit on land that borders water.
+    if (selectedStructure && isHarbour(selectedStructure) && !hasAdjacentWater()) {
+      waterValidationError = "Harbour must be built on land next to water.";
     }
   });
   
@@ -240,8 +247,13 @@
   function startBuilding() {
     if (buildError || !selectedGroup || !selectedStructure || !structureName) return;
 
+    if (onWater) {
+      buildError = "Structures cannot be built on water.";
+      return;
+    }
+
     if (isHarbour(selectedStructure) && !hasAdjacentWater()) {
-      buildError = "Cannot build a harbour here. It must be on or adjacent to water.";
+      buildError = "Cannot build a harbour here. It must be on land next to water.";
       return;
     }
 
@@ -269,13 +281,14 @@
     });
   }
   
-  // Update canBuild to include water validation for harbours
+  // Update canBuild to include water validation
   let canBuild = $derived(
-    selectedGroup && 
-    selectedStructure && 
-    structureName && 
+    selectedGroup &&
+    selectedStructure &&
+    structureName &&
     hasRequiredResources() &&
-    // Add water validation check
+    // No structures on water; harbours need a water-adjacent land tile
+    !onWater &&
     !(isHarbour(selectedStructure) && !hasAdjacentWater())
   );
   
@@ -440,7 +453,7 @@
           </div>
         {/if}
         
-        {#if selectedStructure && isHarbour(selectedStructure) && waterValidationError}
+        {#if waterValidationError}
           <div class="validation-error water-error">
             <span class="error-icon">⚠️</span>
             {waterValidationError}

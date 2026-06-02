@@ -66,7 +66,6 @@
         medium_boat: Ship,
         large_boat: Ship,
         combat_boat: Ship,
-        steamboat: Ship,
         explorer_boat: Ship,
         elven_swan_boat: Ship,
         dwarf_ironclad: Ship,
