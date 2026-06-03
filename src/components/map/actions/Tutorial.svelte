@@ -1,5 +1,7 @@
 <script>
-  import { slide } from 'svelte/transition';
+  import { onMount, onDestroy } from 'svelte';
+  import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
+  import { currentPlayer } from '../../../lib/stores/game.js';
   import Trophy from '../../icons/Trophy.svelte';
 
   const {
@@ -7,300 +9,504 @@
     onOpenAchievements = () => {},
   } = $props();
 
-  let worldExpanded    = $state(false);
-  let terrainExpanded  = $state(false);
-  let structExpanded   = $state(false);
-  let unitsExpanded    = $state(false);
-  let controlsExpanded = $state(false);
+  // Steps: each describes one tutorial beat.
+  // `selector` targets a DOM element to spotlight; null = centred card only.
+  // `achievement` links to an ACHIEVEMENTS key to show unlock status.
+  const STEPS = [
+    {
+      id: 'welcome',
+      title: 'Welcome to Gisaima',
+      body: 'An open-world strategy MMO with procedurally generated maps, territory control, and real-time interaction. This guide walks you through the first things to try.',
+      selector: null,
+      achievement: null,
+    },
+    {
+      id: 'center-tile',
+      title: 'Your Position',
+      body: 'The highlighted tile in the centre of the map is where you are. Tap or click it to open the action wheel and choose what to do here.',
+      selector: '.tile.center',
+      achievement: null,
+    },
+    {
+      id: 'mobilise',
+      title: 'Mobilise a Group',
+      body: 'Open the centre tile wheel and choose Mobilise to gather units into a travelling group. Groups are how you explore and expand.',
+      selector: '.tile.center',
+      achievement: 'mobilised',
+    },
+    {
+      id: 'movement',
+      title: 'Draw a Path',
+      body: 'With a group mobilised, open the wheel and choose Move. Click tiles on the map to draw a movement path, then confirm to send them off.',
+      selector: '.tile.center',
+      achievement: 'first_steps',
+    },
+    {
+      id: 'gather',
+      title: 'Gather Resources',
+      body: 'On a tile with your group, open the wheel and choose Gather to collect resources from the surrounding terrain. Resources power everything.',
+      selector: '.tile.center',
+      achievement: 'first_gather',
+    },
+    {
+      id: 'recruit',
+      title: 'Recruit Units',
+      body: 'At a spawn structure, open the wheel and choose Recruit to add units to your roster. More units means stronger groups.',
+      selector: '.tile.center',
+      achievement: 'first_recruit',
+    },
+    {
+      id: 'craft',
+      title: 'Craft Items',
+      body: 'At a workshop or similar structure, open the wheel and choose Craft to create items that boost your characters and units.',
+      selector: '.tile.center',
+      achievement: 'first_craft',
+    },
+    {
+      id: 'chat',
+      title: 'Talk to Others',
+      body: 'Use the chat button in the top right to send messages to other players in this world. Alliances are often forged in conversation.',
+      selector: '[aria-label="Open chat"], .chat-button, [aria-label="Chat"]',
+      achievement: 'first_message',
+    },
+    {
+      id: 'combat',
+      title: 'Enter Combat',
+      body: 'Move a group onto a tile occupied by enemies to start a battle, or join an existing fight already in progress.',
+      selector: '.tile.center',
+      achievement: 'first_attack',
+    },
+    {
+      id: 'achievements',
+      title: 'Track Your Progress',
+      body: 'Open the Achievements panel to see everything you\'ve unlocked and what to try next. Good luck — the world is waiting.',
+      selector: '.achievements-button, [aria-label="Show achievements"]',
+      achievement: null,
+    },
+  ];
 
-  function openAchievements() {
-    onClose();
-    onOpenAchievements();
+  const totalSteps = STEPS.length;
+
+  const savedStep = typeof localStorage !== 'undefined'
+    ? parseInt(localStorage.getItem('tutorial-step') || '0', 10)
+    : 0;
+
+  let stepIndex = $state(Math.min(savedStep, totalSteps - 1));
+  let spotlightRect = $state(null);
+  let isSnapping = $state(false);
+
+  const step = $derived(STEPS[stepIndex]);
+  const playerAchievements = $derived($currentPlayer?.achievements || {});
+  const stepAchievement = $derived(
+    step.achievement ? ACHIEVEMENTS[step.achievement] : null
+  );
+  const stepUnlocked = $derived(
+    step.achievement ? !!playerAchievements[step.achievement] : false
+  );
+
+  function resolveSelector(selector) {
+    if (!selector) return null;
+    const parts = selector.split(',').map(s => s.trim());
+    for (const s of parts) {
+      const el = document.querySelector(s);
+      if (el) return el;
+    }
+    return null;
   }
 
-  function dismiss() {
+  function updateSpotlight() {
+    if (!step.selector) {
+      spotlightRect = null;
+      return;
+    }
+    const el = resolveSelector(step.selector);
+    if (!el) {
+      spotlightRect = null;
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    const PAD = 8;
+    spotlightRect = {
+      top: r.top - PAD,
+      left: r.left - PAD,
+      width: r.width + PAD * 2,
+      height: r.height + PAD * 2,
+    };
+  }
+
+  function goTo(index) {
+    stepIndex = Math.max(0, Math.min(index, totalSteps - 1));
+    localStorage.setItem('tutorial-step', String(stepIndex));
+    updateSpotlight();
+  }
+
+  function next() {
+    if (stepIndex < totalSteps - 1) goTo(stepIndex + 1);
+    else finish();
+  }
+
+  function prev() {
+    if (stepIndex > 0) goTo(stepIndex - 1);
+  }
+
+  function finish() {
     localStorage.setItem('tutorial-state', 'closed');
     onClose();
   }
+
+  function skip() {
+    finish();
+  }
+
+  function openAchievements() {
+    finish();
+    onOpenAchievements();
+  }
+
+  // Recompute spotlight when step changes and on resize.
+  let rafId = null;
+  function scheduleSpotlight() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => { updateSpotlight(); rafId = null; });
+  }
+
+  onMount(() => {
+    updateSpotlight();
+    window.addEventListener('resize', scheduleSpotlight);
+    return () => {
+      window.removeEventListener('resize', scheduleSpotlight);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  });
+
+  $effect(() => {
+    // Re-spotlight when step changes (after DOM settles).
+    void stepIndex;
+    scheduleSpotlight();
+  });
+
+  // Card positioning: prefer above the spotlight, fall back to below, or centred.
+  const cardStyle = $derived.by(() => {
+    if (!spotlightRect) return 'top:50%;left:50%;transform:translate(-50%,-50%)';
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 600;
+    const cardH = 220;
+    const cardW = Math.min(340, vw - 32);
+    const spaceAbove = spotlightRect.top;
+    const spaceBelow = vh - (spotlightRect.top + spotlightRect.height);
+    let top, left;
+    if (spaceAbove >= cardH + 16) {
+      top = spotlightRect.top - cardH - 12;
+    } else if (spaceBelow >= cardH + 16) {
+      top = spotlightRect.top + spotlightRect.height + 12;
+    } else {
+      top = Math.max(16, (vh - cardH) / 2);
+    }
+    left = Math.max(16, Math.min(spotlightRect.left + spotlightRect.width / 2 - cardW / 2, vw - cardW - 16));
+    return `top:${top}px;left:${left}px;width:${cardW}px`;
+  });
 </script>
 
-<div class="help-panel">
-  <div class="help-body">
-    <p class="summary">
-      Strategic open-world MMO with procedurally generated maps, territory control,
-      and real-time interaction. Explore worlds, build structures, and compete with other players.
-    </p>
-
-    <div class="sections">
-
-      <div class="section">
-        <button class="section-hd" onclick={() => (worldExpanded = !worldExpanded)} aria-expanded={worldExpanded}>
-          <span>Map Exploration</span>
-          <span class="chevron" class:open={worldExpanded}>▸</span>
-        </button>
-        {#if worldExpanded}
-          <ul class="section-body" transition:slide|local={{ duration: 200 }}>
-            <li>Explore an infinite procedurally generated world</li>
-            <li>Grid-based coordinate system for precise navigation</li>
-            <li>URL updates with coordinates for location sharing</li>
-            <li>Hover over tiles to view detailed information</li>
-          </ul>
+<!-- Full-screen overlay -->
+<div
+  class="tutorial-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Interactive tutorial"
+  onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); }}
+  tabindex="-1"
+>
+  <!-- Dark backdrop with spotlight hole via SVG mask -->
+  <svg class="backdrop" aria-hidden="true">
+    <defs>
+      <mask id="spotlight-mask">
+        <!-- White = show backdrop (dark), black = hide backdrop (reveal) -->
+        <rect width="100%" height="100%" fill="white" />
+        {#if spotlightRect}
+          <rect
+            x={spotlightRect.left}
+            y={spotlightRect.top}
+            width={spotlightRect.width}
+            height={spotlightRect.height}
+            rx="4"
+            fill="black"
+          />
         {/if}
-      </div>
+      </mask>
+    </defs>
+    <rect width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#spotlight-mask)" />
+  </svg>
 
-      <div class="section">
-        <button class="section-hd" onclick={() => (terrainExpanded = !terrainExpanded)} aria-expanded={terrainExpanded}>
-          <span>Terrain &amp; Biomes</span>
-          <span class="chevron" class:open={terrainExpanded}>▸</span>
-        </button>
-        {#if terrainExpanded}
-          <ul class="section-body" transition:slide|local={{ duration: 200 }}>
-            <li>Multiple biomes with unique resource characteristics</li>
-            <li>Terrain rarity system: common to mythic quality</li>
-            <li>Rare terrain provides strategic advantages</li>
-            <li>Special visual effects indicate valuable terrain</li>
-          </ul>
-        {/if}
-      </div>
+  {#if spotlightRect}
+    <!-- Visible border around spotlight target -->
+    <div
+      class="spotlight-border"
+      style="top:{spotlightRect.top}px;left:{spotlightRect.left}px;width:{spotlightRect.width}px;height:{spotlightRect.height}px"
+    ></div>
+  {/if}
 
-      <div class="section">
-        <button class="section-hd" onclick={() => (structExpanded = !structExpanded)} aria-expanded={structExpanded}>
-          <span>Structures</span>
-          <span class="chevron" class:open={structExpanded}>▸</span>
-        </button>
-        {#if structExpanded}
-          <ul class="section-body" transition:slide|local={{ duration: 200 }}>
-            <li>Build spawn points, watchtowers, and fortresses</li>
-            <li>Structures provide territorial control and strategic advantages</li>
-            <li>Different structures have unique functions and requirements</li>
-            <li>Strategic placement is key to efficient expansion</li>
-          </ul>
-        {/if}
-      </div>
-
-      <div class="section">
-        <button class="section-hd" onclick={() => (unitsExpanded = !unitsExpanded)} aria-expanded={unitsExpanded}>
-          <span>Units &amp; Combat</span>
-          <span class="chevron" class:open={unitsExpanded}>▸</span>
-        </button>
-        {#if unitsExpanded}
-          <ul class="section-body" transition:slide|local={{ duration: 200 }}>
-            <li>Command unit groups for expansion and resource gathering</li>
-            <li>Combat factors: unit strength, terrain, and positioning</li>
-            <li>Form alliances with other players for mutual benefits</li>
-            <li>Balance expansion with defensive capabilities</li>
-          </ul>
-        {/if}
-      </div>
-
-      <div class="section">
-        <button class="section-hd" onclick={() => (controlsExpanded = !controlsExpanded)} aria-expanded={controlsExpanded}>
-          <span>Controls</span>
-          <span class="chevron" class:open={controlsExpanded}>▸</span>
-        </button>
-        {#if controlsExpanded}
-          <div class="section-body controls-grid" transition:slide|local={{ duration: 200 }}>
-            <div class="ctrl"><kbd>WASD</kbd> / <kbd>↑←↓→</kbd> Navigate</div>
-            <div class="ctrl"><kbd>Click</kbd> Move to tile</div>
-            <div class="ctrl"><kbd>Drag</kbd> Pan view</div>
-            <div class="ctrl"><kbd>Hover</kbd> Tile details</div>
-          </div>
-        {/if}
-      </div>
-
+  <!-- Instruction card -->
+  <div class="tutorial-card" style={cardStyle}>
+    <div class="card-progress">
+      {#each STEPS as _, i}
+        <button
+          class="progress-dot"
+          class:active={i === stepIndex}
+          class:done={i < stepIndex}
+          onclick={() => goTo(i)}
+          aria-label="Go to step {i + 1}"
+        ></button>
+      {/each}
     </div>
 
-    <div class="ach-row">
-      <button class="ach-btn" onclick={openAchievements}>
-        <Trophy extraClass="ach-icon" />
-        View Achievements
-      </button>
+    <div class="card-body">
+      <h2 class="card-title">{step.title}</h2>
+      <p class="card-text">{step.body}</p>
+
+      {#if stepAchievement}
+        <div class="card-achievement" class:unlocked={stepUnlocked}>
+          <span class="ach-icon-wrap">
+            {#if stepUnlocked}
+              <Trophy extraClass="ach-icon-svg" />
+            {:else}
+              <span class="ach-lock-glyph">?</span>
+            {/if}
+          </span>
+          <span class="ach-label">
+            {stepUnlocked ? stepAchievement.title + ' — Unlocked' : stepAchievement.title}
+          </span>
+        </div>
+      {/if}
     </div>
 
-    <a href="/guide" target="_blank" rel="noopener noreferrer" class="guide-link">
-      Read the complete guide ↗
-    </a>
-
-    <button class="dismiss-btn close-btn" onclick={dismiss}>Got it — start exploring</button>
+    <div class="card-actions">
+      <div class="card-nav">
+        <button class="nav-btn" onclick={prev} disabled={stepIndex === 0} aria-label="Previous step">
+          ‹ Prev
+        </button>
+        {#if stepIndex < totalSteps - 1}
+          <button class="nav-btn primary" onclick={next} aria-label="Next step">
+            Next ›
+          </button>
+        {:else}
+          <button class="nav-btn primary" onclick={openAchievements} aria-label="View achievements">
+            View Achievements
+          </button>
+        {/if}
+      </div>
+      <button class="skip-btn" onclick={skip}>Skip tutorial</button>
+    </div>
   </div>
 </div>
 
 <style>
-  .help-panel {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    color: var(--color-parchment-100, #fbf6e7);
-    font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+  .tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    pointer-events: all;
   }
+  .tutorial-overlay:focus { outline: none; }
 
-  .help-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.75em 1em 1.25em;
-    display: flex;
-    flex-direction: column;
-    gap: 0.9em;
-    scrollbar-width: thin;
-    scrollbar-color: var(--chrome-gold-border) transparent;
-  }
-
-  .summary {
-    font-family: var(--font-editorial, serif);
-    font-style: italic;
-    font-size: 0.8em;
-    line-height: 1.5;
-    color: var(--chrome-text-dim);
-    margin: 0;
-  }
-
-  /* ── Collapsible sections ── */
-  .sections {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3em;
-  }
-
-  .section {
-    border: 0.075em solid var(--chrome-gold-soft);
-  }
-
-  .section-hd {
+  .backdrop {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--chrome-gold-soft);
-    border: none;
-    color: var(--chrome-text);
-    padding: 0.55em 0.8em;
-    font-family: var(--font-display);
-    font-size: 0.7em;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.12s;
+    height: 100%;
+    pointer-events: all;
   }
-  .section-hd:hover { background: var(--chrome-card-strong); }
 
-  .chevron {
-    font-size: 0.75em;
-    color: var(--chrome-text-faint);
-    display: inline-block;
-    transition: transform 0.15s;
-    transform: rotate(0deg);
+  .spotlight-border {
+    position: fixed;
+    border: 2px solid var(--chrome-gold, #b08d4a);
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(176,141,74,0.3), 0 0 12px 2px rgba(176,141,74,0.25);
+    pointer-events: none;
+    transition: top 0.18s ease, left 0.18s ease, width 0.18s ease, height 0.18s ease;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(176,141,74,0.3), 0 0 10px 2px rgba(176,141,74,0.2); }
+    50%       { box-shadow: 0 0 0 1px rgba(176,141,74,0.5), 0 0 18px 4px rgba(176,141,74,0.4); }
+  }
+
+  /* ── Card ── */
+  .tutorial-card {
+    position: fixed;
+    background: var(--chrome-bg, #141820);
+    border: 1px solid var(--chrome-gold-border, #5a4520);
+    color: var(--chrome-text, #e8e0cc);
+    font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 8001;
+    max-width: 340px;
+    min-width: 260px;
+  }
+
+  /* Progress dots */
+  .card-progress {
+    display: flex;
+    gap: 0.4em;
+    padding: 0.7em 0.9em 0.4em;
+    align-items: center;
+  }
+
+  .progress-dot {
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+    background: var(--chrome-text-faint, #4a4030);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
     flex-shrink: 0;
   }
-  .chevron.open { transform: rotate(90deg); }
+  .progress-dot.done { background: var(--chrome-gold-border, #5a4520); }
+  .progress-dot.active {
+    background: var(--chrome-gold, #b08d4a);
+    transform: scale(1.3);
+  }
+  .progress-dot:hover { background: var(--chrome-gold-soft, #2a2010); }
 
-  .section-body {
-    list-style: none;
-    margin: 0;
-    padding: 0.5em 0.8em 0.6em;
-    background: var(--chrome-card);
+  /* Card body */
+  .card-body {
+    padding: 0.5em 0.9em 0.7em;
     display: flex;
     flex-direction: column;
-    gap: 0.3em;
+    gap: 0.5em;
   }
 
-  .section-body li {
+  .card-title {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.82em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chrome-gold, #b08d4a);
+    margin: 0;
+  }
+
+  .card-text {
     font-family: var(--font-editorial, serif);
     font-style: italic;
     font-size: 0.78em;
-    color: var(--chrome-text-dim);
-    line-height: 1.4;
-    padding-left: 0.8em;
-    position: relative;
-  }
-  .section-body li::before {
-    content: '·';
-    position: absolute;
-    left: 0;
-    color: var(--chrome-gold);
+    line-height: 1.5;
+    color: var(--chrome-text-dim, #a09070);
+    margin: 0;
   }
 
-  /* Controls grid inside section-body */
-  .controls-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.4em 0.8em;
+  /* Achievement badge */
+  .card-achievement {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.35em 0.6em;
+    background: var(--chrome-card, #1a1e28);
+    border: 1px solid var(--chrome-gold-soft, #2a2010);
+    opacity: 0.65;
+    transition: opacity 0.2s, border-color 0.2s;
+  }
+  .card-achievement.unlocked {
+    opacity: 1;
+    border-color: var(--chrome-gold, #b08d4a);
   }
 
-  .ctrl {
-    font-family: var(--font-mono);
-    font-size: 0.72em;
-    color: var(--chrome-text-dim);
-  }
-
-  kbd {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: var(--chrome-field-bg);
-    border: 0.075em solid var(--chrome-field-border);
-    padding: 0.1em 0.3em;
-    color: var(--chrome-text);
-  }
-
-  /* ── Achievements row ── */
-  .ach-row { flex-shrink: 0; }
-
-  .ach-btn {
+  .ach-icon-wrap {
+    width: 1.4em;
+    height: 1.4em;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--chrome-gold, #b08d4a);
+    flex-shrink: 0;
+  }
+  :global(.ach-icon-svg) {
+    width: 1.1em;
+    height: 1.1em;
+  }
+  .ach-lock-glyph {
+    font-family: var(--font-display, serif);
+    font-size: 0.75em;
+    color: var(--chrome-text-faint, #4a4030);
+  }
+  .ach-label {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.65em;
+    letter-spacing: 0.08em;
+    color: var(--chrome-text-dim, #a09070);
+  }
+  .card-achievement.unlocked .ach-label { color: var(--chrome-gold, #b08d4a); }
+
+  /* Card actions */
+  .card-actions {
+    border-top: 1px solid var(--chrome-hairline, #252830);
+    padding: 0.6em 0.9em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+
+  .card-nav {
+    display: flex;
     gap: 0.5em;
-    width: 100%;
-    padding: 0.5em 1em;
-    background: var(--chrome-gold-soft);
-    border: 0.075em solid var(--chrome-gold-border);
-    color: var(--chrome-gold);
-    font-family: var(--font-display);
-    font-size: 0.7em;
-    letter-spacing: 0.14em;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 0.4em 0.6em;
+    background: var(--chrome-field-bg, #1a1e28);
+    border: 1px solid var(--chrome-field-border, #2a2e38);
+    color: var(--chrome-text-dim, #a09070);
+    font-family: var(--font-display, serif);
+    font-size: 0.65em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.12s, border-color 0.12s;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
   }
-  .ach-btn:hover {
-    background: var(--chrome-card-strong);
-    border-color: var(--chrome-gold);
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
   }
-
-  .help-panel :global(.ach-icon) {
-    width: 1em;
-    height: 1em;
-    color: var(--chrome-gold);
+  .nav-btn:not(:disabled):hover {
+    background: var(--chrome-gold-soft, #2a2010);
+    border-color: var(--chrome-gold-border, #5a4520);
+    color: var(--chrome-text, #e8e0cc);
   }
-
-  /* ── Guide link ── */
-  .guide-link {
-    font-family: var(--font-mono);
-    font-size: 0.68em;
-    color: var(--chrome-gold);
-    text-decoration: none;
-    text-align: center;
-    letter-spacing: 0.06em;
-    transition: color 0.12s;
-    flex-shrink: 0;
-  }
-  .guide-link:hover { color: var(--chrome-text); }
-
-  /* ── Dismiss button — hidden in dossier (close-btn global override) ── */
-  .dismiss-btn {
-    font-family: var(--font-display);
-    font-size: 0.68em;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+  .nav-btn.primary {
     background: var(--color-aged-gold, #b08d4a);
+    border-color: var(--color-aged-gold, #b08d4a);
     color: var(--color-ink-900, #0e1320);
-    border: 0.075em solid var(--color-aged-gold);
-    padding: 0.55em 1em;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.12s;
-    flex-shrink: 0;
   }
-  .dismiss-btn:hover { background: var(--color-gold-pale, #d4b170); }
+  .nav-btn.primary:hover {
+    background: var(--color-gold-pale, #d4b170);
+    border-color: var(--color-gold-pale, #d4b170);
+    color: var(--color-ink-900, #0e1320);
+  }
+
+  .skip-btn {
+    background: none;
+    border: none;
+    color: var(--chrome-text-faint, #4a4030);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.6em;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-align: center;
+    padding: 0.1em;
+    transition: color 0.12s;
+  }
+  .skip-btn:hover { color: var(--chrome-text-dim, #a09070); }
+
+  @media (max-width: 480px) {
+    .tutorial-card {
+      min-width: 0;
+      width: calc(100vw - 32px) !important;
+      left: 16px !important;
+    }
+  }
 </style>

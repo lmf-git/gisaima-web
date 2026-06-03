@@ -214,6 +214,11 @@
     }
   });
 
+  // Sub-tile visual offset for smooth dragging (px, applied as CSS translate)
+  let dragVisualX = $state(0);
+  let dragVisualY = $state(0);
+  let isSnapBack = $state(false);
+
   let mapElement = null;
   let resizeObserver = null;
   let introduced = $state(false);
@@ -376,10 +381,13 @@
     if (event.type === 'dragstart' || event.type === 'touchstart') {
       const clientX = event.clientX || event.touches?.[0]?.clientX || 0;
       const clientY = event.clientY || event.touches?.[0]?.clientY || 0;
-      
+
       dist = 0;
       wasDrag = false;
-      
+      isSnapBack = false;
+      dragVisualX = 0;
+      dragVisualY = 0;
+
       setHighlighted(null, null);
       
       map.update(state => ({
@@ -433,6 +441,10 @@
       const cellsMovedY = Math.floor(dragAccumY / adjustedTileSize);
 
       if (cellsMovedX === 0 && cellsMovedY === 0) {
+        // No tile crossed yet — show sub-tile visual offset so drag feels immediate
+        isSnapBack = false;
+        dragVisualX = dragAccumX;
+        dragVisualY = dragAccumY;
         map.update(state => ({
           ...state,
           dragStartX: clientX,
@@ -450,6 +462,13 @@
       const remainderX = dragAccumX - (cellsMovedX * adjustedTileSize);
       const remainderY = dragAccumY - (cellsMovedY * adjustedTileSize);
 
+      // Keep visual offset at the sub-tile remainder so the grid appears
+      // to slide continuously — the tile coordinate shift and the offset
+      // reset cancel each other out visually.
+      isSnapBack = false;
+      dragVisualX = remainderX;
+      dragVisualY = remainderY;
+
       moveTarget(newX, newY);
 
       map.update(state => ({
@@ -465,7 +484,12 @@
     
     else if (event.type === 'dragend' || event.type === 'touchend' || event.type === 'touchcancel') {
       if (!state.isDragging || state.dragSource !== 'map') return false;
-      
+
+      // Snap remaining sub-tile visual offset back to zero with a short transition
+      isSnapBack = true;
+      dragVisualX = 0;
+      dragVisualY = 0;
+
       map.update(state => ({
         ...state,
         isDragging: false,
@@ -473,7 +497,7 @@
         dragAccumY: 0,
         dragSource: null
       }));
-      
+
       return true;
     }
     
@@ -1841,11 +1865,13 @@
         </svg>
       {/if}
       
-      <div class="grid main-grid" 
-        style="--cols: {$map.cols}; --rows: {$map.rows};" 
+      <div class="grid main-grid"
+        style="--cols: {$map.cols}; --rows: {$map.rows}; transform: translate({dragVisualX}px, {dragVisualY}px);"
         role="grid"
         class:animated={!introduced}
-        class:max-zoom={isMaximumZoom}>
+        class:max-zoom={isMaximumZoom}
+        class:snap-back={isSnapBack}
+        ontransitionend={() => { isSnapBack = false; }}>
         
         {#each $gridArray as cell (cell.x + ':' + cell.y)}
           {@const highestRarityItem = getHighestRarityItem(cell.items)}
@@ -2181,8 +2207,6 @@
     display: grid;
     box-sizing: border-box;
     z-index: 2; /* Keep grid z-index lower than UI components */
-    /* Fix for grid wobbling during drag */
-    transform: translateZ(0);
     will-change: transform;
     touch-action: manipulation;
   }
@@ -2192,6 +2216,10 @@
     grid-template-rows: repeat(var(--rows), 1fr);
     width: 100%;
     height: 100%;
+  }
+
+  .main-grid.snap-back {
+    transition: transform 0.1s ease-out;
   }
   
   /* Biome scatter is rendered as inline SVG (<BiomeScatter />) so glyphs

@@ -51,6 +51,7 @@
     
     import Overview from '../../components/map/actions/Overview.svelte';
     import SpawnMenu from '../../components/map/actions/SpawnMenu.svelte';
+    import Tutorial from '../../components/map/actions/Tutorial.svelte';
     import Map from '../../components/icons/Map.svelte';
     import Close from '../../components/icons/Close.svelte';
     import Spyglass from '../../components/icons/Spyglass.svelte';
@@ -1359,6 +1360,12 @@
 
         <AchievementUnlocked />
 
+        {#if isTutorialVisible}
+            <Tutorial
+                onClose={() => { dossierPanel = null; }}
+                onOpenAchievements={openAchievementsFromTutorial}
+            />
+        {/if}
 
         <!-- Modals -->
 
