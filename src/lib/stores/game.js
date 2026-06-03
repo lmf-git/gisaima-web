@@ -36,6 +36,7 @@ export const game = writable({
   joinedWorlds: null,  // null = not yet fetched; [] = fetched but empty
   worlds: {},
   player: null,
+  playerLoaded: false,  // false until player world data has been fetched at least once
   loading: true,
   worldLoading: false,
   error: null,
@@ -163,10 +164,14 @@ export async function loadJoinedWorlds(userId) {
 
 export async function listenToPlayerWorldData(userId, worldKey) {
   if (!userId || !worldKey) return;
+  game.update(s => ({ ...s, playerLoaded: false }));
   try {
     const data = await apiGet(`/players/${userId}/worlds/${worldKey}`).catch(() => null);
-    game.update(s => ({ ...s, player: data }));
-  } catch { /* not critical */ }
+    game.update(s => ({ ...s, player: data, playerLoaded: true }));
+  } catch {
+    // Mark loaded even on failure so the UI stops waiting on player data.
+    game.update(s => ({ ...s, playerLoaded: true }));
+  }
 }
 
 export async function getWorldInfo(worldId) {
@@ -306,7 +311,7 @@ export function setup() {
         if (wid) listenToPlayerWorldData($u.uid, wid);
       } else {
         if (_worldInfoUnsub) { _worldInfoUnsub(); _worldInfoUnsub = null; }
-        game.update(s => ({ ...s, player: null, joinedWorlds: [] }));
+        game.update(s => ({ ...s, player: null, playerLoaded: false, joinedWorlds: [] }));
       }
     });
   });

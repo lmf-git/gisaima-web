@@ -369,7 +369,7 @@
     const allTab = filters.find(f => f.id === 'all');
     const otherTabs = filters
       .filter(f => f.id !== 'all')
-      .sort((a, b) => getCount(b.id) - getCount(a.id));
+      .sort((a, b) => getFilterCount(b.id) - getFilterCount(a.id));
     return [allTab, ...otherTabs];
   }
 

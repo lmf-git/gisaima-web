@@ -1353,7 +1353,7 @@
             <Recenter />
         {/if}
         
-        {#if ($user && !$game.player?.alive)}
+        {#if ($user && $game.playerLoaded && !$game.player?.alive)}
             <SpawnMenu onSpawnComplete={handleSpawnComplete} />
         {/if}
 

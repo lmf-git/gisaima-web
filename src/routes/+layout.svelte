@@ -154,14 +154,6 @@
             </a>
         </div>
 
-        <button class="mobile-menu-toggle" aria-label="Toggle Menu" onclick={toggleMobileMenu}>
-            <HamburgerIcon
-                size="2em"
-                extraClass="hamburger-icon"
-                active={mobileMenuOpen}
-            />
-        </button>
-
             <nav class="nav">
                 <div class="links">
                     {#if !isGuidePage}
@@ -198,6 +190,14 @@
                     {/if}
                 {/if}
             </div>
+
+        <button class="mobile-menu-toggle" aria-label="Toggle Menu" onclick={toggleMobileMenu}>
+            <HamburgerIcon
+                size="2em"
+                extraClass="hamburger-icon"
+                active={mobileMenuOpen}
+            />
+        </button>
 
         {#if (mobileMenuOpen || menuAnimatingOut)}
             <MobileMenu
@@ -1315,7 +1315,6 @@
         text-decoration: none;
         transition: background 0.15s ease, border-color 0.15s ease;
         white-space: nowrap;
-        order: 2;
     }
     .return-map-pill:hover {
         background: var(--color-wax-red);
@@ -1596,8 +1595,7 @@
         cursor: pointer;
         z-index: 110;
         padding: 0.5em;
-        order: 3; /* Position after other elements */
-        margin-left: 2em; /* Increased from 1em to 2em */
+        margin-left: 2em;
     }
     
     /* Hide menu toggle on larger screens */
