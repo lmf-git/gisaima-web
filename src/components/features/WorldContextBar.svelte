@@ -194,7 +194,7 @@
 </script>
 
 {#if $game?.worldKey}
-    <header class="dossier">
+    <header class="dossier" class:not-on-map={!onMap}>
         <!-- Compact Gisaima mark — only surfaces on mobile, where the house
              crest/tagline is hidden, so the bar still carries the brand. -->
         <a class="ctx-logo" href="/" aria-label="Gisaima home">
@@ -574,6 +574,9 @@
 
         /* Surface the profile avatar now the house crest is hidden. */
         .ctx-avatar { display: inline-flex; }
+
+        /* Hide resources when the back-to-map button is visible — not enough space for both. */
+        .dossier.not-on-map .res { display: none; }
     }
 
     /* Search wrapper — positions the dropdown relative to the pill */

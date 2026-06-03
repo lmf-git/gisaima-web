@@ -16,6 +16,7 @@
     import WorldContextBar from '../components/features/WorldContextBar.svelte';
     import LeftRail from '../components/map/foundation/LeftRail.svelte';
     import { theme, toggleTheme } from '$lib/stores/theme.js';
+    import Stamp from '../components/ui/Stamp.svelte';
 
     // Routes that read from / write to a specific world. The world-context
     // strip surfaces under the layout header on each of these so the player
@@ -174,8 +175,8 @@
 
             {#if $user && hasCurrentWorld && !headerLoading && !isWorldScopedPage}
                 <a class="return-map-pill" href="/map" title={`Return to ${$game.worldKey}`}>
-                    <span class="arrow" aria-hidden="true">‹</span>
-                    <span class="text">Map · <em>{$game.worldKey}</em></span>
+                    <Stamp kind="compass" size={13} />
+                    <span class="text"><span class="pill-resume">Resume</span><span class="pill-map">Map</span> · <em>{$game.worldKey}</em></span>
                 </a>
             {/if}
             
@@ -225,7 +226,7 @@
             <div class="footer-content">
                 <div class="footer-section branding">
                     <div class="brand">
-                        <a href="/" class="footer-logo">
+                        <a href="/" class="footer-logo" aria-label="Gisaima Home">
                             <Logo extraClass="footer-logo-icon" />
                         </a>
                         <h2 class="footer-title">isaima Realm</h2>
@@ -1281,6 +1282,17 @@
         }
     }
 
+    /* World-scoped page content already clears the dossier bar via main-content
+       padding-top. Trim the per-page padding-top so content doesn't double-offset. */
+    :global(.app.world-scoped .page) {
+        padding-top: 1.5em !important;
+    }
+    @media (max-width: 700px) {
+        :global(.app.world-scoped .page) {
+            padding-top: 1em !important;
+        }
+    }
+
     /* "Return to map" pill — surfaces the active world id on every page so
        the player always has a one-click route back to the active realm.
        Lives outside .nav so it stays visible on mobile too (the .nav block
@@ -1310,11 +1322,9 @@
         border-color: var(--color-wax-red);
         color: var(--color-parchment-100);
     }
-    .return-map-pill .arrow {
-        font-family: var(--font-display);
-        font-size: 1.3em;
-        line-height: 1;
-        opacity: 0.85;
+    .return-map-pill :global(svg) {
+        flex-shrink: 0;
+        opacity: 0.9;
     }
     .return-map-pill .text em {
         font-family: var(--font-mono);
@@ -1335,13 +1345,19 @@
         border-color: var(--color-gold-pale);
         color: var(--color-ink-900);
     }
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
         .return-map-pill {
             padding: 0.35em 0.55em;
             font-size: 0.7em;
-            margin-right: 0.4em;
+            margin-right: 0;
         }
         .return-map-pill .text em { display: none; }
+        .return-map-pill .pill-map { display: none; }
+        .return-map-pill .pill-resume { display: inline; }
+    }
+    @media (min-width: 769px) {
+        .return-map-pill .pill-resume { display: none; }
+        .return-map-pill .pill-map { display: inline; }
     }
 
     .links a {
@@ -1559,7 +1575,7 @@
         }
         
         .mobile-menu-toggle {
-            margin-left: 1.5em; /* Increased spacing on mobile */
+            margin-left: 0.5em;
         }
     }
 

@@ -14,6 +14,7 @@
   import Torch from '../../icons/Torch.svelte';
   import Close from '../../icons/Close.svelte';
   import Monster from '../../icons/Monster.svelte';
+  import Swords from '../../icons/Swords.svelte';
   
   // Import the new GroupStatus component
   import GroupStatus from './GroupStatus.svelte';
@@ -363,24 +364,12 @@
     setHighlighted(x, y);
   }
 
-  // Modified function to get sorted tabs with enabled ones first
+  // Tabs sorted by entity count descending — most populated type first.
   function getSortedFilterTabs() {
-    // Always keep "all" as the first tab
     const allTab = filters.find(f => f.id === 'all');
-    
-    // Get other tabs and sort them - enabled first, then disabled
     const otherTabs = filters
       .filter(f => f.id !== 'all')
-      .sort((a, b) => {
-        const aHasContent = hasContent(a.id);
-        const bHasContent = hasContent(b.id);
-        
-        if (aHasContent && !bHasContent) return -1;
-        if (!aHasContent && bHasContent) return 1;
-        return 0;
-      });
-    
-    // Return all tab followed by sorted others
+      .sort((a, b) => getCount(b.id) - getCount(a.id));
     return [allTab, ...otherTabs];
   }
 
@@ -1193,7 +1182,7 @@
                 tabindex="0"
                 role="button"
               >
-                <div class="entity-battle-icon">⚔️</div>
+                <div class="entity-battle-icon"><Swords size="1.2em" extraClass="battle-icon" /></div>
                 <div class="entity-info">
                   <div class="entity-name">
                     Battle ({battle.x}, {battle.y})
@@ -1399,14 +1388,14 @@
   }
 
   .entities-panel {
-    background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
-    border: 1px solid rgba(176, 141, 74, 0.35);
+    background: linear-gradient(180deg, var(--chrome-panel-a), var(--chrome-panel-b));
+    border: 1px solid var(--chrome-gold-border);
     border-radius: 0;
-    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(176, 141, 74, 0.15);
+    box-shadow: 0 1em 3em var(--chrome-shadow), inset 0 1px 0 var(--chrome-gold-soft);
     text-shadow: none;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     width: 100%;
     max-width: 28em;
     display: flex;
@@ -1446,7 +1435,7 @@
   .subtitle {
     font-size: 0.7em;
     font-weight: normal;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-dim);
     margin-left: 0.6em;
     font-family: var(--font-mono);
   }
@@ -1460,8 +1449,8 @@
   }
 
   .at-target {
-    background-color: rgba(176, 141, 74, 0.12);
-    border-color: rgba(176, 141, 74, 0.45);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
     position: relative;
   }
 
@@ -1469,13 +1458,13 @@
      Groups previously only inherited a faint border and read poorly; give the
      same clear contrast the current-player row already has. */
   .entity.current-player-owned {
-    background-color: rgba(100, 255, 218, 0.12);
-    border-color: rgba(100, 255, 218, 0.55);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
     position: relative;
   }
 
   .entity.current-player-owned:hover {
-    background-color: rgba(100, 255, 218, 0.2);
+    background-color: var(--chrome-card-strong);
   }
 
   .entity.current-player-owned::after {
@@ -1485,48 +1474,48 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background-color: rgba(100, 255, 218, 0.85);
+    background-color: var(--chrome-gold);
   }
 
   .entity.current-player-owned .entity-name {
-    color: #e6fff8;
+    color: var(--chrome-gold);
     font-weight: 600;
   }
 
   .is-here {
-    background-color: rgba(176, 141, 74, 0.12);
-    border-color: rgba(176, 141, 74, 0.45);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
     position: relative;
   }
 
   .is-here .entity-distance {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-weight: 500;
     font-size: 0.9em;
   }
 
   .at-target.is-here .entity-distance {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-weight: 600;
   }
 
   .entity-distance {
     font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
     margin-left: auto;
     white-space: nowrap;
     display: flex;
     align-items: center;
     font-family: var(--font-mono);
   }
-  
-  
+
+
   .is-here .entity-distance::first-letter {
     font-size: 1.8em;
     line-height: 0;
     margin-right: 0.1em;
     vertical-align: middle;
-    color: rgba(212, 177, 112, 1);
+    color: var(--chrome-gold);
   }
 
   .map-entities {
@@ -1549,8 +1538,8 @@
 
   .filter-tabs {
     display: flex;
-    border-bottom: 1px solid rgba(176, 141, 74, 0.3);
-    background-color: rgba(14, 19, 32, 0.5);
+    border-bottom: 1px solid var(--chrome-gold-border);
+    background-color: var(--chrome-card);
     padding: 0 0.3em;
     width: 100%;
     overflow-x: auto;
@@ -1566,7 +1555,7 @@
     border: none;
     border-bottom: 2px solid transparent;
     cursor: pointer;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
     transition: color 0.15s ease, border-color 0.15s ease;
     flex: 1;
     text-align: center;
@@ -1578,12 +1567,12 @@
   }
 
   .filter-tab:hover:not(:disabled) {
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .filter-tab.active {
-    border-bottom: 2px solid var(--color-aged-gold);
-    color: var(--color-gold-pale);
+    border-bottom: 2px solid var(--chrome-gold);
+    color: var(--chrome-gold);
     font-weight: 600;
   }
 
@@ -1593,7 +1582,7 @@
   }
 
   .filter-tab.has-content:not(.active) {
-    color: rgba(232, 228, 210, 0.75);
+    color: var(--chrome-text);
   }
 
   .filter-count {
@@ -1608,39 +1597,40 @@
     font-weight: 500;
     margin-left: 0.4em;
     line-height: 1;
-    background: rgba(176, 141, 74, 0.2);
-    color: var(--color-gold-pale);
-    border: 1px solid rgba(176, 141, 74, 0.35);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
+    border: 1px solid var(--chrome-gold-border);
     box-shadow: none;
   }
 
-  
   .filter-count-structures {
-    background: rgba(110, 99, 83, 0.35);
-    color: var(--color-parchment-100);
+    background: var(--chrome-card-strong);
+    color: var(--chrome-text);
+    border-color: var(--chrome-border);
   }
 
   .filter-count-groups {
-    background: rgba(154, 51, 32, 0.35);
-    color: #f8d4cc;
-    border-color: rgba(193, 74, 47, 0.5);
+    background: rgba(154, 51, 32, 0.2);
+    color: var(--color-vermilion-2);
+    border-color: rgba(193, 74, 47, 0.4);
   }
 
   .filter-count-players {
-    background: rgba(22, 57, 63, 0.45);
-    color: #aed3dc;
-    border-color: rgba(22, 57, 63, 0.7);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text-dim);
+    border-color: var(--chrome-border);
   }
 
   .filter-count-items {
-    background: rgba(176, 141, 74, 0.3);
-    color: var(--color-gold-pale);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
+    border-color: var(--chrome-gold-border);
   }
 
   .filter-count-battles {
-    background: rgba(91, 26, 31, 0.55);
-    color: #f1c0bb;
-    border-color: rgba(154, 51, 32, 0.65);
+    background: rgba(91, 26, 31, 0.2);
+    color: var(--color-vermilion-2);
+    border-color: rgba(154, 51, 32, 0.4);
   }
 
   .filter-tab.active .filter-count {
@@ -1654,9 +1644,9 @@
     padding: 0.8em 1em;
     font-size: 1.1em;
     font-weight: 600;
-    color: var(--color-gold-pale, #d4b170);
-    background-color: rgba(176, 141, 74, 0.08);
-    border-bottom: 1px solid rgba(176, 141, 74, 0.2);
+    color: var(--chrome-gold);
+    background-color: var(--chrome-gold-soft);
+    border-bottom: 1px solid var(--chrome-gold-border);
     font-family: var(--font-heading);
     display: flex;
     align-items: center;
@@ -1674,12 +1664,12 @@
     border-radius: 50%;
     margin-left: auto;
     transition: background-color 0.2s;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-dim);
   }
 
   .close-button:hover {
-    background-color: rgba(176, 141, 74, 0.12);
-    color: var(--color-parchment-100, #fbf6e7);
+    background-color: var(--chrome-gold-soft);
+    color: var(--chrome-text);
   }
 
   .entities-content {
@@ -1718,26 +1708,26 @@
     margin-bottom: 0.6em;
     padding: 0.5em 0.7em;
     border-radius: 0.3em;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: var(--chrome-card);
+    border: 1px solid var(--chrome-border);
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
 
   .entity:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--chrome-card-strong);
+    box-shadow: 0 2px 4px var(--chrome-shadow);
   }
 
   .entity:focus {
-    outline: 2px solid rgba(176, 141, 74, 0.6);
-    box-shadow: 0 0 0 2px rgba(176, 141, 74, 0.45);
+    outline: 2px solid var(--chrome-gold-border);
+    box-shadow: 0 0 0 2px var(--chrome-gold-soft);
   }
 
   .entity.player.current {
-    background-color: rgba(224, 198, 142, 0.75);
-    border-color: rgba(176, 141, 74, 0.7);
-    border-left: 3px solid var(--color-aged-gold, #b08d4a);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
+    border-left: 3px solid var(--chrome-gold);
   }
 
   .entity-icon {
@@ -1764,7 +1754,7 @@
 
   .entity-name {
     font-weight: 500;
-    color: rgba(0, 0, 0, 0.85);
+    color: var(--chrome-text);
     line-height: 1.2;
     margin-bottom: 0.2em;
   }
@@ -1774,7 +1764,7 @@
     flex-wrap: wrap;
     gap: 0.6em;
     font-size: 0.85em;
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--chrome-text-dim);
     width: 100%;
     justify-content: space-between;
   }
@@ -1784,7 +1774,7 @@
     width: 1.4em;
     height: 1.4em;
     opacity: 0.85;
-    fill: rgba(0, 0, 0, 0.7);
+    fill: var(--chrome-text-dim);
   }
   
   
@@ -1809,8 +1799,8 @@
 
   
   .entity.battle {
-    background-color: rgba(139, 0, 0, 0.05);
-    border: 1px solid rgba(139, 0, 0, 0.2);
+    background-color: rgba(154, 51, 32, 0.08);
+    border: 1px solid rgba(154, 51, 32, 0.25);
   }
 
   .entity-battle-icon {
@@ -1828,18 +1818,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5em 1em;  
+    padding: 0.5em 1em;
     cursor: pointer;
     user-select: none;
     position: relative;
     width: 100%;
-    background-color: rgba(176, 141, 74, 0.06);
+    background-color: var(--chrome-gold-soft);
     border-radius: 0.3em 0.3em 0 0;
     transition: background-color 0.2s ease;
   }
-  
+
   .section-header:hover {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-card-strong);
   }
   
   .section-controls {
@@ -1853,7 +1843,7 @@
     margin: 0;
     font-size: 0.9em;
     font-weight: 600;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-dim);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     display: flex;
@@ -1864,7 +1854,7 @@
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(232, 228, 210, 0.45);
+    color: var(--chrome-text-faint);
     font-size: 0.8em;
     cursor: pointer;
     padding: 0.2em 0.5em;
@@ -1877,11 +1867,10 @@
   }
 
   .collapse-button:hover {
-    color: rgba(232, 228, 210, 0.9);
-    background-color: rgba(176, 141, 74, 0.08);
+    color: var(--chrome-text);
+    background-color: var(--chrome-gold-soft);
     border-radius: 50%;
   }
-
 
   .sort-controls {
     display: flex;
@@ -1893,7 +1882,7 @@
     background: none;
     border: none;
     font-size: 0.7em;
-    color: rgba(232, 228, 210, 0.45);
+    color: var(--chrome-text-faint);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
     cursor: pointer;
@@ -1904,13 +1893,13 @@
   }
 
   .sort-option:hover {
-    background-color: rgba(176, 141, 74, 0.1);
-    color: rgba(232, 228, 210, 0.85);
+    background-color: var(--chrome-gold-soft);
+    color: var(--chrome-text);
   }
 
   .sort-option.active {
-    background-color: rgba(176, 141, 74, 0.18);
-    color: var(--color-gold-pale, #d4b170);
+    background-color: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
   }
   
   .sort-direction {

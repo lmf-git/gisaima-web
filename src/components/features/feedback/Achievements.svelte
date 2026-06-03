@@ -117,14 +117,14 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
   }
 
   .ach-dossier-count {
     font-family: var(--font-mono);
     font-size: 0.72em;
-    color: rgba(251,246,231,0.45);
+    color: var(--chrome-text-faint);
     padding: 0.5em 1em 0.25em;
     flex-shrink: 0;
   }
@@ -133,7 +133,7 @@
   .achievements-panel :global(.trophy-icon) {
     width: 1em;
     height: 1em;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
   }
 
   /* Category filter strip */
@@ -141,7 +141,7 @@
     display: flex;
     gap: 0.4em;
     padding: 0.6em 1em;
-    border-bottom: 0.075em solid rgba(255, 255, 255, 0.06);
+    border-bottom: 0.075em solid var(--chrome-hairline);
     flex-wrap: wrap;
     flex-shrink: 0;
     background: transparent;
@@ -149,9 +149,9 @@
 
   .ach-cat-btn {
     padding: 0.25em 0.7em;
-    background: rgba(255, 255, 255, 0.05);
-    border: 0.075em solid rgba(255, 255, 255, 0.1);
-    color: rgba(251, 246, 231, 0.6);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-field-border);
+    color: var(--chrome-text-dim);
     font-family: var(--font-display);
     font-size: 0.62em;
     letter-spacing: 0.14em;
@@ -160,14 +160,14 @@
     transition: background 0.12s, border-color 0.12s, color 0.12s;
   }
   .ach-cat-btn:hover {
-    background: rgba(176, 141, 74, 0.1);
-    border-color: rgba(176, 141, 74, 0.35);
-    color: var(--color-parchment-100);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
+    color: var(--chrome-text);
   }
   .ach-cat-btn.active {
-    background: rgba(176, 141, 74, 0.18);
-    border-color: var(--color-aged-gold, #b08d4a);
-    color: var(--color-gold-pale, #d4b170);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold);
+    color: var(--chrome-gold);
   }
 
   /* Scrollable content */
@@ -176,13 +176,13 @@
     overflow-y: auto;
     padding: 0.75em 1em;
     scrollbar-width: thin;
-    scrollbar-color: rgba(176, 141, 74, 0.25) transparent;
+    scrollbar-color: var(--chrome-gold-border) transparent;
   }
 
   .ach-empty {
     font-family: var(--font-editorial, serif);
     font-style: italic;
-    color: rgba(232, 228, 210, 0.4);
+    color: var(--chrome-text-faint);
     font-size: 0.82em;
     text-align: center;
     padding: 2em 0;
@@ -202,18 +202,18 @@
     align-items: flex-start;
     gap: 0.75em;
     padding: 0.65em 0.75em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    background: var(--chrome-card);
+    border: 0.075em solid var(--chrome-gold-soft);
     transition: background 0.12s, border-color 0.12s;
   }
   .ach-item:hover {
-    background: rgba(176, 141, 74, 0.07);
-    border-color: rgba(176, 141, 74, 0.28);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
   }
 
   .ach-item.unlocked {
-    border-left: 0.2em solid var(--color-aged-gold, #b08d4a);
-    background: rgba(176, 141, 74, 0.06);
+    border-left: 0.2em solid var(--chrome-gold);
+    background: var(--chrome-gold-soft);
   }
   .ach-item.locked {
     opacity: 0.65;
@@ -226,26 +226,26 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
   }
 
   .achievements-panel :global(.ach-trophy) {
     width: 1.4em;
     height: 1.4em;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
   }
 
   .ach-lock {
     width: 1.4em;
     height: 1.4em;
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--chrome-field-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-display);
     font-size: 0.75em;
     letter-spacing: 0.1em;
-    color: rgba(251, 246, 231, 0.3);
+    color: var(--chrome-text-faint);
   }
 
   .ach-details { flex: 1; min-width: 0; }
@@ -254,7 +254,7 @@
     font-family: var(--font-display);
     font-size: 0.76em;
     letter-spacing: 0.08em;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     margin-bottom: 0.2em;
   }
 
@@ -262,7 +262,7 @@
     font-family: var(--font-editorial, serif);
     font-style: italic;
     font-size: 0.72em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
     line-height: 1.4;
   }
 
@@ -270,7 +270,7 @@
     margin-top: 0.3em;
     font-family: var(--font-mono);
     font-size: 0.62em;
-    color: rgba(176, 141, 74, 0.6);
+    color: var(--chrome-gold);
     letter-spacing: 0.06em;
   }
 </style>

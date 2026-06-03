@@ -350,7 +350,7 @@
       aria-hidden="false"
     >
       <!-- Outer ink ring -->
-      <circle cx={center} cy={center} r={R + 1} fill="rgba(14,19,32,.65)" stroke="rgba(251,246,231,.6)" stroke-width="0.6" />
+      <circle cx={center} cy={center} r={R + 1} class="outer-ring" stroke-width="0.6" />
 
       <!-- Sectors -->
       {#each availableActions as action, i}
@@ -394,7 +394,7 @@
       {/each}
 
       <!-- Center hub: close button on parchment fill -->
-      <circle cx={center} cy={center} r={r - 2} fill="#cac281" stroke="rgba(14,19,32,.55)" stroke-width="0.9" />
+      <circle cx={center} cy={center} r={r - 2} class="hub-bg" stroke-width="0.9" />
       <circle
         cx={center}
         cy={center}
@@ -439,20 +439,30 @@
   .sector { opacity: 0; transition: opacity 0.18s ease; pointer-events: none; }
   .sector.visible { opacity: 1; pointer-events: auto; }
 
+  .outer-ring {
+    fill: var(--chrome-bg);
+    stroke: var(--chrome-border-strong);
+  }
+
+  .hub-bg {
+    fill: var(--chrome-gold-soft);
+    stroke: var(--chrome-border-strong);
+  }
+
   .sector-fill {
-    fill: rgba(251, 246, 231, 0.92);
-    stroke: rgba(14, 19, 32, 0.6);
+    fill: var(--chrome-panel-a);
+    stroke: var(--chrome-border-strong);
     stroke-width: 0.8;
     cursor: pointer;
     transition: fill 0.15s ease, stroke 0.15s ease;
   }
   .sector-fill:hover {
-    fill: rgba(176, 141, 74, 0.9);
-    stroke: var(--color-ink-900, #1a2030);
+    fill: var(--chrome-gold);
+    stroke: var(--chrome-border-strong);
   }
   .sector-fill:focus-visible {
     outline: none;
-    fill: rgba(176, 141, 74, 0.85);
+    fill: var(--chrome-gold-soft);
   }
 
   .sector-icon {
@@ -461,19 +471,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-ink-900);
+    color: var(--chrome-text);
   }
   .peek-container :global(.wheel-icon) {
     width: 22px;
     height: 22px;
-    fill: var(--color-ink-900, #1a2030);
-    stroke: var(--color-ink-900, #1a2030);
+    fill: var(--chrome-text);
+    stroke: var(--chrome-text);
   }
   .sector-fill:hover ~ foreignObject .sector-icon,
   .sector-fill:hover ~ foreignObject :global(.wheel-icon) {
-    color: var(--color-parchment-100, #fbf6e7);
-    fill: var(--color-parchment-100, #fbf6e7);
-    stroke: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-bg);
+    fill: var(--chrome-bg);
+    stroke: var(--chrome-bg);
   }
 
   .sector-label {
@@ -481,7 +491,7 @@
     font-size: 10px;
     letter-spacing: 0.12em;
     font-weight: 600;
-    fill: var(--color-ink-900, #1a2030);
+    fill: var(--chrome-text);
   }
 
   .center-hub {
@@ -497,11 +507,11 @@
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.2em;
-    fill: var(--color-ink-900, #1a2030);
+    fill: var(--chrome-text);
   }
   .center-coord {
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    fill: var(--color-wax-red, #5b1a1f);
+    fill: var(--color-wax-red);
   }
 </style>

@@ -5,5 +5,8 @@ export default defineConfig({
   plugins: [sveltekit()],
   resolve: {
     preserveSymlinks: true
+  },
+  build: {
+    cssCodeSplit: false
   }
 });

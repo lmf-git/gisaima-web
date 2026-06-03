@@ -60,6 +60,7 @@
   import Fairy from '../../icons/Fairy.svelte';
   import Monster from '../../icons/Monster.svelte';
   import Compass from '../../icons/Compass.svelte';
+  import Swords from '../../icons/Swords.svelte';
   
   import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
   
@@ -2022,14 +2023,14 @@
               <!-- Regular battle indicator -->
               {#if hasBattle(cell)}
                 <div class="battle-indicator" title="Active battle in progress">
-                  ⚔️
+                  <Swords size="0.9em" extraClass="battle-icon" />
                 </div>
               {/if}
-              
+
               <!-- New structure battle indicator -->
               {#if hasStructureBattle(cell)}
                 <div class="structure-battle-indicator" title="Structure involved in battle">
-                  <span class="structure-battle-icon">⚔️</span>
+                  <Swords size="0.9em" extraClass="structure-battle-icon" />
                 </div>
               {/if}
               

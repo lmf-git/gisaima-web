@@ -22,6 +22,7 @@
   import Goblin from '../../icons/Goblin.svelte';
   import Fairy from '../../icons/Fairy.svelte';
   import Monster from '../../icons/Monster.svelte';
+  import Swords from '../../icons/Swords.svelte';
   import Compass from '../../icons/Compass.svelte';
   import Eye from '../../icons/Eye.svelte';
   import Crop from '../../icons/Crop.svelte';
@@ -1416,7 +1417,7 @@
                     </div>
                   </div>
                   
-                  <div class="entity-battle-icon">⚔️</div>
+                  <div class="entity-battle-icon"><Swords size="1.2em" extraClass="battle-icon" /></div>
                   
                   <div class="battle-sides">
                     <div class="battle-side side1 {getWinningSideClass(battle, 1)}">
@@ -1595,16 +1596,16 @@
     padding: 1em 1.5em 1.5em;
     overflow-y: auto;
     max-height: calc(85vh - 4em);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .core-section {
     padding-bottom: 1em;
-    border-bottom: 1px solid rgba(176, 141, 74, 0.18);
+    border-bottom: 1px solid var(--chrome-gold-border);
     margin-bottom: 1em;
-    background-color: rgba(26, 32, 48, 0.55);
+    background-color: var(--chrome-card);
     border-radius: 0.3em;
-    border: 1px solid rgba(176, 141, 74, 0.15);
+    border: 1px solid var(--chrome-gold-soft);
     padding: 0.8em;
   }
 
@@ -1621,7 +1622,7 @@
   }
 
   .attribute-label {
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-dim);
     font-weight: 500;
     min-width: 40px;
     flex-shrink: 0;
@@ -1629,7 +1630,7 @@
 
   .attribute-value {
     flex-grow: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     display: flex;
     align-items: center;
   }
@@ -1664,20 +1665,20 @@
     user-select: none;
     position: relative;
     width: 100%;
-    background-color: rgba(176, 141, 74, 0.06);
+    background-color: var(--chrome-gold-soft);
     border-radius: 0.3em 0.3em 0 0;
     transition: background-color 0.2s ease;
   }
-  
+
   .section-header:hover {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-card-strong);
   }
-  
+
   .section-title {
     margin: 0;
     font-size: 0.9em;
     font-weight: 600;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-dim);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     display: flex;
@@ -1695,7 +1696,7 @@
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-size: 0.8em;
     cursor: pointer;
     padding: 0.2em 0.5em;
@@ -1706,10 +1707,10 @@
     min-width: 1.5em;
     min-height: 1.5em;
   }
-  
+
   .collapse-button:hover {
-    color: var(--color-parchment-200);
-    background-color: rgba(176, 141, 74, 0.08);
+    color: var(--chrome-text);
+    background-color: var(--chrome-gold-soft);
     border-radius: 50%;
   }
 
@@ -1724,37 +1725,39 @@
     padding: 0.1em 0.6em;
     margin-left: 0.3em;
     line-height: 1;
-    background: rgba(14, 19, 32, 0.45);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0.15em rgba(255, 255, 255, 0.2);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text);
+    border: 1px solid var(--chrome-border);
   }
 
-  /* Add specific entity count colors to match Overview.svelte */
   .entity-count.groups-count {
-    background: rgba(154, 51, 32, 0.55);
-    box-shadow: 0 0 0.15em rgba(255, 100, 100, 0.6);
+    background: rgba(154, 51, 32, 0.2);
+    color: var(--color-vermilion-2);
+    border-color: rgba(193, 74, 47, 0.4);
   }
 
   .entity-count.players-count {
-    background: rgba(22, 57, 63, 0.55);
-    box-shadow: 0 0 0.15em rgba(100, 100, 255, 0.6);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text-dim);
+    border-color: var(--chrome-border);
   }
 
   .entity-count.items-count {
-    background: rgba(176, 141, 74, 0.55);
-    box-shadow: 0 0 0.15em rgba(255, 215, 0, 0.6);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
+    border-color: var(--chrome-gold-border);
   }
 
   .entity-count.battles-count {
-    background: rgba(91, 26, 31, 0.65);
-    box-shadow: 0 0 0.15em rgba(139, 0, 0, 0.6);
+    background: rgba(91, 26, 31, 0.2);
+    color: var(--color-vermilion-2);
+    border-color: rgba(154, 51, 32, 0.4);
   }
 
   .entity-count.structures-count {
-    background: rgba(110, 99, 83, 0.45);
-    box-shadow: 0 0 0.15em rgba(0, 0, 0, 0.6);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--chrome-card-strong);
+    color: var(--chrome-text);
+    border-color: var(--chrome-border);
   }
 
   .sort-controls {
@@ -1767,7 +1770,7 @@
     background: none;
     border: none;
     font-size: 0.7em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     padding: 0.2em 0.4em;
     border-radius: 0.3em;
     cursor: pointer;
@@ -1776,15 +1779,15 @@
     gap: 0.2em;
     transition: all 0.2s ease;
   }
-  
+
   .sort-option:hover {
-    background-color: rgba(176, 141, 74, 0.08);
-    color: var(--color-parchment-200);
+    background-color: var(--chrome-gold-soft);
+    color: var(--chrome-text);
   }
-  
+
   .sort-option.active {
-    background-color: rgba(176, 141, 74, 0.14);
-    color: rgba(212, 177, 112, 0.95);
+    background-color: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
   }
   
   .sort-direction {
@@ -1806,12 +1809,12 @@
   
   .action-button {
     padding: 0.6em;
-    background-color: rgba(176, 141, 74, 0.12); 
-    border: 1px solid rgba(200, 200, 200, 0.3);
+    background-color: var(--chrome-gold-soft);
+    border: 1px solid var(--chrome-border);
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     font-family: var(--font-body);
     transition: all 0.2s;
     display: flex;
@@ -1821,7 +1824,7 @@
   }
 
   .action-button:hover {
-    background-color: rgba(176, 141, 74, 0.22);
+    background-color: var(--chrome-card-strong);
     transform: translateY(-1px);
   }
   
@@ -1911,12 +1914,12 @@
   
   .entity-action {
     padding: 0.4em 0.7em;
-    background-color: rgba(176, 141, 74, 0.12);
-    border: 1px solid rgba(176, 141, 74, 0.3);
+    background-color: var(--chrome-gold-soft);
+    border: 1px solid var(--chrome-gold-border);
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.82em;
-    color: var(--color-parchment-200, rgba(232, 228, 210, 0.85));
+    color: var(--chrome-text);
     font-family: var(--font-body);
     transition: background-color 0.15s, border-color 0.15s;
     display: inline-flex;
@@ -1926,9 +1929,9 @@
   }
 
   .entity-action:hover:not(:disabled) {
-    background-color: rgba(176, 141, 74, 0.22);
-    border-color: rgba(176, 141, 74, 0.5);
-    color: var(--color-parchment-100, #fbf6e7);
+    background-color: var(--chrome-card-strong);
+    border-color: var(--chrome-gold);
+    color: var(--chrome-text);
   }
 
   .entity-action:disabled {
@@ -1974,19 +1977,17 @@
   }
 
   .player-owned {
-    border-color: var(--color-bright-accent, #64ffda);
-    background-color: rgba(100, 255, 218, 0.12);
+    border-color: var(--chrome-gold-border);
+    background-color: var(--chrome-gold-soft);
     position: relative;
   }
 
   .player-owned:hover {
-    background-color: rgba(100, 255, 218, 0.18);
+    background-color: var(--chrome-card-strong);
   }
 
-  /* Brighten owned-entity text so player-owned groups read clearly against
-     the tinted background (matches the contrast of the current-player row). */
   .player-owned .entity-name {
-    color: #e6fff8;
+    color: var(--chrome-gold);
     font-weight: 600;
   }
 

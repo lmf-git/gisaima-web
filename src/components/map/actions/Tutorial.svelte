@@ -143,7 +143,7 @@
     flex-direction: column;
     gap: 0.9em;
     scrollbar-width: thin;
-    scrollbar-color: rgba(176, 141, 74, 0.25) transparent;
+    scrollbar-color: var(--chrome-gold-border) transparent;
   }
 
   .summary {
@@ -151,7 +151,7 @@
     font-style: italic;
     font-size: 0.8em;
     line-height: 1.5;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-dim);
     margin: 0;
   }
 
@@ -163,7 +163,7 @@
   }
 
   .section {
-    border: 0.075em solid rgba(176, 141, 74, 0.14);
+    border: 0.075em solid var(--chrome-gold-soft);
   }
 
   .section-hd {
@@ -171,9 +171,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(176, 141, 74, 0.06);
+    background: var(--chrome-gold-soft);
     border: none;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     padding: 0.55em 0.8em;
     font-family: var(--font-display);
     font-size: 0.7em;
@@ -183,11 +183,11 @@
     text-align: left;
     transition: background 0.12s;
   }
-  .section-hd:hover { background: rgba(176, 141, 74, 0.12); }
+  .section-hd:hover { background: var(--chrome-card-strong); }
 
   .chevron {
     font-size: 0.75em;
-    color: rgba(232, 228, 210, 0.35);
+    color: var(--chrome-text-faint);
     display: inline-block;
     transition: transform 0.15s;
     transform: rotate(0deg);
@@ -199,7 +199,7 @@
     list-style: none;
     margin: 0;
     padding: 0.5em 0.8em 0.6em;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--chrome-card);
     display: flex;
     flex-direction: column;
     gap: 0.3em;
@@ -209,7 +209,7 @@
     font-family: var(--font-editorial, serif);
     font-style: italic;
     font-size: 0.78em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-dim);
     line-height: 1.4;
     padding-left: 0.8em;
     position: relative;
@@ -218,7 +218,7 @@
     content: '·';
     position: absolute;
     left: 0;
-    color: var(--color-aged-gold, #b08d4a);
+    color: var(--chrome-gold);
   }
 
   /* Controls grid inside section-body */
@@ -231,16 +231,16 @@
   .ctrl {
     font-family: var(--font-mono);
     font-size: 0.72em;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-dim);
   }
 
   kbd {
     font-family: var(--font-mono);
     font-size: 0.85em;
-    background: rgba(255, 255, 255, 0.08);
-    border: 0.075em solid rgba(255, 255, 255, 0.15);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-field-border);
     padding: 0.1em 0.3em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   /* ── Achievements row ── */
@@ -253,9 +253,9 @@
     gap: 0.5em;
     width: 100%;
     padding: 0.5em 1em;
-    background: rgba(176, 141, 74, 0.1);
-    border: 0.075em solid rgba(176, 141, 74, 0.3);
-    color: var(--color-gold-pale, #d4b170);
+    background: var(--chrome-gold-soft);
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-gold);
     font-family: var(--font-display);
     font-size: 0.7em;
     letter-spacing: 0.14em;
@@ -264,28 +264,28 @@
     transition: background 0.12s, border-color 0.12s;
   }
   .ach-btn:hover {
-    background: rgba(176, 141, 74, 0.18);
-    border-color: var(--color-aged-gold, #b08d4a);
+    background: var(--chrome-card-strong);
+    border-color: var(--chrome-gold);
   }
 
   .help-panel :global(.ach-icon) {
     width: 1em;
     height: 1em;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
   }
 
   /* ── Guide link ── */
   .guide-link {
     font-family: var(--font-mono);
     font-size: 0.68em;
-    color: rgba(176, 141, 74, 0.7);
+    color: var(--chrome-gold);
     text-decoration: none;
     text-align: center;
     letter-spacing: 0.06em;
     transition: color 0.12s;
     flex-shrink: 0;
   }
-  .guide-link:hover { color: var(--color-gold-pale, #d4b170); }
+  .guide-link:hover { color: var(--chrome-text); }
 
   /* ── Dismiss button — hidden in dossier (close-btn global override) ── */
   .dismiss-btn {

@@ -428,25 +428,22 @@
       {#each terrainGrid as tile (tile.x + ',' + tile.y)}
         <svelte:element
           this={joined ? "button" : "div"}
-          class="terrain-tile" 
+          class="terrain-tile"
           class:center={tile.isCenter}
           class:joined={joined}
           class:interactive={joined}
           class:hovered={joined && isHovered(tile.x, tile.y)}
           style="background-color: {tile.color};"
-          aria-label={joined 
-            ? `View ${tile.biomeName} at coordinates ${tile.worldX},${tile.worldY}` 
-            : tile.biomeName
-          }
-          title={joined 
-            ? `View ${tile.biomeName} at coordinates ${tile.worldX},${tile.worldY}` 
+          aria-label={joined ? `View ${tile.biomeName} at coordinates ${tile.worldX},${tile.worldY}` : null}
+          title={joined
+            ? `View ${tile.biomeName} at coordinates ${tile.worldX},${tile.worldY}`
             : tile.biomeName
           }
           onclick={joined ? (e) => handleTileClick(tile, e) : null}
           onmouseenter={() => handleTileHover(tile.x, tile.y)}
           onmouseleave={clearHover}
           onkeydown={joined ? (e) => handleTileKeydown(tile, e) : null}
-          disabled={!joined || (isDragging && wasDrag)}
+          disabled={joined ? (isDragging && wasDrag) : null}
           type={joined ? "button" : null}
           role={joined ? "button" : "presentation"}
         ></svelte:element>
