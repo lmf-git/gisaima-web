@@ -517,7 +517,7 @@
   }
 
   .race-description {
-    font-size: 0.85em;
+    font-size: 0.95em;
     max-height: 5em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -532,7 +532,7 @@
   .race-option p {
     margin: 0;
     text-align: center;
-    color: var(--color-ink-500);
+    color: var(--color-ink-700);
   }
 
   .race-option:focus {
@@ -543,19 +543,21 @@
   /* Mobile race carousel */
   .race-carousel {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: 0.5em;
     margin: 0.5em 0 0.8em 0;
   }
 
   .race-chevron {
     flex: 0 0 auto;
-    width: 2.2em;
+    width: 1.5em;
+    height: 2.4em;
+    padding: 0;
     background: transparent;
     border: 1px solid var(--color-parchment-shadow);
     border-radius: 2px;
     color: var(--color-ink-900);
-    font-size: 1.6em;
+    font-size: 2.4em;
     line-height: 1;
     cursor: pointer;
     display: flex;
@@ -580,6 +582,8 @@
     -webkit-line-clamp: unset;
     line-clamp: unset;
     display: block;
+    font-size: 1.05em;
+    line-height: 1.5;
   }
 
   .carousel-dots {

@@ -311,6 +311,12 @@
             <span class="tick-lbl">NEXT TICK</span>
             <span class="tick-val">{tickLabel}</span>
         </a>
+
+        <!-- Player avatar — the house crest carries it on desktop but is hidden
+             on mobile, so surface a tappable profile avatar here instead. -->
+        <a class="ctx-avatar" href="/profile" aria-label="Your realm profile" title="Your realm profile">
+            <WaxSeal label={initial} color="#5b1a1f" size={28} />
+        </a>
     </header>
 {/if}
 
@@ -358,6 +364,15 @@
         height: 2em;
         width: auto;
         display: block;
+    }
+
+    /* Player profile avatar — mobile only; the house crest carries identity on
+       desktop. Sits at the right end of the bar. */
+    .ctx-avatar {
+        display: none;
+        align-items: center;
+        flex-shrink: 0;
+        text-decoration: none;
     }
 
     /* House crest block */
@@ -556,6 +571,9 @@
         .res li:nth-child(n+3) { display: inline-flex; }  /* show all five again */
         .res-val .r { display: none; }   /* drop the word, keep icon + count */
         .res-icon :global(svg) { width: 0.9em; height: 0.9em; }
+
+        /* Surface the profile avatar now the house crest is hidden. */
+        .ctx-avatar { display: inline-flex; }
     }
 
     /* Search wrapper — positions the dropdown relative to the pill */

@@ -667,7 +667,13 @@
         // Only process as tap if movement was minimal
         if (moveDistance < TAP_MOVEMENT_THRESHOLD) {
           console.log('Detected tap at:', touchX, touchY);
-          
+
+          // Suppress the browser's compatibility mouse/click events for this
+          // touch. We dispatch our own synthetic click below; without this the
+          // native click fires ~300ms later as a second click, which reopens
+          // then immediately closes the Peek wheel on a single tap.
+          event.preventDefault();
+
           // Create a synthetic click event
           const clickEvent = new MouseEvent('click', {
             bubbles: true,

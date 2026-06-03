@@ -55,10 +55,10 @@
     min-width: 2em;
     width: 2em;
     height: 2em;
-    background-color: rgba(14, 19, 32, 0.85);
-    border: 0.075em solid rgba(176, 141, 74, 0.4);
+    background-color: var(--chrome-panel-a);
+    border: 0.075em solid var(--chrome-gold-border);
     border-radius: 0;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
     padding: 0.3em;
     font-size: 0.9em;
     cursor: pointer;
@@ -75,9 +75,9 @@
   }
 
   .control-button:hover:not(:disabled) {
-    background-color: rgba(176, 141, 74, 0.16);
-    border-color: var(--color-gold-pale, #d4b170);
-    color: var(--color-parchment-100);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold);
+    color: var(--chrome-text);
   }
 
   .control-button:disabled {

@@ -793,6 +793,9 @@
   .error-text { color: var(--color-wax-red); font-style: italic; }
 
   @media (max-width: 480px) {
+    .worlds-page {
+      padding-top: 6em;
+    }
     h1 {
       font-size: 1.8rem;
       margin-bottom: 1.2rem;

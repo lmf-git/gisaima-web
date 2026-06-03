@@ -21,6 +21,11 @@
     <div class={`mobile-menu-header ${animatingOut ? 'animate-out' : 'animate-item'}`}
          style={animatingOut ? 'animation-delay: 0.2s;' : ''}>
         <h2>Menu</h2>
+        <button class="mobile-menu-close" onclick={onClose} aria-label="Close menu">
+            <svg width="1.4em" height="1.4em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+        </button>
     </div>
 
     <nav class="mobile-nav">
@@ -98,11 +103,9 @@
         max-width: 500px; /* Limit the maximum width */
         margin: 0 auto; /* Center the menu */
         box-sizing: border-box; /* Include padding in width */
-        background-color: var(--color-panel-bg);
+        background-color: var(--color-parchment-100);
         border: 0.075em solid var(--color-panel-border);
-        border-top: none;
-        border-bottom-left-radius: 2px;
-        border-bottom-right-radius: 2px;
+        border-radius: 2px;
         box-shadow: 0 0.625em 1.875em var(--color-shadow);
         padding: 1.5em;
         display: flex;
@@ -114,12 +117,31 @@
     }
 
     .mobile-menu-header {
+        position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 1.5em;
         padding-bottom: 1em;
         border-bottom: 0.075em solid var(--color-panel-border);
+    }
+
+    .mobile-menu-close {
+        position: absolute;
+        top: -0.25em;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25em;
+        background: transparent;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .mobile-menu-close:hover {
+        color: var(--color-bright-accent);
     }
 
     .mobile-menu-header h2 {

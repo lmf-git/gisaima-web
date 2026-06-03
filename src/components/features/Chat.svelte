@@ -323,7 +323,7 @@
     border: none;
     cursor: pointer;
     color: rgba(232,228,210,0.5);
-    padding: 0.2em;
+    padding: 0.35em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -517,8 +517,8 @@
   }
 
   :global(.close-icon) {
-    width: 1.1em;
-    height: 1.1em;
+    width: 1.7em;
+    height: 1.7em;
   }
 
   @media (max-width: 600px) {

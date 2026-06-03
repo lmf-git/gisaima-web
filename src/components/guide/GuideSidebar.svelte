@@ -56,12 +56,83 @@
       {/each}
     </ul>
   </nav>
+  {#if open}
+    <div
+      class="toc-backdrop"
+      onclick={() => (open = false)}
+      onkeydown={(e) => e.key === 'Escape' && (open = false)}
+      role="button"
+      tabindex="-1"
+      aria-label="Close contents"
+    ></div>
+  {/if}
 </aside>
 
 <style>
   .sidebar {
     width: 100%;
     position: relative;
+  }
+
+  /* On mobile the contents become a slide-in drawer: a small floating
+     "Contents" trigger (the toggle) over the page, and the list slides in from
+     the left with a backdrop. This keeps the TOC from sitting above the page
+     title in the document flow. */
+  @media (max-width: 899px) {
+    .sidebar {
+      position: fixed;
+      top: 6.4em;
+      right: 1em;
+      width: auto;
+      z-index: 60;
+    }
+
+    .toc {
+      background: none;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      max-height: none;
+      overflow: visible;
+    }
+
+    .toc-toggle {
+      margin: 0;
+      padding: 0.7em 1em;
+      font-size: 0.8em;
+      background: var(--color-parchment-100);
+      border: 1px solid var(--color-ink-900);
+      border-radius: 2px;
+      box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.18);
+    }
+
+    .sidebar .toc-list {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(78vw, 300px);
+      padding: 5em 1.2em 2em;
+      background: var(--color-parchment-100);
+      border-right: 1px solid var(--color-ink-900);
+      box-shadow: 0.4em 0 1.6em rgba(0, 0, 0, 0.3);
+      overflow-y: auto;
+      z-index: 61;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+    }
+    .sidebar.open .toc-list {
+      transform: translateX(0);
+    }
+
+    .toc-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 60;
+      cursor: pointer;
+    }
   }
 
   @media (min-width: 900px) {

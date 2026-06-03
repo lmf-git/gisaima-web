@@ -124,16 +124,16 @@
                 {:else if $user}
                     <Button variant="primary" href="/worlds">
                         <Stamp kind="banner" size={14} />
-                        Begin your reign
+                        Play now
                     </Button>
                 {:else}
                     <Button variant="primary" href="/signup">
                         <Stamp kind="banner" size={14} />
-                        Begin your reign
+                        Play now
                     </Button>
                 {/if}
                 <a class="ghost-link" href="/guide">
-                    Game guide
+                    Guide
                     <Stamp kind="eye" size={14} />
                 </a>
             </div>

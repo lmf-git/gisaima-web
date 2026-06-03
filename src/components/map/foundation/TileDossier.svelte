@@ -204,7 +204,7 @@
         {/if}
       </div>
       <button class="ds-close" onclick={onClose} aria-label="Close dossier">
-        <Close size="1.25em" />
+        <Close size="1.7em" />
       </button>
     </div>
 
@@ -496,7 +496,7 @@
     border: none;
     color: var(--chrome-text-dim);
     cursor: pointer;
-    padding: 0.3em 0.35em;
+    padding: 0.4em 0.45em;
     display: flex;
     align-items: center;
     flex-shrink: 0;
