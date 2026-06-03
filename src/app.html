@@ -37,6 +37,12 @@
 		<meta property="twitter:description" content="A strategic open-world MMO with elements of war, economy, and community-building. Control units, manage settlements, engage in battles, and trade resources within a dynamic world.">
 		<meta property="twitter:image" content="%sveltekit.assets%/logo.png">
 		
+		<!-- Preload the two above-the-fold fonts (Cinzel = headings / LCP <h1>,
+		     EB Garamond = body lede) so they arrive before first paint and the
+		     hero renders in its real font immediately — no swap flash to hide. -->
+		<link rel="preload" href="%sveltekit.assets%/fonts/cinzel.woff2" as="font" type="font/woff2" crossorigin />
+		<link rel="preload" href="%sveltekit.assets%/fonts/ebgaramond.woff2" as="font" type="font/woff2" crossorigin />
+
 		<!-- Apply the saved light/dark theme before first paint to avoid a flash. -->
 		<script>
 			try {

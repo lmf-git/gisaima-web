@@ -289,36 +289,20 @@
       }, (totalItems - 1) * showInterval);
 
     } else if (!isOpen && isVisible && !isExiting) {
-      // Start closing animation
+      // Start closing animation. Rather than removing sectors one-by-one in
+      // JS (which left their backgrounds lingering at partial opacity), the
+      // `.exiting` class drives a single coordinated CSS collapse — every
+      // sector scales back into the hub and fades fully, with a brief reverse
+      // stagger keyed off --i. We just unmount once that animation is done.
       isFullyOpen = false;
       isExiting = true;
 
-      // Remove buttons in REVERSE sequence (last to first)
-      let currentButtons = [...visibleButtons];
-      const removeInterval = 80; // Time between button removals (ms)
-
-      // Schedule removal of each action button in REVERSE order
-      // Start from highest index (totalItems - 2) down to 0
-      // We exclude the close button (totalItems - 1) which is removed separately
-      for (let i = totalItems - 2; i >= 0; i--) {
-        setTimeout(() => {
-          if (currentButtons.includes(i)) {
-            currentButtons = currentButtons.filter(btn => btn !== i);
-            visibleButtons = currentButtons;
-          }
-        }, (totalItems - 2 - i) * removeInterval);
-      }
-
-      // Remove the close button last
-      setTimeout(() => {
+      if (exitTimeout) clearTimeout(exitTimeout);
+      exitTimeout = setTimeout(() => {
+        isVisible = false;
+        isExiting = false;
         visibleButtons = [];
-
-        // Finally, hide the entire component
-        setTimeout(() => {
-          isVisible = false;
-          isExiting = false;
-        }, 100);
-      }, (totalItems - 1) * removeInterval);
+      }, 360);
     }
   });
 
@@ -371,7 +355,7 @@
         {@const mid = (a1 + a2) / 2}
         {@const ix = center + Math.cos(mid) * ((R + r) / 2)}
         {@const iy = center + Math.sin(mid) * ((R + r) / 2)}
-        <g class="sector" class:visible={sectorVisible} style="--i: {i}">
+        <g class="sector" class:visible={sectorVisible} style="--i: {i}; --total: {N}; transform-origin: {center}px {center}px;">
           <path
             d={sectorPath}
             class="sector-fill"
@@ -427,17 +411,41 @@
     z-index: 800;
     pointer-events: none;
     filter: drop-shadow(0 1em 2em rgba(0, 0, 0, 0.45));
-    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                opacity 0.22s ease;
   }
   .peek-container.exiting {
-    transform: translate(-50%, -50%) scale(0.85);
-    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
   }
 
   .wheel { display: block; pointer-events: none; overflow: visible; }
 
-  .sector { opacity: 0; transition: opacity 0.18s ease; pointer-events: none; }
-  .sector.visible { opacity: 1; pointer-events: auto; }
+  /* Sectors grow out of / collapse into the hub via scale, not just opacity,
+     so closing reads as a clean retraction instead of fading spokes. */
+  .sector {
+    opacity: 0;
+    transform: scale(0.45);
+    transform-box: view-box;
+    transition: opacity 0.18s ease,
+                transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .sector.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  /* Coordinated exit: every sector retracts toward the hub with a short
+     reverse stagger (outer/last-shown leaves first). Higher specificity than
+     `.sector.visible` so it wins even while .visible is still set. */
+  .peek-container.exiting .sector {
+    opacity: 0;
+    transform: scale(0.45);
+    transition: opacity 0.16s ease,
+                transform 0.2s cubic-bezier(0.4, 0, 1, 1);
+    transition-delay: calc((var(--total) - var(--i)) * 0.028s);
+  }
 
   .outer-ring {
     fill: var(--chrome-bg);

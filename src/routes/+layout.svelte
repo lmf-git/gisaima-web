@@ -9,12 +9,8 @@
     import XIcon from '../components/icons/XIcon.svelte';
     import DiscordIcon from '../components/icons/DiscordIcon.svelte';
     import GitHubIcon from '../components/icons/GitHubIcon.svelte'; 
-    import MobileMenu from '../components/MobileMenu.svelte';
     import { isAuthReady, game } from '../lib/stores/game.js';
     import HamburgerIcon from '../components/icons/HamburgerIcon.svelte';
-    import GuestWarning from '../components/features/GuestWarning.svelte';
-    import WorldContextBar from '../components/features/WorldContextBar.svelte';
-    import LeftRail from '../components/map/foundation/LeftRail.svelte';
     import { theme, toggleTheme } from '$lib/stores/theme.js';
     import Stamp from '../components/ui/Stamp.svelte';
 
@@ -92,6 +88,35 @@
 
     // Derived state for UI loading conditions
     const headerLoading = $derived($userLoading || !$isAuthReady);
+
+    // Conditionally-rendered chrome is dynamically imported so its JS + (render-
+    // blocking) CSS stay off the home page's critical path. Each chunk is fetched
+    // only the first time its trigger condition becomes true:
+    //   • MobileMenu       — when the mobile menu is opened
+    //   • GuestWarning     — for returning guests due a conversion nudge
+    //   • WorldContextBar  } the world dossier — only on the map and world-scoped
+    //   • LeftRail         } routes, never on the marketing site
+    let MobileMenu = $state(null);
+    let GuestWarning = $state(null);
+    let WorldContextBar = $state(null);
+    let LeftRail = $state(null);
+
+    $effect(() => {
+        if ((mobileMenuOpen || menuAnimatingOut) && !MobileMenu)
+            import('../components/MobileMenu.svelte').then((m) => (MobileMenu = m.default));
+    });
+    $effect(() => {
+        if (showDossier) {
+            if (!WorldContextBar)
+                import('../components/features/WorldContextBar.svelte').then((m) => (WorldContextBar = m.default));
+            if (!LeftRail)
+                import('../components/map/foundation/LeftRail.svelte').then((m) => (LeftRail = m.default));
+        }
+    });
+    $effect(() => {
+        if ((showGuestWarning || guestWarningAnimatingOut) && $user?.isGuest && !GuestWarning)
+            import('../components/features/GuestWarning.svelte').then((m) => (GuestWarning = m.default));
+    });
 
     // `worldKey` can be restored from localStorage before (or without) the
     // player ever having joined that world, so it's not enough on its own to
@@ -199,7 +224,7 @@
             />
         </button>
 
-        {#if (mobileMenuOpen || menuAnimatingOut)}
+        {#if (mobileMenuOpen || menuAnimatingOut) && MobileMenu}
             <MobileMenu
                 onClose={closeMobileMenu}
                 currentPath={$page.url.pathname}
@@ -214,8 +239,8 @@
 
     <main class="main-content">
         {#if showDossier}
-            <LeftRail />
-            <WorldContextBar />
+            {#if LeftRail}<LeftRail />{/if}
+            {#if WorldContextBar}<WorldContextBar />{/if}
         {/if}
         {@render children?.()}
     </main>
@@ -307,8 +332,8 @@
     {/if}
 
     <!-- Add the Guest Warning component -->
-    {#if (showGuestWarning || guestWarningAnimatingOut) && $user?.isGuest}
-        <GuestWarning 
+    {#if (showGuestWarning || guestWarningAnimatingOut) && $user?.isGuest && GuestWarning}
+        <GuestWarning
             onClose={closeGuestWarning}
             animatingOut={guestWarningAnimatingOut}
         />
@@ -322,7 +347,8 @@
         font-style: normal;
         font-weight: 400 900;
         font-display: swap;
-        src: url('/fonts/cinzel.ttf') format('truetype');
+        src: url('/fonts/cinzel.woff2') format('woff2'),
+             url('/fonts/cinzel.ttf') format('truetype');
     }
 
     @font-face {
@@ -330,7 +356,8 @@
         font-style: normal;
         font-weight: 400 800;
         font-display: swap;
-        src: url('/fonts/ebgaramond.ttf') format('truetype');
+        src: url('/fonts/ebgaramond.woff2') format('woff2'),
+             url('/fonts/ebgaramond.ttf') format('truetype');
     }
 
     @font-face {
@@ -338,7 +365,8 @@
         font-style: italic;
         font-weight: 400 800;
         font-display: swap;
-        src: url('/fonts/ebgaramond-italic.ttf') format('truetype');
+        src: url('/fonts/ebgaramond-italic.woff2') format('woff2'),
+             url('/fonts/ebgaramond-italic.ttf') format('truetype');
     }
 
     @font-face {
@@ -346,7 +374,8 @@
         font-style: normal;
         font-weight: 400;
         font-display: swap;
-        src: url('/fonts/imfellenglish.ttf') format('truetype');
+        src: url('/fonts/imfellenglish.woff2') format('woff2'),
+             url('/fonts/imfellenglish.ttf') format('truetype');
     }
 
     @font-face {
@@ -354,7 +383,8 @@
         font-style: italic;
         font-weight: 400;
         font-display: swap;
-        src: url('/fonts/imfellenglish-italic.ttf') format('truetype');
+        src: url('/fonts/imfellenglish-italic.woff2') format('woff2'),
+             url('/fonts/imfellenglish-italic.ttf') format('truetype');
     }
 
     @font-face {
@@ -362,7 +392,8 @@
         font-style: normal;
         font-weight: 100 800;
         font-display: swap;
-        src: url('/fonts/jetbrainsmono.ttf') format('truetype');
+        src: url('/fonts/jetbrainsmono.woff2') format('woff2'),
+             url('/fonts/jetbrainsmono.ttf') format('truetype');
     }
 
     @font-face {
@@ -370,7 +401,8 @@
         font-style: italic;
         font-weight: 100 800;
         font-display: swap;
-        src: url('/fonts/jetbrainsmono-italic.ttf') format('truetype');
+        src: url('/fonts/jetbrainsmono-italic.woff2') format('woff2'),
+             url('/fonts/jetbrainsmono-italic.ttf') format('truetype');
     }
 
     :global(*) {
@@ -1189,19 +1221,10 @@
     .header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         padding: 1em 2em;
         position: absolute;
         top: 0;
         left: 0;
-        /* right: 0; */
-        z-index: 100;
-        height: 6em;
-        gap: 3em;
-
-        align-items: center;
-        justify-content: space-between;
-        padding: 1em 2em;
         z-index: 100;
         height: 6em;
         width: 100%;
@@ -1435,7 +1458,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 150px;
+        max-width: 16em;
         order: -1;
     }
 

@@ -1398,162 +1398,117 @@
               {#each sortedBattles as battle}
                 <div class="entity battle">
                   <div class="battle-header">
-                    <div class="entity-name">
-                      Battle {battle.id.substring(battle.id.lastIndexOf('_') + 1)}
+                    <div class="battle-header-left">
+                      <Swords size="1.1em" extraClass="battle-icon" />
+                      {#if battle.tickCount > 0}
+                        <span class="battle-status-tag">Round {battle.tickCount}</span>
+                      {:else}
+                        <span class="battle-status-tag new">New</span>
+                      {/if}
                     </div>
-                    
-                    <div class="battle-status-wrapper">
-                      <div class="battle-status">
-                        {#if battle.tickCount > 0}
-                          <span class="battle-status-tag">Active</span>
-                        {:else}
-                          <span class="battle-status-tag new">New</span>
+                    {#if battle.side1?.casualties > 0 || battle.side2?.casualties > 0}
+                      <div class="battle-casualties">
+                        {#if battle.side1?.casualties > 0}
+                          <span class="casualties-tag">-{battle.side1.casualties}</span>
+                        {/if}
+                        {#if battle.side2?.casualties > 0}
+                          <span class="casualties-tag">-{battle.side2.casualties}</span>
                         {/if}
                       </div>
-                      
-                      <div class="battle-timer">
-                        Tick: {battle.tickCount || 0}
-                      </div>
-                    </div>
+                    {/if}
                   </div>
-                  
-                  <div class="entity-battle-icon"><Swords size="1.2em" extraClass="battle-icon" /></div>
-                  
+
                   <div class="battle-sides">
                     <div class="battle-side side1 {getWinningSideClass(battle, 1)}">
                       <div class="side-name">{battle?.side1?.name || 'Attackers'}</div>
-                      <div class="side-units">
-                        {#if battle?.side1?.groups}
-                          <div class="unit-count">
-                            {#if Object.keys(battle.side1.groups).length > 0}
-                              Groups: {Object.keys(battle.side1.groups).length}
-                              
-                              <!-- Show units detail if available -->
-                              {#if battle.side1.units || Object.values(battle.side1.groups).some(g => g.units)}
-                                ({getUnitCountForSide(battle, 1)} units)
-                              {/if}
-                              
-                              {#if battle.side1.casualties > 0}
-                                <span class="casualties-tag">
-                                  -{battle.side1.casualties}
-                                </span>
-                              {/if}
-                            {/if}
-                          </div>
-                          
-                          <!-- Add detailed groups display -->
-                          <div class="battle-groups-details">
-                            {#each Object.entries(battle.side1.groups) as [groupId, group]}
-                              <div class="battle-group">
-                                <div class="group-info">
-                                  <span class="group-race">{_fmt(group.race || 'unknown')}</span>
-                                  <span class="group-type">{_fmt(group.type || 'group')}</span>
-                                  
-                                  <!-- Add group power calculation -->
-                                  {#if typeof calculateGroupPower === 'function'}
-                                    {@const groupPower = calculateGroupPower(group)}
-                                    {@const itemPower = calculateItemPower(group)}
-                                    <span class="group-power-info">
-                                      Power: {groupPower}
-                                      {#if itemPower > 0}
-                                        <span class="item-power-bonus">(+{itemPower} from items)</span>
-                                      {/if}
-                                    </span>
-                                  {/if}
-                                </div>
-                                
-                                {#if group.units && Object.keys(group.units).length > 0}
-                                  <div class="battle-units">
-                                    <!-- Replace individual unit listing with counts by type -->
-                                    {#each countUnitsByType(group.units) as unitType}
-                                      <div class="unit-type-summary">
-                                        <span class="unit-type-name">
-                                          {_fmt(unitType.type)}
-                                          <!-- Only show race if it's different from type (case insensitive) -->
-                                          {#if unitType.race && unitType.type !== 'player' && 
-                                              unitType.type.toLowerCase() !== unitType.race.toLowerCase()}
-                                            <span class="unit-race-tag">{_fmt(unitType.race)}</span>
-                                          {/if}
-                                        </span>
-                                        <span class="unit-count-badge">×{unitType.count}</span>
-                                      </div>
-                                    {/each}
-                                  </div>
+                      {#if battle?.side1?.groups}
+                        <div class="battle-groups-details">
+                          {#each Object.entries(battle.side1.groups) as [groupId, group]}
+                            <div class="battle-group">
+                              <div class="group-info">
+                                {#if group.type && (!group.race || group.race.toLowerCase() === group.type.toLowerCase())}
+                                  <span class="group-type">{_fmt(group.type)}</span>
+                                {:else}
+                                  {#if group.race}<span class="group-race">{_fmt(group.race)}</span>{/if}
+                                  {#if group.type}<span class="group-type">{_fmt(group.type)}</span>{/if}
+                                {/if}
+                                {#if typeof calculateGroupPower === 'function'}
+                                  {@const groupPower = calculateGroupPower(group)}
+                                  {@const itemPower = calculateItemPower(group)}
+                                  <span class="group-power-info">
+                                    Power: {groupPower}
+                                    {#if itemPower > 0}
+                                      <span class="item-power-bonus">+{itemPower}</span>
+                                    {/if}
+                                  </span>
                                 {/if}
                               </div>
-                            {/each}
-                          </div>
-                        {/if}
-                      </div>
+                              {#if group.units && Object.keys(group.units).length > 0}
+                                <div class="battle-units">
+                                  {#each countUnitsByType(group.units) as unitType}
+                                    <div class="unit-type-summary">
+                                      <span class="unit-type-name">
+                                        {_fmt(unitType.type)}
+                                        {#if unitType.race && unitType.type !== 'player' && unitType.type.toLowerCase() !== unitType.race.toLowerCase()}
+                                          <span class="unit-race-tag">{_fmt(unitType.race)}</span>
+                                        {/if}
+                                      </span>
+                                      <span class="unit-count-badge">×{unitType.count}</span>
+                                    </div>
+                                  {/each}
+                                </div>
+                              {/if}
+                            </div>
+                          {/each}
+                        </div>
+                      {/if}
                     </div>
-                    
+
                     <div class="battle-vs">vs</div>
-                    
+
                     <div class="battle-side side2 {getWinningSideClass(battle, 2)}">
                       <div class="side-name">{battle?.side2?.name || 'Defenders'}</div>
-                      <div class="side-units">
-                        {#if battle?.side2?.groups}
-                          <div class="unit-count">
-                            {#if Object.keys(battle.side2.groups).length > 0}
-                              Groups: {Object.keys(battle.side2.groups).length}
-                              
-                              <!-- Show units detail if available -->
-                              {#if battle.side2.units || Object.values(battle.side2.groups).some(g => g.units)}
-                                ({getUnitCountForSide(battle, 2)} units)
-                              {/if}
-                              
-                              {#if battle.side2.casualties > 0}
-                                <span class="casualties-tag">
-                                  -{battle.side2.casualties}
-                                </span>
-                              {/if}
-                            {/if}
-                          </div>
-                          
-                          <!-- Add detailed groups display for side 2 -->
-                          <div class="battle-groups-details">
-                            {#each Object.entries(battle.side2.groups) as [groupId, group]}
-                              <div class="battle-group">
-                                <div class="group-info">
-                                  <span class="group-race">{_fmt(group.race || 'unknown')}</span>
-                                  <span class="group-type">{_fmt(group.type || 'group')}</span>
-                                  
-                                  <!-- Add group power calculation -->
-                                  {#if typeof calculateGroupPower === 'function'}
-                                    {@const groupPower = calculateGroupPower(group)}
-                                    {@const itemPower = calculateItemPower(group)}
-                                    <span class="group-power-info">
-                                      Power: {groupPower}
-                                      {#if itemPower > 0}
-                                        <span class="item-power-bonus">(+{itemPower} from items)</span>
-                                      {/if}
-                                    </span>
-                                  {/if}
-                                </div>
-                                
-                                {#if group.units && Object.keys(group.units).length > 0}
-                                  <div class="battle-units">
-                                    <!-- Replace individual unit listing with counts by type -->
-                                    {#each countUnitsByType(group.units) as unitType}
-                                      <div class="unit-type-summary">
-                                        <span class="unit-type-name">
-                                          {_fmt(unitType.type)}
-                                          <!-- Only show race if it's different from type (case insensitive) -->
-                                          {#if unitType.race && unitType.type !== 'player' && 
-                                              unitType.type.toLowerCase() !== unitType.race.toLowerCase()}
-                                            <span class="unit-race-tag">{_fmt(unitType.race)}</span>
-                                          {/if}
-                                        </span>
-                                        <span class="unit-count-badge">×{unitType.count}</span>
-                                      </div>
-                                    {/each}
-                                  </div>
+                      {#if battle?.side2?.groups}
+                        <div class="battle-groups-details">
+                          {#each Object.entries(battle.side2.groups) as [groupId, group]}
+                            <div class="battle-group">
+                              <div class="group-info">
+                                {#if group.type && (!group.race || group.race.toLowerCase() === group.type.toLowerCase())}
+                                  <span class="group-type">{_fmt(group.type)}</span>
+                                {:else}
+                                  {#if group.race}<span class="group-race">{_fmt(group.race)}</span>{/if}
+                                  {#if group.type}<span class="group-type">{_fmt(group.type)}</span>{/if}
+                                {/if}
+                                {#if typeof calculateGroupPower === 'function'}
+                                  {@const groupPower = calculateGroupPower(group)}
+                                  {@const itemPower = calculateItemPower(group)}
+                                  <span class="group-power-info">
+                                    Power: {groupPower}
+                                    {#if itemPower > 0}
+                                      <span class="item-power-bonus">+{itemPower}</span>
+                                    {/if}
+                                  </span>
                                 {/if}
                               </div>
-                            {/each}
-                          </div>
-                        {/if}
-                      </div>
+                              {#if group.units && Object.keys(group.units).length > 0}
+                                <div class="battle-units">
+                                  {#each countUnitsByType(group.units) as unitType}
+                                    <div class="unit-type-summary">
+                                      <span class="unit-type-name">
+                                        {_fmt(unitType.type)}
+                                        {#if unitType.race && unitType.type !== 'player' && unitType.type.toLowerCase() !== unitType.race.toLowerCase()}
+                                          <span class="unit-race-tag">{_fmt(unitType.race)}</span>
+                                        {/if}
+                                      </span>
+                                      <span class="unit-count-badge">×{unitType.count}</span>
+                                    </div>
+                                  {/each}
+                                </div>
+                              {/if}
+                            </div>
+                          {/each}
+                        </div>
+                      {/if}
                     </div>
                   </div>
                   
@@ -1993,7 +1948,7 @@
 
   .player-owned .entity-race,
   .player-owned .entity-details {
-    color: rgba(230, 255, 248, 0.75);
+    color: var(--chrome-text-dim);
   }
 
   .player-owned::after {
@@ -2049,7 +2004,7 @@
 
   .item-quantity {
     font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-faint);
     margin-left: 0.2em;
     margin-right: 0.5em;
   }
@@ -2068,20 +2023,15 @@
     margin-bottom: 0.5em;
   }
   
-  .battle-status-wrapper {
+  .battle-header-left {
     display: flex;
     align-items: center;
-    gap: 0.6em;
+    gap: 0.5em;
   }
-  
-  /* Fix battle icon positioning */
-  .entity-battle-icon {
-    position: absolute;
-    top: 0.5em;
-    right: 0.5em;
-    font-size: 1.2em;
-    opacity:  0.7;
-    z-index: 1;
+
+  .battle-casualties {
+    display: flex;
+    gap: 0.3em;
   }
   
   /* Stack battle sides vertically — the dossier column is too narrow for
@@ -2108,14 +2058,14 @@
     background-color: rgba(120, 170, 255, 0.1);
     border: 1px solid rgba(120, 170, 255, 0.28);
     border-left: 3px solid rgba(120, 170, 255, 0.7);
-    color: #cfe0ff;
+    color: var(--chrome-text);
   }
 
   .battle-side.side2 {
     background-color: rgba(255, 130, 130, 0.1);
     border: 1px solid rgba(255, 130, 130, 0.28);
     border-left: 3px solid rgba(255, 130, 130, 0.7);
-    color: #ffd4d4;
+    color: var(--chrome-text);
   }
 
   /* vs divider sits between the stacked sides */
@@ -2128,14 +2078,7 @@
     font-size: 0.85em;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(232, 228, 210, 0.5);
-  }
-
-  .battle-timer {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.85em;
-    color: #d32f2f;
-    white-space: nowrap;
+    color: var(--chrome-text-faint);
   }
 
   /* Improve progress bar positioning for horizontal layout */
@@ -2447,8 +2390,8 @@
     margin-bottom: 0.6em;
     padding: 0.5em 0.7em;
     border-radius: 0.3em;
-    background-color: rgba(26, 32, 48, 0.55);
-    border: 1px solid rgba(176, 141, 74, 0.15);
+    background-color: var(--chrome-card);
+    border: 1px solid var(--chrome-gold-border);
     transition: background-color 0.2s ease;
     position: relative;
     cursor: pointer;

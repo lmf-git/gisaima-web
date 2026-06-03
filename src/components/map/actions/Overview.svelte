@@ -15,6 +15,7 @@
   import Close from '../../icons/Close.svelte';
   import Monster from '../../icons/Monster.svelte';
   import Swords from '../../icons/Swords.svelte';
+  import Chevron from '../../icons/Chevron.svelte';
   
   // Import the new GroupStatus component
   import GroupStatus from './GroupStatus.svelte';
@@ -460,7 +461,7 @@
 >
   <div class="entities-panel">
     <h3 class="title">
-      Map Entities
+      Overview
       <span class="subtitle">{visibleChunks} chunks visible</span>
       
       <!-- Replace the close button to match the size in Details component -->
@@ -470,7 +471,7 @@
         aria-label="Close map entities panel"
         onkeydown={(e) => e.key === 'Escape' && onClose()}
       >
-        <Close size="1.6em" extraClass="close-icon-dark" />
+        <Close size="1.6em" />
       </button>
     </h3>
     
@@ -925,12 +926,13 @@
                           • <span class="item-count">{getGroupItemCount(group)} items</span>
                         {/if}
                         {#if getGroupUnitCount(group) > 0}
-                          <button 
+                          <button
                             class="toggle-units-btn"
                             onclick={(e) => toggleGroupDetails(group.id, e)}
                             aria-expanded={!!expandedGroups[group.id]}
+                            aria-label={expandedGroups[group.id] ? 'Hide units' : 'Show units'}
                           >
-                            {expandedGroups[group.id] ? 'Hide' : 'Show'}
+                            <Chevron size="0.9em" direction={expandedGroups[group.id] ? 'up' : 'down'} />
                           </button>
                         {/if}
                       </span>
@@ -948,9 +950,7 @@
                         {#each Object.entries(group.units) as [unitId, unit]}
                           <div class="group-unit">
                             <div class="unit-icon">
-                              {#if unit.type === 'monster'}
-                                <Monster extraClass="unit-race-icon" />
-                              {:else if unit.race}
+                              {#if unit.race}
                                 {#if unit.race.toLowerCase() === 'human'}
                                   <Human extraClass="unit-race-icon" />
                                 {:else if unit.race.toLowerCase() === 'elf'}
@@ -961,7 +961,11 @@
                                   <Goblin extraClass="unit-race-icon" />
                                 {:else if unit.race.toLowerCase() === 'fairy'}
                                   <Fairy extraClass="unit-race-icon" />
+                                {:else}
+                                  <Monster extraClass="unit-race-icon" />
                                 {/if}
+                              {:else if unit.type !== 'player'}
+                                <Monster extraClass="unit-race-icon" />
                               {/if}
                             </div>
                             <div class="unit-info">
@@ -2171,5 +2175,25 @@
     font-size: 0.8em;
     color: rgba(0, 0, 0, 0.6);
     font-weight: 400;
+  }
+
+  .toggle-units-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.1em 0.2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--chrome-text-dim);
+    border-radius: 0.2em;
+    vertical-align: middle;
+    margin-left: 0.2em;
+    transition: color 0.15s, background-color 0.15s;
+  }
+
+  .toggle-units-btn:hover {
+    color: var(--chrome-text);
+    background-color: var(--chrome-gold-soft);
   }
 </style>

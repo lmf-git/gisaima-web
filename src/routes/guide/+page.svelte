@@ -46,17 +46,16 @@
     }
 
     const sections = document.querySelectorAll('.guide-section');
+    // rootMargin fires when the section's top edge crosses 15% from the top of
+    // the viewport, keeping the active TOC item in sync even for tall sections.
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) activeSection = entry.target.id;
       });
-    }, { threshold: 0.6 });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
 
     sections.forEach(section => observer.observe(section));
 
-    // Separate reveal observer: fades + slides each section into view. The
-    // active-section observer above uses a 0.6 threshold, too high to reveal
-    // tall sections, so reveals get their own low-threshold observer.
     const revealEls = document.querySelectorAll('.guide-content .reveal, .guide-section');
     let revealObserver;
     if (typeof IntersectionObserver !== 'undefined') {
@@ -67,7 +66,7 @@
             revealObserver.unobserve(entry.target);
           }
         }
-      }, { threshold: 0.12 });
+      }, { threshold: 0 });
       revealEls.forEach(el => revealObserver.observe(el));
     } else {
       revealEls.forEach(el => el.classList.add('in-view'));

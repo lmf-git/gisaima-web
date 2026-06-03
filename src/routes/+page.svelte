@@ -1,13 +1,10 @@
 <script>
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { get } from 'svelte/store';
     import { user } from '$lib/stores/user.js';
     import { game } from '$lib/stores/game.js';
     import { apiGet } from '$lib/api.js';
-    import { headerRevealed, HEADER_REVEAL_MS } from '$lib/stores/ui.js';
     import CompassRose from '../components/ui/CompassRose.svelte';
-    import WorldCard from '../components/specific/worlds/WorldCard.svelte';
     import Flourish from '../components/ui/Flourish.svelte';
     import Stamp from '../components/ui/Stamp.svelte';
     import Button from '../components/ui/Button.svelte';
@@ -16,12 +13,12 @@
     let loading = $state(true);
     let pageEl = $state(null);
 
-    // On first load the above-the-fold hero waits for the header to reveal so
-    // the two cascade in sequence; once the header has revealed (every later
-    // navigation back to home) the hero reveals immediately with no offset.
-    // Snapshot once at init — must NOT be reactive, or the offset would drop
-    // mid-animation when the header finishes and snap the stagger.
-    const heroBase = get(headerRevealed) ? 0 : HEADER_REVEAL_MS;
+    // The hero reveals immediately on load. It used to wait out the full header
+    // cascade (HEADER_REVEAL_MS) to hide the slow webfont swap, but the fonts are
+    // now preloaded woff2 and arrive before first paint, so the heading can paint
+    // in its real font right away — gating it only hurt LCP. Kept as a `0` base so
+    // the per-element stagger below (heroBase + 150, +300, …) still reads clearly.
+    const heroBase = 0;
 
     // Pull real worlds (their seeds drive the live previews)
     onMount(async () => {
@@ -76,6 +73,15 @@
     }
 
     const featured = $derived(worlds[0]);
+
+    // The world preview dial only appears once a real world has loaded, so its
+    // component (and heavy terrain-rendering CSS) is dynamically imported off the
+    // critical path rather than blocking the hero's first paint.
+    let WorldCard = $state(null);
+    $effect(() => {
+        if (featured && !WorldCard)
+            import('../components/specific/worlds/WorldCard.svelte').then((m) => (WorldCard = m.default));
+    });
 
     const stats = $derived([
         { n: worlds.length || '∞', l: 'Realms' },
@@ -155,16 +161,18 @@
             {#if featured}
                 <div class="dial" transition:fade={{ duration: 400 }}>
                     <div class="dial-inner">
-                        <WorldCard
-                            worldId={idOf(featured)}
-                            seed={seedOf(featured, 87)}
-                            world={featured}
-                            worldCenter={centerOf(featured)}
-                            joined={!!$user}
-                            tileSize={6}
-                            maxCols={27}
-                            maxRows={27}
-                        />
+                        {#if WorldCard}
+                            <WorldCard
+                                worldId={idOf(featured)}
+                                seed={seedOf(featured, 87)}
+                                world={featured}
+                                worldCenter={centerOf(featured)}
+                                joined={!!$user}
+                                tileSize={6}
+                                maxCols={27}
+                                maxRows={27}
+                            />
+                        {/if}
                     </div>
                 </div>
                 <div class="tick-chip" transition:fade={{ duration: 400 }}>

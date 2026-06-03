@@ -74,17 +74,16 @@
     position: relative;
   }
 
-  /* On mobile the contents become a slide-in drawer: a small floating
-     "Contents" trigger (the toggle) over the page, and the list slides in from
-     the left with a backdrop. This keeps the TOC from sitting above the page
-     title in the document flow. */
+  /* On mobile the TOC becomes a slide-in drawer. The "Contents" trigger sits
+     in the bottom-left corner so it doesn't overlap the header and is easy to
+     reach. The drawer slides in from the left with a full-screen backdrop. */
   @media (max-width: 899px) {
     .sidebar {
       position: fixed;
-      top: 6.4em;
-      right: 1em;
+      bottom: 1.5em;
+      left: 1em;
       width: auto;
-      z-index: 60;
+      z-index: 122;
     }
 
     .toc {
@@ -98,12 +97,13 @@
 
     .toc-toggle {
       margin: 0;
-      padding: 0.7em 1em;
-      font-size: 0.8em;
+      padding: 0.6em 1.1em;
+      font-size: 0.85em;
       background: var(--color-parchment-100);
       border: 1px solid var(--color-ink-900);
-      border-radius: 2px;
-      box-shadow: 0 0.4em 1.2em rgba(0, 0, 0, 0.18);
+      border-radius: 2em;
+      box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.22);
+      gap: 0.5em;
     }
 
     .sidebar .toc-list {
@@ -118,7 +118,7 @@
       border-right: 1px solid var(--color-ink-900);
       box-shadow: 0.4em 0 1.6em rgba(0, 0, 0, 0.3);
       overflow-y: auto;
-      z-index: 61;
+      z-index: 121;
       transform: translateX(-100%);
       transition: transform 0.25s ease;
     }
@@ -130,7 +130,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.4);
-      z-index: 60;
+      z-index: 120;
       cursor: pointer;
     }
   }
