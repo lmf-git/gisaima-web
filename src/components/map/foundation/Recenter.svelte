@@ -177,9 +177,8 @@
 <style>
   .recenter-button {
     position: fixed;
-    top: 35%;
-    right: 1em;
-    transform: translateY(-50%);
+    bottom: 2em;
+    left: 1em;
     background: rgba(14, 19, 32, 0.85);
     border: 1px solid rgba(176, 141, 74, 0.4);
     border-radius: 0;
@@ -208,24 +207,17 @@
     border-color: var(--color-gold-pale);
   }
 
-  /* When the tile dossier is open it covers the right edge where this button
-     normally sits. On desktop the dossier is a 28em right panel, so slide the
-     button clear of it; on mobile it's a bottom drawer, so lift the button to
-     the top instead. */
-  @media (min-width: 701px) {
-    :global(.map.dossier-open) .recenter-button {
-      right: calc(28em + 1em);
-    }
-  }
+  /* On mobile the LeftRail becomes a 52px bottom tab bar; lift above it. */
   @media (max-width: 700px) {
-    :global(.map.dossier-open) .recenter-button {
-      top: 5em;
+    .recenter-button {
+      bottom: calc(52px + 1em + env(safe-area-inset-bottom));
+      left: 1em;
     }
   }
 
   @keyframes pulseButton {
-    0% { transform: translateY(-50%) scale(1); }
-    100% { transform: translateY(-50%) scale(1.04); }
+    0% { transform: scale(1); }
+    100% { transform: scale(1.04); }
   }
 
   :global(.torch-icon-button) {

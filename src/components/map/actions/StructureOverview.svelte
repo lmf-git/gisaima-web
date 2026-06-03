@@ -1261,7 +1261,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     font-family: var(--font-body, 'EB Garamond', serif);
     overflow: hidden;
   }
@@ -1279,7 +1279,7 @@
     align-items: center;
     gap: 0.85em;
     padding-bottom: 0.85em;
-    border-bottom: 0.075em solid rgba(255, 255, 255, 0.06);
+    border-bottom: 0.075em solid var(--chrome-hairline);
     margin-bottom: 0.85em;
   }
 
@@ -1307,14 +1307,14 @@
     font-size: 0.88em;
     font-weight: 500;
     letter-spacing: 0.07em;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
   }
 
   .structure-description {
     font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
     font-size: 0.82em;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-dim);
     line-height: 1.4;
   }
 
@@ -1357,8 +1357,8 @@
   /* ── Collapsible sections ── */
   .entities-section {
     margin-bottom: 0.6em;
-    border: 0.075em solid rgba(176, 141, 74, 0.15);
-    background: rgba(255, 255, 255, 0.02);
+    border: 0.075em solid var(--chrome-hairline);
+    background: var(--chrome-field-bg);
   }
 
   .section-header {
@@ -1366,25 +1366,25 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5em 0.8em;
-    background: rgba(176, 141, 74, 0.05);
+    background: var(--chrome-gold-soft);
     cursor: pointer;
     user-select: none;
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
+    border-bottom: 0.075em solid var(--chrome-hairline);
   }
 
-  .section-header:hover { background: rgba(176, 141, 74, 0.09); }
+  .section-header:hover { background: var(--chrome-gold-soft); filter: brightness(1.08); }
 
   .collapse-button {
     background: none;
     border: none;
-    color: rgba(232, 228, 210, 0.4);
+    color: var(--chrome-text-faint);
     font-size: 0.75em;
     cursor: pointer;
     padding: 0.2em 0.4em;
     transition: color 0.15s;
     line-height: 1;
   }
-  .collapse-button:hover { color: var(--color-gold-pale, #d4b170); }
+  .collapse-button:hover { color: var(--chrome-gold); }
 
   h4 {
     margin: 0;
@@ -1410,7 +1410,7 @@
     align-items: baseline;
     font-size: 0.82em;
     padding-bottom: 0.4em;
-    border-bottom: 0.04em solid rgba(255, 255, 255, 0.05);
+    border-bottom: 0.04em solid var(--chrome-hairline);
   }
 
   .info-label {
@@ -1422,7 +1422,7 @@
 
   .info-value {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
   }
 
   h5 {
@@ -1436,9 +1436,9 @@
   }
 
   .features-list, .upgrade-requirements, .new-features {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--chrome-field-bg);
     padding: 0.55em;
-    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    border: 0.075em solid var(--chrome-hairline);
   }
 
   .feature-item, .new-feature-item {
@@ -1447,7 +1447,7 @@
     gap: 0.55em;
     margin-bottom: 0.45em;
     padding-bottom: 0.45em;
-    border-bottom: 0.04em solid rgba(255, 255, 255, 0.05);
+    border-bottom: 0.04em solid var(--chrome-hairline);
   }
   .feature-item:last-child, .new-feature-item:last-child {
     margin-bottom: 0;
@@ -1472,7 +1472,7 @@
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.8em;
     letter-spacing: 0.06em;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     margin-bottom: 0.15em;
   }
 
@@ -1480,7 +1480,7 @@
     font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
     font-size: 0.78em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
   }
 
   /* ── Upgrade section ── */
@@ -1505,9 +1505,9 @@
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.78em;
     padding: 0.3em 0.55em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 0.075em solid rgba(176, 141, 74, 0.12);
-    color: rgba(232, 228, 210, 0.75);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-hairline);
+    color: var(--chrome-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1536,15 +1536,15 @@
   .storage-tabs {
     display: flex;
     margin-bottom: 0.7em;
-    border: 0.075em solid rgba(176, 141, 74, 0.2);
+    border: 0.075em solid var(--chrome-gold-border);
   }
 
   .tab-button {
     flex: 1;
     padding: 0.45em 0.7em;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--chrome-field-bg);
     border: none;
-    border-right: 0.075em solid rgba(176, 141, 74, 0.18);
+    border-right: 0.075em solid var(--chrome-hairline);
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.65em;
     letter-spacing: 0.14em;
@@ -1554,22 +1554,22 @@
     align-items: center;
     justify-content: center;
     gap: 0.4em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
     transition: background 0.15s, color 0.15s;
   }
   .tab-button:last-child { border-right: none; }
   .tab-button.active {
-    background: rgba(176, 141, 74, 0.12);
-    color: var(--color-gold-pale, #d4b170);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-gold);
   }
   .tab-button:hover:not(.active) {
-    background: rgba(176, 141, 74, 0.06);
-    color: rgba(232, 228, 210, 0.8);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-text);
   }
 
   .tab-count {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
-    background: rgba(176, 141, 74, 0.15);
+    background: var(--chrome-gold-soft);
     padding: 0.1em 0.4em;
     font-size: 0.85em;
   }
@@ -1580,7 +1580,7 @@
     text-align: center;
     font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
-    color: rgba(232, 228, 210, 0.35);
+    color: var(--chrome-text-faint);
     font-size: 0.85em;
   }
 
@@ -1599,12 +1599,12 @@
     align-items: flex-start;
     margin-bottom: 0.35em;
     padding: 0.45em 0.65em;
-    background: rgba(255, 255, 255, 0.02);
-    border: 0.075em solid rgba(176, 141, 74, 0.12);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-hairline);
     transition: background 0.15s;
   }
   .entity:last-child { margin-bottom: 0; }
-  .entity:hover { background: rgba(176, 141, 74, 0.06); }
+  .entity:hover { background: var(--chrome-gold-soft); }
 
   .item-info { flex: 1; }
 
@@ -1612,14 +1612,14 @@
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.8em;
     letter-spacing: 0.05em;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     margin-bottom: 0.15em;
   }
 
   .item-quantity {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.88em;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-dim);
     margin-left: 0.4em;
     font-weight: normal;
   }
@@ -1629,7 +1629,7 @@
     flex-wrap: wrap;
     gap: 0.5em;
     font-size: 0.75em;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-dim);
   }
 
   .item-type {
@@ -1641,7 +1641,7 @@
     font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
     font-size: 0.82em;
-    color: rgba(232, 228, 210, 0.45);
+    color: var(--chrome-text-faint);
     margin-top: 0.3em;
   }
 
@@ -1678,9 +1678,9 @@
     font-size: 0.85em;
     padding: 0.05em 0.5em;
     margin-left: 0.3em;
-    color: rgba(232, 228, 210, 0.6);
-    background: rgba(255, 255, 255, 0.06);
-    border: 0.075em solid rgba(255, 255, 255, 0.1);
+    color: var(--chrome-text-dim);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-hairline);
   }
 
   .items-count     { color: var(--color-gold-pale, #d4b170); border-color: rgba(176, 141, 74, 0.3); }
@@ -1706,12 +1706,12 @@
   .building-card {
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.02);
-    border: 0.075em solid rgba(176, 141, 74, 0.15);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-hairline);
     padding: 0.65em;
     transition: background 0.15s;
   }
-  .building-card:hover { background: rgba(176, 141, 74, 0.05); }
+  .building-card:hover { background: var(--chrome-gold-soft); }
 
   .building-card.available-building { border-style: dashed; border-color: rgba(76, 175, 80, 0.35); }
   .building-card.available-building:has(.unavailable-label) { border-color: rgba(198, 40, 40, 0.35); }
@@ -1745,30 +1745,30 @@
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.82em;
     letter-spacing: 0.06em;
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     margin-bottom: 0.1em;
   }
 
   .building-level {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.72em;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-dim);
   }
 
   .building-description {
     font-family: var(--font-editorial, 'IM Fell English', serif);
     font-style: italic;
     font-size: 0.8em;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-dim);
     margin-bottom: 0.6em;
     line-height: 1.3;
   }
 
   .building-requirements {
     margin: 0.1em 0 0.6em;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--chrome-field-bg);
     padding: 0.5em;
-    border: 0.075em solid rgba(176, 141, 74, 0.1);
+    border: 0.075em solid var(--chrome-hairline);
   }
 
   .building-requirements h6 {
@@ -1784,7 +1784,7 @@
   .upgrade-progress { margin-top: 0.4em; }
 
   .progress-bar {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--chrome-field-bg);
     height: 0.3em;
     margin-bottom: 0.35em;
     overflow: hidden;
@@ -1795,7 +1795,7 @@
   .progress-text {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.72em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
   }
 
   /* ── Upgrade/build buttons ── */
@@ -1825,7 +1825,7 @@
   .building-max-level {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.7em;
-    color: rgba(232, 228, 210, 0.35);
+    color: var(--chrome-text-faint);
     text-align: center;
     padding: 0.35em 0;
   }
@@ -1850,9 +1850,9 @@
   }
   .build-building-button:not(:disabled):hover { background: rgba(76, 175, 80, 0.25); }
   .build-building-button:disabled {
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(232, 228, 210, 0.3);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text-faint);
+    border-color: var(--chrome-hairline);
     cursor: not-allowed;
   }
 
@@ -1869,16 +1869,16 @@
   }
   .access-label {
     font-size: 0.8em;
-    color: rgba(232, 228, 210, 0.85);
+    color: var(--chrome-text);
   }
   .access-select {
     flex: 0 0 auto;
     min-width: 7.5em;
     padding: 0.3em 0.5em;
     font-size: 0.8em;
-    color: #e8e4d2;
-    background: rgba(0, 0, 0, 0.3);
-    border: 0.075em solid rgba(255, 255, 255, 0.18);
+    color: var(--chrome-text);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-field-border);
     border-radius: 0.2em;
   }
   .access-select:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -1926,9 +1926,9 @@
     border-color: var(--color-gold-pale, #d4b170);
   }
   .upgrade-button:disabled {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(232, 228, 210, 0.3);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text-faint);
+    border-color: var(--chrome-hairline);
     cursor: not-allowed;
   }
 

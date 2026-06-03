@@ -1888,9 +1888,8 @@
             role="gridcell"
           >
             <!-- Animated SVG biome scatter — trees, peaks, ripples, etc.
-                 Skipped on centre + subdivided tiles where the structure
-                 decoration owns the visual space. -->
-            {#if !cell.isCenter && !cell.structure}
+                 Skipped on tiles where the structure decoration owns the visual space. -->
+            {#if !cell.structure}
               <BiomeScatter
                 biomeGroup={cell.biome?.water ? 'water'
                   : cell.biome?.name?.match(/forest|wood|jungle|tropical/i) ? 'forest'

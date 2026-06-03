@@ -1622,8 +1622,8 @@
         width: 1.2em;
     }
     :global(.close-icon-dark) {
-        fill: var(--color-parchment-100, #fbf6e7);
-        stroke: var(--color-parchment-100, #fbf6e7);
+        fill: currentColor;
+        stroke: currentColor;
     }
 
     .minimap-button {
