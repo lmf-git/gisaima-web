@@ -3,10 +3,8 @@
     import { game } from '$lib/stores/game.js';
     import { user } from '$lib/stores/user.js';
     import { apiGet, apiPost } from '$lib/api.js';
-    import WaxSeal from '../../components/ui/WaxSeal.svelte';
-    import Flourish from '../../components/ui/Flourish.svelte';
-    import Button from '../../components/ui/Button.svelte';
-    import Stamp from '../../components/ui/Stamp.svelte';
+    import WaxSeal from '../../ui/WaxSeal.svelte';
+    import Button from '../../ui/Button.svelte';
 
     let scores = $state([]);
     let mine = $state(null);
@@ -58,13 +56,8 @@
     $effect(() => { if (worldId) load(); });
 </script>
 
-<svelte:head><title>Morality — Gisaima</title></svelte:head>
-
-<div class="page">
-    <div class="eyebrow wax">The Ledger of Deeds</div>
-    <h1>Morality</h1>
-    <p class="lede">Good and evil are decided by the realm. Five accusations a day, and a long memory.</p>
-    <Flourish extraClass="page-flourish" />
+<div class="deeds">
+    <p class="lede italic">Good and evil are decided by the realm. Five accusations a day, and a long memory.</p>
 
     {#if mine}
         <section class="me">
@@ -111,10 +104,8 @@
         </form>
     {/if}
 
-    <hr class="rule-deco" />
-
     <section>
-        <div class="eyebrow">The Roll</div>
+        <div class="eyebrow">The Roll of Deeds</div>
         {#if loading}
             <p class="empty italic">Counting deeds…</p>
         {:else if !worldId}
@@ -145,10 +136,8 @@
 </div>
 
 <style>
-    .page { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
-    .eyebrow.wax { color: var(--color-wax-red); }
-    h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
-    .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
+    .deeds { color: var(--color-ink-900); }
+    .lede { font-family: var(--font-editorial); color: var(--color-ink-500); margin: 0 0 1em; }
     .me { background: var(--color-parchment-100); border: 1px solid var(--color-ink-900); padding: 1.5em; margin: 1.5em 0; }
     .me-row { display: flex; align-items: center; gap: 1.5em; }
     .me-score { font-family: var(--font-display); font-size: 2.4rem; }
@@ -178,5 +167,4 @@
     .empty { font-family: var(--font-editorial); padding: 2em 0; color: var(--color-ink-500); }
     .italic { font-style: italic; }
     .err { color: var(--color-wax-red); }
-    .rule-deco { border: none; margin: 2em 0; }
 </style>

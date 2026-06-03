@@ -199,17 +199,6 @@
             <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
         </div>
     </section>
-
-    <footer class="page-foot reveal">
-        <span>© Gisaima · MIT · drawn by hand and code</span>
-        <span class="links">
-            <a href="https://github.com/lmf-git/gisaima" target="_blank" rel="noopener noreferrer">github</a>
-            ·
-            <a href="https://discord.gg/ugmRXWNXbA" target="_blank" rel="noopener noreferrer">discord</a>
-            ·
-            <a href="/guide">guide</a>
-        </span>
-    </footer>
 </div>
 
 <style>
@@ -441,27 +430,12 @@
         color: rgba(232, 228, 210, 0.6);
     }
 
-    .page-foot {
-        position: relative;
-        z-index: 2;
-        padding: 1.6em 4em;
-        border-top: 1px solid rgba(176, 141, 74, 0.25);
-        display: flex;
-        justify-content: space-between;
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: rgba(232, 228, 210, 0.5);
-    }
-    .page-foot a { color: rgba(232, 228, 210, 0.7); text-decoration: none; }
-    .page-foot a:hover { color: var(--color-gold-pale); }
-
     @media (max-width: 900px) {
         .hero { grid-template-columns: 1fr; padding: 2em 1.5em 4em; gap: 3em; }
         .astrolabe { max-width: 380px; margin: 0 auto; }
         .pillars { padding: 2em 1.5em 4em; }
         .pillar-grid { grid-template-columns: 1fr 1fr; gap: 1.5em; }
         .tri { grid-template-columns: 1fr; padding: 0 1.5em 4em; gap: 3em; }
-        .page-foot { padding: 1.4em 1.5em; flex-direction: column; gap: 0.5em; }
     }
     @media (max-width: 520px) {
         .pillar-grid { grid-template-columns: 1fr; }

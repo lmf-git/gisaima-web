@@ -52,6 +52,9 @@
 
   // Component state
   let selectedRace = $state(null);
+  // Mobile shows one race at a time in a chevron carousel; the visible race is
+  // the selected one. Keep an index so prev/next can cycle through.
+  let currentRaceIndex = $state(0);
   let displayName = $state(untrack(() => initialName));
   let houseSelection = $state(null); // from HousePicker: { mode, houseId? | houseName? }
   let displayNameError = $state('');
@@ -84,6 +87,21 @@
   // Handle race selection
   function selectRace(race) {
     selectedRace = race;
+  }
+
+  // On mobile the carousel selects whichever race is currently shown.
+  $effect(() => {
+    if (isMobile) {
+      selectedRace = races[currentRaceIndex];
+    }
+  });
+
+  function prevRace() {
+    currentRaceIndex = (currentRaceIndex - 1 + races.length) % races.length;
+  }
+
+  function nextRace() {
+    currentRaceIndex = (currentRaceIndex + 1) % races.length;
   }
   
   // Toggle race description on mobile
@@ -191,8 +209,22 @@
   }
 </script>
 
+{#snippet raceIcon(race, extra)}
+  {#if race?.id === 'human'}
+    <Human extraClass={extra} />
+  {:else if race?.id === 'elf'}
+    <Elf extraClass={extra} />
+  {:else if race?.id === 'dwarf'}
+    <Dwarf extraClass={extra} />
+  {:else if race?.id === 'goblin'}
+    <Goblin extraClass={extra} />
+  {:else if race?.id === 'fairy'}
+    <Fairy extraClass={extra} />
+  {/if}
+{/snippet}
+
 <!-- Add backdrop that covers the full screen -->
-<div 
+<div
   class={`confirmation-backdrop ${animatingOut ? 'animate-out' : 'animate-in'}`} 
   onclick={onClose}
   onkeydown={handleBackdropKeyDown}
@@ -206,52 +238,76 @@
     <!-- Step 1: Race Selection -->
     {#if currentStep === 1}
       <h2 class="step-title">Select Your Race</h2>
-      
-      <div class="race-selection">
-        {#each races as race (race.id)}
-          <div 
-            class="race-option" 
-            class:selected={selectedRace?.id === race.id}
-            onclick={() => selectRace(race)}
-            onkeydown={(e) => handleRaceKeydown(race, e)}
-            tabindex="0"
-            role="button"
-            aria-pressed={selectedRace?.id === race.id}
-          >
-            <div class="race-icon-container">
-              {#if race.id === 'human'}
-                <Human extraClass="confirmation-race-icon" />
-              {:else if race.id === 'elf'}
-                <Elf extraClass="confirmation-race-icon" />
-              {:else if race.id === 'dwarf'}
-                <Dwarf extraClass="confirmation-race-icon" />
-              {:else if race.id === 'goblin'}
-                <Goblin extraClass="confirmation-race-icon" />
-              {:else if race.id === 'fairy'}
-                <Fairy extraClass="confirmation-race-icon" />
-              {/if}
+
+      {#if isMobile}
+        <!-- Mobile: one race at a time, navigated with chevrons. The flex grid
+             of cards doesn't fit comfortably on narrow screens. -->
+        {@const race = races[currentRaceIndex]}
+        <div class="race-carousel">
+          <button class="race-chevron" onclick={prevRace} aria-label="Previous race">‹</button>
+
+          <div class="race-option selected carousel-card">
+            <div class="race-icon-container large">
+              {@render raceIcon(race, 'confirmation-race-icon large')}
             </div>
             <h3>{race.name}</h3>
-            <div class="race-description">
+            <div class="race-description carousel-description">
               <p>{race.description}</p>
             </div>
           </div>
-        {/each}
-      </div>
-      
+
+          <button class="race-chevron" onclick={nextRace} aria-label="Next race">›</button>
+        </div>
+
+        <div class="carousel-dots" role="tablist" aria-label="Race selection">
+          {#each races as r, i (r.id)}
+            <button
+              class="carousel-dot"
+              class:active={i === currentRaceIndex}
+              role="tab"
+              aria-label={r.name}
+              aria-selected={i === currentRaceIndex}
+              onclick={() => (currentRaceIndex = i)}
+            ></button>
+          {/each}
+        </div>
+      {:else}
+        <div class="race-selection">
+          {#each races as race (race.id)}
+            <div
+              class="race-option"
+              class:selected={selectedRace?.id === race.id}
+              onclick={() => selectRace(race)}
+              onkeydown={(e) => handleRaceKeydown(race, e)}
+              tabindex="0"
+              role="button"
+              aria-pressed={selectedRace?.id === race.id}
+            >
+              <div class="race-icon-container">
+                {@render raceIcon(race, 'confirmation-race-icon')}
+              </div>
+              <h3>{race.name}</h3>
+              <div class="race-description">
+                <p>{race.description}</p>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+
       <div class="confirmation-actions">
         <button class="cancel-button" onclick={onClose}>
-          Cancel
+          Back
         </button>
-        <button 
-          class="next-button" 
-          disabled={!selectedRace} 
+        <button
+          class="next-button"
+          disabled={!selectedRace}
           onclick={goToNameInput}
         >
           Next
         </button>
       </div>
-      
+
     <!-- Step 2: Name Input -->
     {:else if currentStep === 2}
       <h2 class="step-title">
@@ -259,17 +315,7 @@
         <span class="race-header-info">
           <span class="race-name">{getSingularRaceName(selectedRace)}</span>
           <div class="race-icon-container inline">
-            {#if selectedRace?.id === 'human'}
-              <Human extraClass="confirmation-race-icon header" />
-            {:else if selectedRace?.id === 'elf'}
-              <Elf extraClass="confirmation-race-icon header" />
-            {:else if selectedRace?.id === 'dwarf'}
-              <Dwarf extraClass="confirmation-race-icon header" />
-            {:else if selectedRace?.id === 'goblin'}
-              <Goblin extraClass="confirmation-race-icon header" />
-            {:else if selectedRace?.id === 'fairy'}
-              <Fairy extraClass="confirmation-race-icon header" />
-            {/if}
+            {@render raceIcon(selectedRace, 'confirmation-race-icon header')}
           </div>
         </span>
       </h2>
@@ -493,49 +539,118 @@
     outline: 2px solid var(--color-wax-red);
     outline-offset: 2px;
   }
+
+  /* Mobile race carousel */
+  .race-carousel {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5em;
+    margin: 0.5em 0 0.8em 0;
+  }
+
+  .race-chevron {
+    flex: 0 0 auto;
+    width: 2.2em;
+    background: transparent;
+    border: 1px solid var(--color-parchment-shadow);
+    border-radius: 2px;
+    color: var(--color-ink-900);
+    font-size: 1.6em;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .race-chevron:hover {
+    background: var(--color-parchment-300);
+    border-color: var(--color-ink-900);
+  }
+
+  .carousel-card {
+    flex: 1 1 auto;
+    min-width: 0;
+    cursor: default;
+  }
+
+  .carousel-description {
+    max-height: none;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5em;
+    margin-bottom: 0.4em;
+  }
+
+  .carousel-dot {
+    width: 0.6em;
+    height: 0.6em;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--color-ink-700);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .carousel-dot.active {
+    background: var(--color-wax-red);
+    border-color: var(--color-wax-red);
+  }
   
   .confirmation-actions {
     display: flex;
     justify-content: center;
-    gap: 1em;
+    gap: 0.8em;
     margin-top: 1em;
-    flex-wrap: wrap;
   }
-  
+
   .cancel-button,
   .back-button {
+    flex: 1 1 0;
+    min-width: 0;
     background: transparent;
     color: var(--color-ink-900);
     border: 1px solid var(--color-ink-900);
-    padding: 0.75em 1.5em;
+    padding: 0.75em 1em;
     border-radius: 2px;
     cursor: pointer;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 0.78em;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     transition: background 0.15s ease;
+    white-space: nowrap;
   }
 
   .next-button,
   .confirm-button {
+    flex: 1 1 0;
+    min-width: 0;
     background-color: var(--color-ink-900);
     color: var(--color-parchment-100);
     border: 1px solid var(--color-ink-900);
-    min-width: 10em;
-    padding: 0.75em 1.5em;
+    padding: 0.75em 1em;
     border-radius: 2px;
     cursor: pointer;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 0.78em;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     transition: background 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .cancel-button:hover:not(:disabled),
@@ -662,27 +777,15 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 0.8em;
     }
-    
-    .confirmation-actions {
-      flex-direction: column;
-      width: 100%;
-    }
-    
-    .cancel-button,
-    .back-button,
-    .next-button,
-    .confirm-button {
-      width: 100%;
-    }
-    
+
     .race-option h3 {
       font-size: 0.9em;
     }
-    
-    .race-description {
+
+    .race-selection .race-description {
       display: none;
     }
-    
+
     .race-option {
       padding: 0.6em;
     }

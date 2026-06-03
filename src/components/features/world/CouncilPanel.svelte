@@ -1,12 +1,11 @@
 <script>
     import { onMount } from 'svelte';
     import { game } from '$lib/stores/game.js';
-    import { user } from '$lib/stores/user.js';
     import { apiGet, apiPost } from '$lib/api.js';
-    import Stamp from '../../components/ui/Stamp.svelte';
-    import Flourish from '../../components/ui/Flourish.svelte';
-    import Button from '../../components/ui/Button.svelte';
-    import WaxSeal from '../../components/ui/WaxSeal.svelte';
+    import Stamp from '../../ui/Stamp.svelte';
+    import Flourish from '../../ui/Flourish.svelte';
+    import Button from '../../ui/Button.svelte';
+    import WaxSeal from '../../ui/WaxSeal.svelte';
 
     let votes = $state([]);
     let coffers = $state(null);
@@ -43,11 +42,9 @@
     $effect(() => { if (worldId) load(); });
 </script>
 
-<svelte:head><title>Politics — Gisaima</title></svelte:head>
-
-<div class="page">
+<div class="panel">
     <div class="eyebrow wax">The Council Chamber</div>
-    <h1>Politics of the Realm</h1>
+    <h2>Council of the Realm</h2>
     <p class="lede">Where the laws are written, the coffers counted, and the rulers raised or torn down.</p>
     <Flourish extraClass="page-flourish" />
 
@@ -130,14 +127,12 @@
             </div>
         </section>
     {/if}
-
-    <p class="note">Vote / coffer / morality systems are stubbed via /worlds/:id/politics. Vote casting requires backing collections and tick-based closure logic (see <a href="/flows">flows</a>).</p>
 </div>
 
 <style>
-    .page { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
+    .panel { color: var(--color-ink-900); }
     .eyebrow.wax { color: var(--color-wax-red); }
-    h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
+    h2 { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .empty { font-family: var(--font-editorial); color: var(--color-ink-500); padding: 2em 0; }
     .italic { font-style: italic; }
@@ -168,7 +163,6 @@
     .o-name { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); font-size: 0.85rem; }
     .o-term { font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-ink-500); }
     .rule-deco { border: none; margin: 2em 0; }
-    .note { font-family: var(--font-editorial); font-style: italic; font-size: 0.85rem; color: var(--color-ink-500); margin-top: 2em; }
     @media (max-width: 700px) {
         .block.split { grid-template-columns: 1fr; }
         .coffers { grid-template-columns: 1fr; }

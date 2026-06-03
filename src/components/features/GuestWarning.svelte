@@ -1,5 +1,6 @@
 <script>
   import Close from '../icons/Close.svelte';
+  import Chevron from '../icons/Chevron.svelte';
   import { signUp } from '../../lib/stores/user';
   
   const { onClose, animatingOut = false } = $props();
@@ -59,7 +60,7 @@
 
 <div class={`guest-warning ${animatingOut ? 'animate-out' : 'animate-in'}`}>
   <div class="warning-header">
-    <h2>Temporary Account Notice</h2>
+    <h2>Convert Account</h2>
     <button class="close-btn" aria-label="Close dialog" onclick={onClose}>
       <Close size="2.2em" extraClass="close-icon-light" />
     </button>
@@ -95,11 +96,12 @@
         </div>
         
         <div class="password-option">
-          <button 
-            type="button" 
-            class="password-toggle-btn" 
+          <button
+            type="button"
+            class="password-toggle-btn"
             onclick={togglePassword}>
-            Set a password (optional) {usePassword ? '▼' : '►'}
+            <span>Set a password (optional)</span>
+            <Chevron size="0.9em" direction={usePassword ? 'down' : 'right'} />
           </button>
         </div>
         
@@ -144,11 +146,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(10, 25, 47, 0.85);
+    background-color: rgba(14, 19, 32, 0.55);
     z-index: 999;
     cursor: pointer;
+    backdrop-filter: blur(2px);
   }
-  
+
   .guest-warning {
     position: fixed;
     top: 50%;
@@ -156,34 +159,36 @@
     transform: translate(-50%, -50%);
     width: 90%;
     max-width: 30em;
-    background: rgba(21, 38, 60, 0.95);
-    border: 2px solid var(--color-muted-teal);
-    border-radius: 0.5em;
-    box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.5);
-    padding: 2em;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--color-parchment-100);
+    border: 1px solid var(--color-ink-900);
+    border-radius: 0;
+    box-shadow: 0 2em 5em rgba(0, 0, 0, 0.35);
+    padding: 1.8em 2em;
     z-index: 1000;
-    color: var(--color-text);
+    color: var(--color-ink-900);
     font-family: var(--font-body);
   }
-  
+
   .warning-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5em;
     padding-bottom: 1em;
-    border-bottom: 0.0625em solid var(--color-panel-border);
+    border-bottom: 1px solid var(--color-parchment-shadow);
   }
-  
+
   .warning-header h2 {
-    color: var(--color-pale-green);
+    color: var(--color-ink-900);
     margin: 0;
-    font-family: var(--font-heading);
-    font-weight: 400;
-    letter-spacing: 0.1em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.04em;
     font-size: 1.5em;
   }
-  
+
   .close-btn {
     height: 3em;
     display: flex;
@@ -191,173 +196,189 @@
     justify-content: center;
     background: transparent;
     border: none;
-    color: var(--color-text);
+    color: var(--color-ink-900);
     cursor: pointer;
     opacity: 0.7;
     transition: opacity 0.2s ease;
     padding: 0;
   }
-  
+
   .close-btn:hover {
     opacity: 1;
   }
-  
+
   .close-btn > :global(.close-icon-light) {
-    color: var(--color-text);
-    stroke: var(--color-text);
+    color: var(--color-ink-900);
+    stroke: var(--color-ink-900);
   }
-  
+
   .warning-content {
     display: flex;
     flex-direction: column;
     gap: 1.2em;
   }
-  
+
   .warning-message p {
     margin: 0 0 0.8em 0;
     line-height: 1.5;
   }
-  
+
   .success-message {
     text-align: center;
-    background: rgba(42, 199, 105, 0.1);
+    background: rgba(111, 140, 122, 0.12);
     padding: 1em;
-    border-radius: 0.5em;
-    border: 1px solid rgba(42, 199, 105, 0.3);
+    border-radius: 2px;
+    border: 1px solid var(--color-sage);
   }
-  
+
   .success-message p {
     margin: 0;
-    color: var(--color-pale-green);
+    color: var(--color-sage-deep);
     font-weight: 600;
   }
-  
+
   .error-message {
-    background-color: rgba(198, 40, 40, 0.2);
-    color: #ff5757;
+    background-color: rgba(154, 51, 32, 0.08);
+    color: var(--color-wax-red);
     padding: 0.75em;
-    border-radius: 0.25em;
+    border-radius: 2px;
     margin: 0.5em 0;
-    border: 1px solid rgba(198, 40, 40, 0.4);
+    border: 1px solid var(--color-vermilion);
+    font-family: var(--font-editorial);
+    font-style: italic;
   }
-  
+
   .upgrade-form {
     display: flex;
     flex-direction: column;
     gap: 1em;
   }
-  
+
   .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
   }
-  
+
   .form-group label {
-    font-size: 0.9em;
-    color: var (--color-muted-teal);
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-700);
   }
-  
+
   .form-group input {
-    padding: 0.8em;
-    background: rgba(0, 0, 0, 0.2);
-    color: var(--color-text);
-    border: 1px solid var(--color-panel-border);
-    border-radius: 0.25em;
+    padding: 0.75em 0.9em;
+    background: var(--color-parchment-200);
+    color: var(--color-ink-900);
+    border: 1px solid var(--color-parchment-shadow);
+    border-radius: 2px;
     font-size: 1em;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: var(--font-body);
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
-  
+
   .form-group input:focus {
     outline: none;
-    border-color: var(--color-muted-teal);
-    box-shadow: 0 0 0 0.1em var(--color-muted-teal);
+    border-color: var(--color-ink-900);
+    background: var(--color-parchment-100);
   }
-  
+
   .password-option {
     display: flex;
     align-items: center;
     margin: 0.5em 0;
   }
-  
+
   .password-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
     background: none;
     border: none;
     padding: 0;
-    color: var(--color-muted-teal);
-    font-family: inherit;
+    color: var(--color-wax-red);
+    font-family: var(--font-editorial);
+    font-style: italic;
     font-size: inherit;
     cursor: pointer;
     text-align: left;
   }
-  
+
+  .password-toggle-btn :global(.chevron-icon) {
+    flex-shrink: 0;
+  }
+
   .password-toggle-btn:hover {
     text-decoration: underline;
   }
-  
+
   .password-toggle-btn:focus {
-    outline: 1px dotted var(--color-muted-teal);
+    outline: 1px dotted var(--color-wax-red);
     outline-offset: 2px;
   }
-  
+
   .form-actions {
     display: flex;
     justify-content: space-between;
     gap: 1em;
     margin-top: 0.5em;
   }
-  
+
   .later-btn,
   .upgrade-btn {
-    padding: 0.8em;
-    border-radius: 0.25em;
+    padding: 0.75em 1.5em;
+    border-radius: 2px;
     cursor: pointer;
-    font-family: var(--font-heading);
+    font-family: var(--font-display);
     font-weight: 600;
-    font-size: 1em;
-    transition: all 0.2s ease;
+    font-size: 0.78em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: background 0.15s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 1;
   }
-  
+
   .later-btn {
     background: transparent;
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-panel-border);
+    color: var(--color-ink-900);
+    border: 1px solid var(--color-ink-900);
   }
-  
+
   .upgrade-btn {
-    background-color: var(--color-button-primary);
-    color: var(--color-text);
-    border: 1px solid var(--color-muted-teal);
+    background-color: var(--color-ink-900);
+    color: var(--color-parchment-100);
+    border: 1px solid var(--color-ink-900);
   }
-  
+
   .later-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(26, 32, 48, 0.06);
   }
-  
+
   .upgrade-btn:hover:not(:disabled) {
-    background-color: var(--color-button-primary-hover);
-    transform: translateY(-0.125em);
-    box-shadow: 0 0.2em 0.5em var(--color-shadow);
+    background-color: var(--color-ink-700);
   }
-  
+
   .upgrade-btn:disabled,
   .later-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
-  
+
   .note {
     font-size: 0.85em;
     text-align: center;
-    color: var(--color-text-secondary);
+    color: var(--color-ink-500);
+    font-family: var(--font-editorial);
+    font-style: italic;
     margin-top: 0.5em;
   }
-  
+
   .spinner {
     display: inline-block;
     width: 1em;

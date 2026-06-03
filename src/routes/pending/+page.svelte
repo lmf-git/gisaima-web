@@ -253,6 +253,12 @@
     .head { margin-bottom: 1em; }
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0; max-width: 640px; }
+    @media (max-width: 600px) {
+        .page { padding: 6em 1.2em 3em; }
+        h1 { font-size: 1.9rem; }
+        .grid { grid-template-columns: 1fr; }
+        .event { grid-template-columns: 44px 1fr; gap: 0.6em; }
+    }
     .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.6em; margin-top: 1.5em; }
     .timeline { display: grid; gap: 0.7em; }
     .event { display: grid; grid-template-columns: 56px 1fr auto; gap: 1em; align-items: center; padding: 0.85em 1.1em; background: var(--color-parchment-100); border: 1px solid var(--color-ink-900); border-left: 4px solid var(--color-ink-900); }

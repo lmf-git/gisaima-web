@@ -170,6 +170,12 @@
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .block { margin: 2em 0; }
+    @media (max-width: 600px) {
+        .page { padding: 6em 1.2em 3em; }
+        h1 { font-size: 1.9rem; }
+        .list li { grid-template-columns: 40px 1fr; gap: 0.7em; }
+        .actions { grid-column: 2; }
+    }
     .empty { font-family: var(--font-editorial); padding: 2em 0; color: var(--color-ink-500); }
     .italic { font-style: italic; }
     .err { color: var(--color-wax-red); }

@@ -12,8 +12,8 @@
 <div class="game-header-switcher"><CharacterSwitcher /></div>
 
 <nav class="game-header-nav">
-  <a class="header-link" class:active={$page.url?.pathname === '/diplomacy'} href="/diplomacy">
-    Diplomacy
+  <a class="header-link" class:active={$page.url?.pathname === '/house'} href="/house">
+    House
   </a>
   <a class="header-link" class:active={$page.url?.pathname === '/rankings'} href="/rankings">
     Rankings

@@ -46,6 +46,7 @@
 
     const rows = $derived(data ? data[tab] || [] : []);
     const tribeRows = $derived(data ? data[tab === 'points' ? 'tribePoints' : tab === 'kills' ? 'tribeKills' : 'tribeStructures'] || [] : []);
+    const houseRows = $derived(data ? data[tab === 'points' ? 'housePoints' : tab === 'kills' ? 'houseKills' : 'houseStructures'] || [] : []);
 
     onMount(load);
     $effect(() => { if (worldId) load(); });
@@ -76,12 +77,12 @@
     {:else}
         <div class="grid">
             <section>
-                <div class="eyebrow">Houses</div>
+                <div class="eyebrow">Players</div>
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>House</th>
+                            <th>Player</th>
                             <th class="num">{tabs.find(x => x.id === tab).label}</th>
                         </tr>
                     </thead>
@@ -97,6 +98,33 @@
                         {/each}
                         {#if rows.length === 0}
                             <tr><td colspan="3" class="empty-cell italic">No standings yet.</td></tr>
+                        {/if}
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <div class="eyebrow">Houses</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>House</th>
+                            <th class="num">{tabs.find(x => x.id === tab).label}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each houseRows as r, i}
+                            <tr>
+                                <td class="rank">
+                                    {#if i < 3}<WaxSeal label={String(i + 1)} color={sealColor(i + 1)} size={28} />{:else}{i + 1}{/if}
+                                </td>
+                                <td class="house">{r.name}</td>
+                                <td class="num">{valueFor(r).toLocaleString()}</td>
+                            </tr>
+                        {/each}
+                        {#if houseRows.length === 0}
+                            <tr><td colspan="3" class="empty-cell italic">No houses sworn.</td></tr>
                         {/if}
                     </tbody>
                 </table>
@@ -171,7 +199,7 @@
         color: var(--color-wax-red);
         border-bottom-color: var(--color-wax-red);
     }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2em; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2em; }
     table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 0.95rem; }
     thead th {
         text-align: left;
@@ -190,6 +218,9 @@
     .empty-cell, .empty { font-family: var(--font-editorial); color: var(--color-ink-500); text-align: center; padding: 2em; }
     .err { color: var(--color-wax-red); }
     .italic { font-style: italic; }
+    @media (max-width: 1000px) {
+        .grid { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 700px) {
         .grid { grid-template-columns: 1fr; }
     }

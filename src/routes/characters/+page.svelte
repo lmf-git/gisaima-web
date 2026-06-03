@@ -221,6 +221,11 @@
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .block { margin: 2.5em 0; }
+    @media (max-width: 600px) {
+        .page { padding: 6em 1.2em 3em; }
+        h1 { font-size: 1.9rem; }
+        .chars li { grid-template-columns: 44px 1fr; gap: 0.5em 0.8em; }
+    }
     .chars { list-style: none; padding: 0; margin: 0.8em 0 0; }
     .chars li { display: grid; grid-template-columns: 56px 1fr auto auto auto; gap: 1em; align-items: center; padding: 1em 0; border-top: 1px solid rgba(26, 32, 48, 0.15); }
     .chars li.dead { opacity: 0.7; }

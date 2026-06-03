@@ -86,6 +86,11 @@
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .block { margin: 2.5em 0; }
+    @media (max-width: 600px) {
+        .page { padding: 6em 1.2em 3em; }
+        h1 { font-size: 1.9rem; }
+        .grid { grid-template-columns: 1fr; }
+    }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8em; margin-top: 0.8em; }
     .item { padding: 0.9em 1.1em; background: var(--color-parchment-100); border: 1px solid rgba(26, 32, 48, 0.2); border-left-width: 4px; }
     .i-head { display: flex; align-items: center; gap: 0.7em; color: var(--color-ink-700); }

@@ -3,16 +3,16 @@
     import Logo from '../../Logo.svelte';
     import Stamp from '../../ui/Stamp.svelte';
 
+    // Diplomacy, Council and Bounty now live inside the House hall (/house);
+    // Deeds folds into the Realm profile. That keeps this rail (and the mobile
+    // tab bar it becomes) short enough to fit.
     const links = [
         { href: '/map',       glyph: 'compass', label: 'World' },
         { href: '/profile',   glyph: 'banner',  label: 'Realm' },
-        { href: '/diplomacy', glyph: 'shield',  label: 'Diplomacy' },
+        { href: '/house',     glyph: 'shield',  label: 'House' },
         { href: '/friends',   glyph: 'plus',    label: 'Friends' },
         { href: '/rankings',  glyph: 'crown',   label: 'Roll' },
-        { href: '/bounties',  glyph: 'skull',   label: 'Bounty' },
         { href: '/trade',     glyph: 'coin',    label: 'Trade' },
-        { href: '/politics',  glyph: 'scroll',  label: 'Council' },
-        { href: '/morality',  glyph: 'star',    label: 'Deeds' },
         { href: '/chronicle', glyph: 'raven',   label: 'Chronicle' }
     ];
 </script>

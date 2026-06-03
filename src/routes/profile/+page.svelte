@@ -10,6 +10,7 @@
     import Button from '../../components/ui/Button.svelte';
     import FamilyTree from '../../components/features/FamilyTree.svelte';
     import HousePicker from '../../components/specific/worlds/HousePicker.svelte';
+    import DeedsPanel from '../../components/features/world/DeedsPanel.svelte';
 
     const player = $derived($currentPlayer);
     const worldId = $derived($game.worldKey);
@@ -194,7 +195,7 @@
             <div>
                 <div class="eyebrow">Decrees</div>
                 <ul class="decrees">
-                    <li><Stamp kind="scroll" size={16} /> <a href="/bounties">Post or pursue bounties</a></li>
+                    <li><Stamp kind="scroll" size={16} /> <a href="/house">Convene the house hall</a></li>
                     <li><Stamp kind="crown" size={16} /> <a href="/rankings">View the standings</a></li>
                     <li><Stamp kind="compass" size={16} /> <a href="/map">Return to the map</a></li>
                 </ul>
@@ -211,8 +212,8 @@
         <div class="rule-deco"></div>
 
         <section class="block">
-            <p class="lede italic">More chronicles to follow: kills, wealth, journeys, alliances forged and broken.</p>
-            <Button variant="ghost" href="/worlds">Survey other realms</Button>
+            <div class="eyebrow">Deeds</div>
+            <DeedsPanel />
         </section>
     {/if}
 </div>

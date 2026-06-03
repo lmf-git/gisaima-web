@@ -7,6 +7,7 @@
     import { entities, coordinates, currentPlayerPosition, moveTarget } from '$lib/stores/map.js';
     import WaxSeal from '../ui/WaxSeal.svelte';
     import Stamp from '../ui/Stamp.svelte';
+    import Logo from '../Logo.svelte';
     import { isFood } from 'gisaima-shared/definitions/ITEMS.js';
 
     // HudA top bar — house crest, resources at current location, search,
@@ -194,8 +195,14 @@
 
 {#if $game?.worldKey}
     <header class="dossier">
+        <!-- Compact Gisaima mark — only surfaces on mobile, where the house
+             crest/tagline is hidden, so the bar still carries the brand. -->
+        <a class="ctx-logo" href="/map" aria-label="Gisaima">
+            <Logo extraClass="ctx-logo-icon" />
+        </a>
+
         <!-- House crest + tagline -->
-        <a class="house" href="/profile" title="Open profile">
+        <a class="house" href="/house" title="Open house hall">
             <WaxSeal label={initial} color="#5b1a1f" size={32} />
             <div class="house-text">
                 <div class="house-name">{houseName}</div>
@@ -337,6 +344,20 @@
     @media (max-width: 700px) {
         :global(.app.map) .dossier,
         :global(.app.world-scoped) .dossier { --dossier-left: 0; }
+    }
+
+    /* Compact brand mark — desktop hides it (the house crest carries identity
+       there); it only appears in the mobile layout below. */
+    .ctx-logo {
+        display: none;
+        align-items: center;
+        flex-shrink: 0;
+        color: var(--color-gold-pale);
+    }
+    .ctx-logo :global(.ctx-logo-icon) {
+        height: 2em;
+        width: auto;
+        display: block;
     }
 
     /* House crest block */
@@ -522,9 +543,19 @@
     @media (max-width: 700px) {
         .dossier { padding: 0 0.65em; gap: 0.5em; }
         .rule { display: none; }
-        .house-text { display: none; }
         .search-wrap { display: none; }
         .tick { padding: 0.3em 0.6em; }
+
+        /* Swap the house crest for the Gisaima mark and bring the resource
+           strip back — together they fit the freed-up width. */
+        .ctx-logo { display: inline-flex; }
+        .house { display: none; }
+
+        .res { display: inline-flex; }
+        .res li { padding: 0 0.45em; gap: 0.3em; border-left: none; }
+        .res li:nth-child(n+3) { display: inline-flex; }  /* show all five again */
+        .res-val .r { display: none; }   /* drop the word, keep icon + count */
+        .res-icon :global(svg) { width: 0.9em; height: 0.9em; }
     }
 
     /* Search wrapper — positions the dropdown relative to the pill */

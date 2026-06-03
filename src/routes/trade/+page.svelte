@@ -203,6 +203,11 @@
     .eyebrow.wax { color: var(--color-wax-red); }
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
+    @media (max-width: 600px) {
+        .page { padding: 6em 1.2em 3em; }
+        h1 { font-size: 1.9rem; }
+        .new-form .row { grid-template-columns: 1fr; }
+    }
     .tabs { display: flex; gap: 0; margin: 2em 0 1em; border-bottom: 1px solid var(--color-ink-900); }
     .tabs button { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.8em 1.4em; background: transparent; border: none; color: var(--color-ink-500); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
     .tabs button.active { color: var(--color-wax-red); border-bottom-color: var(--color-wax-red); }

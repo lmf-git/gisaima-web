@@ -3,10 +3,10 @@
     import { game } from '$lib/stores/game.js';
     import { user } from '$lib/stores/user.js';
     import { apiGet, apiPost } from '$lib/api.js';
-    import WaxSeal from '../../components/ui/WaxSeal.svelte';
-    import Flourish from '../../components/ui/Flourish.svelte';
-    import Stamp from '../../components/ui/Stamp.svelte';
-    import Button from '../../components/ui/Button.svelte';
+    import WaxSeal from '../../ui/WaxSeal.svelte';
+    import Flourish from '../../ui/Flourish.svelte';
+    import Stamp from '../../ui/Stamp.svelte';
+    import Button from '../../ui/Button.svelte';
 
     let tribes = $state([]);
     let myTribe = $state(null);
@@ -69,11 +69,9 @@
     $effect(() => { if (worldId) load(); });
 </script>
 
-<svelte:head><title>Diplomacy — Gisaima</title></svelte:head>
-
-<div class="page">
+<div class="panel">
     <div class="eyebrow wax">The Council of Banners</div>
-    <h1>Diplomacy</h1>
+    <h2>Diplomacy</h2>
     <p class="lede">Alliances are signed in wax. The Chronicle keeps every oath, and every breach.</p>
     <Flourish extraClass="page-flourish" />
 
@@ -146,9 +144,9 @@
 </div>
 
 <style>
-    .page { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
+    .panel { color: var(--color-ink-900); }
     .eyebrow.wax { color: var(--color-wax-red); }
-    h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
+    h2 { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .block { margin: 2em 0; }
     .empty { font-family: var(--font-editorial); padding: 2em 0; color: var(--color-ink-500); }
@@ -171,4 +169,9 @@
     .t-sub { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); font-size: 0.85rem; }
     .join { padding: 0.5em 1em; background: var(--color-ink-900); color: var(--color-parchment-100); border: 1px solid var(--color-ink-900); font-family: var(--font-display); font-size: 0.75em; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4em; }
     .join:hover { background: var(--color-ink-700); }
+    @media (max-width: 700px) {
+        .tribe-row { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+        .form .row { grid-template-columns: 1fr; }
+        .list li { grid-template-columns: 40px 1fr; }
+    }
 </style>

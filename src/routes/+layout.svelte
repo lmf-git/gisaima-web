@@ -15,15 +15,16 @@
     import GuestWarning from '../components/features/GuestWarning.svelte';
     import WorldContextBar from '../components/features/WorldContextBar.svelte';
     import LeftRail from '../components/map/foundation/LeftRail.svelte';
+    import { theme, toggleTheme } from '$lib/stores/theme.js';
 
     // Routes that read from / write to a specific world. The world-context
     // strip surfaces under the layout header on each of these so the player
     // never loses track of which realm they're acting inside.
     const WORLD_SCOPED_PREFIXES = [
-        '/rankings', '/trade', '/bounties', '/politics', '/morality',
+        '/rankings', '/trade', '/house',
         '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
         '/wealth', '/deaths', '/scouting', '/chronicle', '/profile',
-        '/settlement', '/pending', '/characters', '/items', '/diplomacy'
+        '/settlement', '/pending', '/characters', '/items'
     ];
 
     const { children } = $props();
@@ -90,6 +91,16 @@
 
     // Derived state for UI loading conditions
     const headerLoading = $derived($userLoading || !$isAuthReady);
+
+    // `worldKey` can be restored from localStorage before (or without) the
+    // player ever having joined that world, so it's not enough on its own to
+    // show the "return to map" pill. Only treat a world as the player's current
+    // realm once it appears in their fetched joinedWorlds list.
+    const hasCurrentWorld = $derived(
+        !!$game?.worldKey &&
+        Array.isArray($game?.joinedWorlds) &&
+        $game.joinedWorlds.includes($game.worldKey)
+    );
 
     // The header runs its staggered reveal once on first mount of the layout
     // (the layout persists across client-side navigation). Mark it done so
@@ -161,7 +172,7 @@
                 </div>
             </nav>
 
-            {#if $user && $game?.worldKey && !headerLoading && !isWorldScopedPage}
+            {#if $user && hasCurrentWorld && !headerLoading && !isWorldScopedPage}
                 <a class="return-map-pill" href="/map" title={`Return to ${$game.worldKey}`}>
                     <span class="arrow" aria-hidden="true">‹</span>
                     <span class="text">Map · <em>{$game.worldKey}</em></span>
@@ -208,8 +219,8 @@
         {@render children?.()}
     </main>
     
-    <!-- Add footer if not on map or home page (home has its own footer) -->
-    {#if !isMapPage && !isHomePage}
+    <!-- Shared site footer everywhere except the map (which has its own HUD). -->
+    {#if !isMapPage}
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-section branding">
@@ -220,6 +231,25 @@
                         <h2 class="footer-title">isaima Realm</h2>
                     </div>
                     <p class="footer-tagline">Explore and create worlds together</p>
+                    <button
+                        class="theme-toggle"
+                        onclick={toggleTheme}
+                        aria-label="Toggle light or dark theme"
+                        title="Toggle light/dark theme"
+                    >
+                        {#if $theme === 'dark'}
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="4.5" />
+                                <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+                            </svg>
+                            <span>Light mode</span>
+                        {:else}
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+                            </svg>
+                            <span>Dark mode</span>
+                        {/if}
+                    </button>
                 </div>
                 
                 <div class="footer-nav">
@@ -505,6 +535,43 @@
 
         /* Paper grain — reference token */
         --paper-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+
+    /* Dark theme — the whole content site is driven by the parchment (surface)
+       and ink (text) scales, so inverting just those two ladders re-themes
+       every page that uses the tokens. A handful of accent/border aliases are
+       brightened so they stay legible on dark surfaces. Toggled from the footer
+       via the `data-theme` attribute on <html>. */
+    :global(html[data-theme='dark']) {
+        --color-parchment-100: #161b27;
+        --color-parchment-200: #1d2330;
+        --color-parchment-300: #28303f;
+        --color-parchment-400: #36404f;
+        --color-parchment-shadow: #3d485c;
+
+        --color-ink-300: #8b91a1;
+        --color-ink-500: #aab0bf;
+        --color-ink-700: #d7d2c0;
+        --color-ink-900: #f3eeda;
+        --color-ink-1000: #ffffff;
+
+        /* Reads as a warm dark page rather than the bright parchment gradient. */
+        --color-background: #11151f;
+        --color-background-gradient-start: #161b27;
+        --color-background-gradient-end: #11151f;
+
+        /* Accents/links brightened for contrast on the dark surfaces. */
+        --color-wax-red: #c14a2f;
+        --color-link: var(--color-vermilion-2);
+        --color-link-hover: var(--color-gold-pale);
+        --color-bright-accent: #c14a2f;
+
+        /* Hairline borders were dark ink on paper; flip to light translucency. */
+        --color-panel-border: rgba(255, 255, 255, 0.14);
+        --color-card-border: rgba(255, 255, 255, 0.14);
+        --color-shadow: rgba(0, 0, 0, 0.5);
+
+        --paper-noise: none;
     }
 
     /* ── Reference utility classes ───────────────────────────── */
@@ -1603,7 +1670,30 @@
         font-style: italic;
         margin-bottom: 1em;
     }
-    
+
+    .theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        background: transparent;
+        border: 1px solid var(--color-panel-border);
+        border-radius: 2px;
+        color: var(--color-ink-700);
+        padding: 0.5em 0.9em;
+        font-family: var(--font-display);
+        font-size: 0.66rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .theme-toggle:hover {
+        color: var(--color-ink-900);
+        border-color: var(--color-ink-900);
+        background: var(--color-parchment-200);
+    }
+    .theme-toggle svg { flex-shrink: 0; }
+
     .footer-links {
         display: flex;
         flex-direction: column;

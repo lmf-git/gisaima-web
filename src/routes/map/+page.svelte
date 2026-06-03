@@ -1594,6 +1594,24 @@
         }
     }
 
+    /* Stagger the toggle reveal so the cluster cascades in rather than popping
+       all at once. Each direct child of the cluster is itself a control button
+       (FollowPlayer's root element is its button), so we can delay by position.
+       :global is needed to reach the button rendered by the FollowPlayer
+       child component, which doesn't carry this file's scope hash. */
+    .controls-right > :global(:nth-child(1)),
+    .controls-middle-right > :global(:nth-child(1)) { animation-delay: 0.10s; }
+    .controls-right > :global(:nth-child(2)),
+    .controls-middle-right > :global(:nth-child(2)) { animation-delay: 0.18s; }
+    .controls-right > :global(:nth-child(3)),
+    .controls-middle-right > :global(:nth-child(3)) { animation-delay: 0.26s; }
+    .controls-right > :global(:nth-child(4)),
+    .controls-middle-right > :global(:nth-child(4)) { animation-delay: 0.34s; }
+    .controls-right > :global(:nth-child(5)),
+    .controls-middle-right > :global(:nth-child(5)) { animation-delay: 0.42s; }
+    .controls-right > :global(:nth-child(6)),
+    .controls-middle-right > :global(:nth-child(6)) { animation-delay: 0.50s; }
+
     .control-button:focus-visible {
         outline: 0.15em solid var(--color-aged-gold, #b08d4a);
         outline-offset: 0.1em;
@@ -1705,5 +1723,14 @@
     @media (min-width: 900px) {
         .map.dossier-open .controls-right { right: calc(28em + 0.75em); }
         .map.dossier-open .controls-middle-right { right: calc(28em + 0.5em); }
+    }
+
+    /* On mobile the LeftRail becomes a 52px bottom tab bar; lift the right-hand
+       toggle cluster above it so the two don't overlap. */
+    @media (max-width: 700px) {
+        .controls-right {
+            bottom: calc(52px + 1em + env(safe-area-inset-bottom));
+            right: 1em;
+        }
     }
 </style>

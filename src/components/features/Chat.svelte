@@ -40,7 +40,8 @@
     if (activeFilter === 'all') return msgs;
     if (activeFilter === 'monsters') return msgs.filter(m => m.category === 'monster');
     if (activeFilter === 'players') return msgs.filter(m =>
-      m.category === 'player' || m.type === 'system' || m.type === 'user'
+      m.category !== 'monster' &&
+      (m.category === 'player' || m.type === 'system' || m.type === 'user')
     );
     if (activeFilter === 'mine') return msgs.filter(m => uid && m.userId === uid);
     return msgs;
@@ -373,7 +374,23 @@
     flex-direction: column;
     gap: 0.35em;
     scrollbar-width: thin;
-    scrollbar-color: rgba(176,141,74,0.2) transparent;
+    scrollbar-color: rgba(176,141,74,0.25) transparent;
+  }
+
+  /* WebKit (Chrome/Safari) ignores scrollbar-width; style the scrollbar
+     explicitly so it matches the dossier chrome instead of the OS default. */
+  .chat-messages::-webkit-scrollbar {
+    width: 0.4em;
+  }
+  .chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(176, 141, 74, 0.25);
+    border-radius: 0;
+  }
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(176, 141, 74, 0.45);
   }
 
   .chat-input-form {

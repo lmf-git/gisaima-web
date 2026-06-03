@@ -3,10 +3,10 @@
     import { game } from '$lib/stores/game.js';
     import { user } from '$lib/stores/user.js';
     import { apiGet, apiPost } from '$lib/api.js';
-    import WaxSeal from '../../components/ui/WaxSeal.svelte';
-    import Flourish from '../../components/ui/Flourish.svelte';
-    import Stamp from '../../components/ui/Stamp.svelte';
-    import Button from '../../components/ui/Button.svelte';
+    import WaxSeal from '../../ui/WaxSeal.svelte';
+    import Flourish from '../../ui/Flourish.svelte';
+    import Stamp from '../../ui/Stamp.svelte';
+    import Button from '../../ui/Button.svelte';
 
     let items = $state([]);
     let loading = $state(true);
@@ -69,12 +69,10 @@
     $effect(() => { if (worldId) load(); });
 </script>
 
-<svelte:head><title>Bounties — Gisaima</title></svelte:head>
-
-<div class="page">
+<div class="panel">
     <header class="hero">
         <div class="eyebrow wax">The Black List</div>
-        <h1>Bounties of the Realm</h1>
+        <h2>Bounties of the Realm</h2>
         <p class="lede">A coin upon a head. The realm keeps a long memory of those whose lives have been priced.</p>
         <Flourish extraClass="page-flourish" />
 
@@ -147,19 +145,12 @@
 </div>
 
 <style>
-    .page {
-        position: relative;
-        z-index: 2;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 7em 2em 4em;
-        color: var(--color-ink-900);
-    }
+    .panel { color: var(--color-ink-900); }
     .hero { margin-bottom: 2em; }
     .eyebrow.wax { color: var(--color-wax-red); }
-    .hero h1 {
+    .hero h2 {
         font-family: var(--font-display);
-        font-size: 2.8rem;
+        font-size: 2.2rem;
         margin: 0.3em 0;
         letter-spacing: 0.04em;
     }
@@ -246,4 +237,8 @@
     }
     .reward .amount { font-size: 1.4rem; font-weight: 500; }
     .reward .unit { font-size: 0.7rem; letter-spacing: 0.18em; }
+    @media (max-width: 700px) {
+        .row { grid-template-columns: 48px 1fr; }
+        .reward { grid-column: 2; justify-self: start; }
+    }
 </style>

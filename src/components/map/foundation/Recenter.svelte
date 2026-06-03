@@ -208,6 +208,21 @@
     border-color: var(--color-gold-pale);
   }
 
+  /* When the tile dossier is open it covers the right edge where this button
+     normally sits. On desktop the dossier is a 28em right panel, so slide the
+     button clear of it; on mobile it's a bottom drawer, so lift the button to
+     the top instead. */
+  @media (min-width: 701px) {
+    :global(.map.dossier-open) .recenter-button {
+      right: calc(28em + 1em);
+    }
+  }
+  @media (max-width: 700px) {
+    :global(.map.dossier-open) .recenter-button {
+      top: 5em;
+    }
+  }
+
   @keyframes pulseButton {
     0% { transform: translateY(-50%) scale(1); }
     100% { transform: translateY(-50%) scale(1.04); }

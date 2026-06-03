@@ -37,6 +37,14 @@
 		<meta property="twitter:description" content="A strategic open-world MMO with elements of war, economy, and community-building. Control units, manage settlements, engage in battles, and trade resources within a dynamic world.">
 		<meta property="twitter:image" content="%sveltekit.assets%/logo.png">
 		
+		<!-- Apply the saved light/dark theme before first paint to avoid a flash. -->
+		<script>
+			try {
+				var t = localStorage.getItem('gisaima-theme');
+				if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+			} catch (e) {}
+		</script>
+
 		%sveltekit.head%
 
 		<!-- Enhanced viewport settings to prevent browser zoom/scroll interference -->
