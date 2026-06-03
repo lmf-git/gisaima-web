@@ -398,9 +398,9 @@
     width: 28em;
     bottom: 0;
     z-index: 1100;
-    background: linear-gradient(180deg, rgba(10,14,26,0.98) 0%, rgba(10,14,26,0.95) 100%);
-    border-left: 0.075em solid rgba(255,255,255,0.08);
-    color: var(--color-parchment-100, #fbf6e7);
+    background: linear-gradient(180deg, var(--chrome-panel-a) 0%, var(--chrome-panel-b) 100%);
+    border-left: 0.075em solid var(--chrome-border);
+    color: var(--chrome-text);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
     display: flex;
     flex-direction: column;
@@ -426,7 +426,7 @@
       height: 65vh;
       bottom: 52px; /* clear the mobile tab bar */
       border-left: none;
-      border-top: 0.075em solid rgba(255,255,255,0.08);
+      border-top: 0.075em solid var(--chrome-border);
       transform: translateY(calc(100% + 52px));
     }
     .tile-dossier.open { transform: translateY(0); }
@@ -438,10 +438,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.55em 0.75em 0.55em 1em;
-    border-bottom: 0.075em solid rgba(255,255,255,0.1);
+    border-bottom: 0.075em solid var(--chrome-hairline);
     flex-shrink: 0;
     min-height: 2.75em;
-    background: rgba(176,141,74,0.06);
+    background: var(--chrome-gold-soft);
   }
 
   .ds-topbar-left {
@@ -457,7 +457,7 @@
     font-size: 0.8em;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -466,7 +466,7 @@
     font-family: var(--font-display);
     font-size: 0.8em;
     letter-spacing: 0.1em;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -475,7 +475,7 @@
   .ds-topbar-coords {
     font-family: var(--font-mono);
     font-size: 0.72em;
-    color: rgba(251,246,231,0.4);
+    color: var(--chrome-text-faint);
     letter-spacing: 0.04em;
     flex-shrink: 0;
   }
@@ -483,7 +483,7 @@
   .ds-topbar-biome {
     font-family: var(--font-mono);
     font-size: 0.65em;
-    color: rgba(251,246,231,0.28);
+    color: var(--chrome-text-faint);
     flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -494,7 +494,7 @@
   .ds-close {
     background: transparent;
     border: none;
-    color: rgba(251,246,231,0.55);
+    color: var(--chrome-text-dim);
     cursor: pointer;
     padding: 0.3em 0.35em;
     display: flex;
@@ -505,8 +505,8 @@
     margin-left: 0.4em;
   }
   .ds-close:hover {
-    color: var(--color-parchment-100);
-    background: rgba(176,141,74,0.12);
+    color: var(--chrome-text);
+    background: var(--chrome-gold-soft);
   }
 
   /* ── Scrollable body ── */
@@ -589,13 +589,13 @@
     font-family: var(--font-display);
     font-size: 0.9em;
     letter-spacing: 0.08em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     padding: 0.7em 1em 0.2em;
   }
 
   /* ── Generic section ── */
   .ds-section {
-    border-bottom: 0.075em solid rgba(255,255,255,0.06);
+    border-bottom: 0.075em solid var(--chrome-hairline);
     padding: 0.75em 1em;
   }
   .ds-section:last-child { border-bottom: none; }
@@ -618,10 +618,10 @@
     margin-bottom: 0;
     color: inherit;
   }
-  .ds-toggle:hover .ds-label { color: var(--color-gold-pale); }
+  .ds-toggle:hover .ds-label { color: var(--chrome-gold); }
   .ds-chevron {
     font-size: 0.6em;
-    color: rgba(232,228,210,0.35);
+    color: var(--chrome-text-faint);
     margin-left: auto;
     display: inline-block;
     transition: transform 0.15s;
@@ -641,7 +641,7 @@
   .ds-count {
     font-family: var(--font-mono);
     font-size: 0.62em;
-    color: rgba(251,246,231,0.45);
+    color: var(--chrome-text-faint);
   }
   .ds-count.wax {
     color: var(--color-wax-red, #8b2020);
@@ -653,10 +653,10 @@
     font-family: var(--font-mono);
     font-size: 0.58em;
     letter-spacing: 0.12em;
-    color: rgba(251,246,231,0.4);
+    color: var(--chrome-text-faint);
     flex-shrink: 0;
   }
-  .ds-meta-tag.ro { color: rgba(176,141,74,0.6); }
+  .ds-meta-tag.ro { color: var(--chrome-gold); }
 
   /* ── List rows ── */
   .ds-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.2em; }
@@ -673,12 +673,12 @@
   .ds-row.sub  { padding-left: 1.1em; opacity: 0.65; font-size: 0.7em; }
 
   .ds-row-name {
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
   }
   .ds-row-meta {
     font-family: var(--font-mono);
-    color: rgba(251,246,231,0.45);
+    color: var(--chrome-text-faint);
     font-size: 0.88em;
     flex-shrink: 0;
     margin-left: 0.5em;
@@ -696,27 +696,27 @@
     align-items: center;
     padding: 0.28em 0;
     font-size: 0.78em;
-    border-bottom: 0.04em solid rgba(255,255,255,0.04);
+    border-bottom: 0.04em solid var(--chrome-hairline);
   }
-  .ds-items-list :global(svg) { color: var(--color-gold-pale); }
+  .ds-items-list :global(svg) { color: var(--chrome-gold); }
 
   .ds-qty {
     font-family: var(--font-mono);
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     text-align: right;
     font-size: 0.9em;
   }
   .ds-item-name {
     font-family: var(--font-editorial, serif);
     font-style: italic;
-    color: rgba(232,228,210,0.6);
+    color: var(--chrome-text-dim);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
   .ds-empty {
     font-family: var(--font-editorial, serif);
     font-style: italic;
-    color: rgba(232,228,210,0.4);
+    color: var(--chrome-text-faint);
     font-size: 0.8em;
     text-align: center;
     padding: 0.5em 0;
@@ -728,27 +728,27 @@
     letter-spacing: 0.14em;
     padding: 0.25em 0.45em;
     background: transparent;
-    border: 0.075em solid rgba(176,141,74,0.35);
-    color: var(--color-gold-pale);
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-gold);
     cursor: pointer;
     white-space: nowrap;
   }
-  .ds-pick:hover:not(:disabled) { background: rgba(176,141,74,0.15); }
+  .ds-pick:hover:not(:disabled) { background: var(--chrome-gold-soft); }
   .ds-pick:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .ds-drop-form {
     margin-top: 0.5em;
     padding-top: 0.5em;
-    border-top: 1px dashed rgba(176,141,74,0.18);
+    border-top: 1px dashed var(--chrome-gold-soft);
     display: grid;
     grid-template-columns: 1fr 52px auto;
     gap: 0.3em;
   }
   .ds-drop-form select,
   .ds-drop-form input {
-    background: rgba(10,14,26,0.7);
-    border: 0.075em solid rgba(176,141,74,0.28);
-    color: var(--color-parchment-100);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-field-border);
+    color: var(--chrome-text);
     font-family: var(--font-mono);
     font-size: 0.72em;
     padding: 0.3em 0.4em;

@@ -99,7 +99,7 @@
 
 <div class="page parchment-dark" bind:this={pageEl}>
     <div class="bg-rose">
-        <CompassRose size={900} color="var(--color-gold-pale)" opacity={0.06} />
+        <CompassRose size={900} color="var(--chrome-gold)" opacity={0.06} />
     </div>
     <div class="bg-glow"></div>
 
@@ -240,7 +240,7 @@
         min-height: calc(100vh - 6em);
         padding: 4em 0 0;
         overflow: hidden;
-        color: #e8e4d2;
+        color: var(--chrome-text);
         font-family: var(--font-body);
     }
     .bg-rose {
@@ -266,7 +266,7 @@
         z-index: 0;
         background: radial-gradient(ellipse at 80% 30%, rgba(176, 141, 74, 0.12), transparent 50%);
     }
-    .eyebrow.gold { color: var(--color-gold-pale); }
+    .eyebrow.gold { color: var(--chrome-gold); }
 
     .hero {
         position: relative;
@@ -286,16 +286,16 @@
         letter-spacing: 0.02em;
         line-height: 0.95;
         margin: 0.4em 0 0.6em;
-        color: #fbf6e7;
+        color: var(--chrome-text);
     }
     .hero-text h1 .line-1 { display: block; }
-    .hero-text h1 .line-2 { display: block; color: var(--color-gold-pale); }
+    .hero-text h1 .line-2 { display: block; color: var(--chrome-gold); }
     .hero-text .lede {
         font-family: var(--font-editorial);
         font-style: italic;
         font-size: 1.25rem;
         line-height: 1.45;
-        color: rgba(232, 228, 210, 0.7);
+        color: var(--chrome-text-dim);
         max-width: 540px;
         margin: 0 0 1.8em;
     }
@@ -311,23 +311,23 @@
         font-size: 0.78rem;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 0.6em;
         padding: 0.7em 0;
-        border-bottom: 1px solid rgba(251, 246, 231, 0.4);
+        border-bottom: 1px solid var(--chrome-border);
     }
-    .ghost-link:hover { color: var(--color-gold-pale); border-color: var(--color-gold-pale); }
+    .ghost-link:hover { color: var(--chrome-gold); border-color: var(--chrome-gold); }
 
     .stat-row { display: flex; gap: 2.5em; flex-wrap: wrap; }
-    .stat .n { font-family: var(--font-display); font-size: 2rem; color: var(--color-gold-pale); }
+    .stat .n { font-family: var(--font-display); font-size: 2rem; color: var(--chrome-gold); }
     .stat .l {
         font-family: var(--font-mono);
         font-size: 10px;
         letter-spacing: 0.2em;
-        color: rgba(232, 228, 210, 0.5);
+        color: var(--chrome-text-dim);
         text-transform: uppercase;
         margin-top: 0.2em;
     }
@@ -354,12 +354,12 @@
         left: 50%;
         bottom: 4%;
         transform: translateX(-50%);
-        background: rgba(14, 19, 32, 0.85);
+        background: var(--chrome-card-strong);
         padding: 6px 12px;
         border: 1px solid var(--color-aged-gold);
         font-family: var(--font-mono);
         font-size: 11px;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         display: flex;
         align-items: center;
         gap: 0.4em;
@@ -384,7 +384,7 @@
         font-family: var(--font-display);
         font-size: 2.4rem;
         letter-spacing: 0.04em;
-        color: #fbf6e7;
+        color: var(--chrome-text);
         margin: 0.3em 0 0.6em;
     }
     .flourish-wrap {
@@ -394,12 +394,12 @@
     }
     .pillar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5em; }
     .pillar { border-top: 1px solid var(--color-aged-gold); padding-top: 1.5em; }
-    .pillar .icon { color: var(--color-gold-pale); margin-bottom: 0.8em; }
+    .pillar .icon { color: var(--chrome-gold); margin-bottom: 0.8em; }
     .pillar h3 {
         font-family: var(--font-display);
         font-size: 1.05rem;
         letter-spacing: 0.1em;
-        color: #fbf6e7;
+        color: var(--chrome-text);
         margin: 0 0 0.5em;
     }
     .pillar p {
@@ -407,7 +407,7 @@
         font-style: italic;
         font-size: 0.95rem;
         line-height: 1.5;
-        color: rgba(232, 228, 210, 0.65);
+        color: var(--chrome-text-dim);
         margin: 0;
     }
 
@@ -421,13 +421,13 @@
         grid-template-columns: 1.2fr 1fr 1fr;
         gap: 2.4em;
     }
-    .tri h3 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.4em 0 1em; color: #fbf6e7; }
+    .tri h3 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.4em 0 1em; color: var(--chrome-text); }
     .roadmap-note {
         margin: 0.6em 0 0;
         font-family: var(--font-editorial);
         font-style: italic;
         font-size: 0.95rem;
-        color: rgba(232, 228, 210, 0.6);
+        color: var(--chrome-text-dim);
     }
 
     @media (max-width: 900px) {

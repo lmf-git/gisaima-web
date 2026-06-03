@@ -409,8 +409,28 @@
         margin-top: 1.5em;
     }
     @media (max-width: 700px) {
-        .block.split { grid-template-columns: 1fr; }
+        .page { padding: 5em 1.2em 3em; }
+        .hero {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.2em;
+            align-items: center;
+            margin-bottom: 2em;
+        }
+        .hero h1 { font-size: 2rem; }
+        .motto { font-size: 0.95rem; }
+        .block { margin: 2em 0; }
+        .block.split { grid-template-columns: 1fr; gap: 2em; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
-        .stat:nth-child(3) { border-left: none; border-top: 1px solid rgba(26,32,48,.18); }
+        .stat { padding: 1em 0.8em; }
+        .stat .value { font-size: 1.5rem; }
+        .stat:nth-child(3) { border-left: none; }
+        .stat:nth-child(odd) { border-left: none; }
+        .stat:nth-child(n+3) { border-top: 1px solid rgba(26,32,48,.18); }
+        .house-name { font-size: 1.5rem; }
+        .house-row { gap: 1em; }
+        .heraldry { flex-direction: column; text-align: center; gap: 1em; }
+        .lede { max-width: none; }
+        .house-modal { padding: 1.4em 1.2em; }
     }
 </style>

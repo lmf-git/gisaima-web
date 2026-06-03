@@ -24,7 +24,7 @@
         '/rankings', '/trade', '/house',
         '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
         '/wealth', '/deaths', '/scouting', '/chronicle', '/profile',
-        '/settlement', '/pending', '/characters', '/items'
+        '/settlement', '/pending', '/characters', '/items', '/friends'
     ];
 
     const { children } = $props();
@@ -435,6 +435,31 @@
         --color-pale-green: var(--color-sage-deep);
         --color-muted-teal: var(--color-ink-700);
 
+        /* Game-chrome surface tokens — drive the dark HUD shell: the map/home
+           pages, the dossier bar, the side rail / mobile tab bar, the tile
+           dossier and every action modal. Built on the parchment/ink ladder so
+           the whole game surface follows the light/dark toggle (these surfaces
+           were previously hardcoded dark and ignored the theme). Light values
+           here; the dark block overrides the literal-rgba ones below. */
+        --chrome-bg: var(--color-parchment-100);
+        --chrome-panel-a: var(--color-parchment-100);
+        --chrome-panel-b: var(--color-parchment-200);
+        --chrome-card: var(--color-parchment-200);
+        --chrome-card-strong: var(--color-parchment-300);
+        --chrome-text: var(--color-ink-900);
+        --chrome-text-dim: var(--color-ink-500);
+        --chrome-text-faint: var(--color-ink-300);
+        --chrome-gold: var(--color-aged-gold);
+        --chrome-border: rgba(26, 32, 48, 0.18);
+        --chrome-border-strong: rgba(26, 32, 48, 0.3);
+        --chrome-gold-border: rgba(176, 141, 74, 0.5);
+        --chrome-gold-soft: rgba(176, 141, 74, 0.12);
+        --chrome-hairline: rgba(26, 32, 48, 0.1);
+        --chrome-field-bg: rgba(26, 32, 48, 0.05);
+        --chrome-field-border: rgba(26, 32, 48, 0.16);
+        --chrome-backdrop: rgba(20, 26, 38, 0.5);
+        --chrome-shadow: rgba(0, 0, 0, 0.18);
+
         /* Legacy aliases — old variable names still referenced across components.
            Kept pointing at sensible palette colors so the visual remains coherent. */
         --color-dark-navy: var(--color-ink-1000);
@@ -572,6 +597,26 @@
         --color-shadow: rgba(0, 0, 0, 0.5);
 
         --paper-noise: none;
+
+        /* Dark game-chrome surface. The text tokens (--chrome-text*) are
+           ladder-based and already flip via the inverted ink scale above, so
+           only the panel fills and the literal-rgba borders/fields need dark
+           values here. */
+        --chrome-bg: rgba(14, 19, 32, 0.96);
+        --chrome-panel-a: rgba(14, 19, 32, 0.96);
+        --chrome-panel-b: rgba(20, 24, 40, 0.96);
+        --chrome-card: rgba(26, 32, 48, 0.7);
+        --chrome-card-strong: rgba(26, 32, 48, 0.85);
+        --chrome-gold: var(--color-gold-pale);
+        --chrome-border: rgba(255, 255, 255, 0.08);
+        --chrome-border-strong: rgba(176, 141, 74, 0.3);
+        --chrome-gold-border: rgba(176, 141, 74, 0.5);
+        --chrome-gold-soft: rgba(176, 141, 74, 0.18);
+        --chrome-hairline: rgba(255, 255, 255, 0.07);
+        --chrome-field-bg: rgba(255, 255, 255, 0.06);
+        --chrome-field-border: rgba(255, 255, 255, 0.14);
+        --chrome-backdrop: rgba(0, 0, 0, 0.6);
+        --chrome-shadow: rgba(0, 0, 0, 0.5);
     }
 
     /* ── Reference utility classes ───────────────────────────── */
@@ -591,12 +636,15 @@
         pointer-events: none;
         mix-blend-mode: multiply;
     }
+    /* The home page's backdrop. Now theme-aware: the base linear gradient uses
+       the theme background tokens (light parchment / dark ink) with a subtle
+       sage + shadow wash that reads on both. */
     :global(.parchment-dark) {
         background:
-            radial-gradient(ellipse at 30% 20%, rgba(80,110,90,.18), transparent 55%),
-            radial-gradient(ellipse at 70% 90%, rgba(0,0,0,.4), transparent 65%),
-            linear-gradient(180deg, #11151f 0%, #0c1019 100%);
-        color: #d8d4c0;
+            radial-gradient(ellipse at 30% 20%, rgba(80,110,90,.12), transparent 55%),
+            radial-gradient(ellipse at 70% 90%, rgba(0,0,0,.10), transparent 65%),
+            linear-gradient(180deg, var(--color-background-gradient-start) 0%, var(--color-background-gradient-end) 100%);
+        color: var(--chrome-text);
     }
     :global(.rule-deco) {
         height: 0.9em;
@@ -710,8 +758,10 @@
     }
 
     .app.home {
-        background: #0c1019;
-        color: #e8e4d2;
+        background: linear-gradient(to bottom,
+                   var(--color-background-gradient-start),
+                   var(--color-background-gradient-end));
+        color: var(--chrome-text);
     }
 
     /* Map HUD chrome — applies the reference aesthetic to the dark map shell.
@@ -750,11 +800,11 @@
     :global(.app.map.app.map .tutorial-menu),
     :global(.app.map.app.map .modal),
     :global(.app.map.app.map .panel) {
-        background: linear-gradient(180deg, rgba(14, 19, 32, 0.96), rgba(20, 24, 40, 0.96));
-        border: 0.075em solid rgba(176, 141, 74, 0.35);
+        background: linear-gradient(180deg, var(--chrome-panel-a), var(--chrome-panel-b));
+        border: 0.075em solid var(--chrome-gold-border);
         border-radius: 0;
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(176, 141, 74, 0.15);
-        color: var(--color-parchment-200);
+        box-shadow: 0 30px 80px var(--chrome-shadow), inset 0 1px 0 var(--chrome-gold-soft);
+        color: var(--chrome-text);
         backdrop-filter: blur(0.4em);
     }
     :global(.app.map.app.map h1),
@@ -762,7 +812,7 @@
     :global(.app.map.app.map h3),
     :global(.app.map.app.map h4) {
         font-family: var(--font-display);
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         letter-spacing: 0.06em;
     }
     :global(.app.map.app.map .eyebrow),
@@ -772,7 +822,7 @@
         font-size: 0.7em;
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
     :global(.app.map.app.map button.primary) {
         background: var(--color-aged-gold);
@@ -788,8 +838,8 @@
     }
     :global(.app.map.app.map button.secondary) {
         background: transparent;
-        color: var(--color-parchment-100);
-        border: 0.075em solid rgba(176, 141, 74, 0.5);
+        color: var(--chrome-text);
+        border: 0.075em solid var(--chrome-gold-border);
         font-family: var(--font-display);
         letter-spacing: 0.15em;
         text-transform: uppercase;
@@ -797,49 +847,49 @@
     }
     :global(.app.map.app.map button.secondary:hover) {
         border-color: var(--color-gold-pale);
-        background: rgba(176, 141, 74, 0.1);
+        background: var(--chrome-gold-soft);
     }
     :global(.app.map.app.map .coordinates),
     :global(.app.map.app.map .coord),
     :global(.app.map.app.map .timer),
     :global(.app.map.app.map .tick-value) {
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     /* Common modal chrome — headers, close, content, button rows, errors. */
     :global(.app.map.app.map .modal-header) {
-        background: rgba(176, 141, 74, 0.08);
-        border-bottom: 0.075em solid rgba(176, 141, 74, 0.3);
+        background: var(--chrome-gold-soft);
+        border-bottom: 0.075em solid var(--chrome-gold-border);
         padding: 0.85em 1.1em;
         text-shadow: none;
     }
     :global(.app.map.app.map .modal-header h2),
     :global(.app.map.app.map h2),
     :global(.app.map.app.map h3) {
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         text-shadow: none;
     }
     :global(.app.map.app.map .content) {
-        color: var(--color-parchment-200);
+        color: var(--chrome-text);
         text-shadow: none;
     }
     :global(.app.map.app.map .close-btn),
     :global(.app.map.app.map .cancel-btn) {
-        color: var(--color-parchment-200);
+        color: var(--chrome-text);
         background: transparent;
-        border: 0.075em solid rgba(176, 141, 74, 0.4);
+        border: 0.075em solid var(--chrome-gold-border);
         border-radius: 0;
     }
     :global(.app.map.app.map .close-btn:hover),
     :global(.app.map.app.map .cancel-btn:hover) {
-        background: rgba(176, 141, 74, 0.1);
+        background: var(--chrome-gold-soft);
         border-color: var(--color-gold-pale);
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
     :global(.app.map.app.map .button-row),
     :global(.app.map.app.map .modal-actions),
     :global(.app.map.app.map .action-buttons) {
-        border-top: 0.075em solid rgba(176, 141, 74, 0.2);
+        border-top: 0.075em solid var(--chrome-gold-soft);
         padding-top: 0.8em;
     }
     :global(.app.map.app.map .mobilise-btn),
@@ -894,7 +944,7 @@
     }
     :global(.app.map.app.map .next-tick-time),
     :global(.app.map.app.map .tick-info) {
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         font-family: var(--font-mono);
     }
     /* Section dividers + sub-headers commonly used inside action panels. */
@@ -906,14 +956,14 @@
         font-size: 0.72em;
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         text-shadow: none;
     }
     :global(.app.map.app.map .divider),
     :global(.app.map.app.map hr) {
         border: none;
         height: 1px;
-        background: rgba(176, 141, 74, 0.2);
+        background: var(--chrome-gold-soft);
         margin: 0.7em 0;
     }
 
@@ -921,7 +971,7 @@
     :global(.app.map.app.map .row),
     :global(.app.map.app.map .list-row),
     :global(.app.map.app.map tr) {
-        border-color: rgba(176, 141, 74, 0.14);
+        border-color: var(--chrome-gold-soft);
     }
     :global(.app.map.app.map table) { width: 100%; border-collapse: collapse; }
     :global(.app.map.app.map th) {
@@ -929,8 +979,8 @@
         font-size: 0.65em;
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: var(--color-gold-pale);
-        border-bottom: 0.075em solid rgba(176, 141, 74, 0.35);
+        color: var(--chrome-gold);
+        border-bottom: 0.075em solid var(--chrome-gold-border);
         padding: 0.45em 0.6em;
         text-align: left;
         background: transparent;
@@ -938,8 +988,8 @@
     }
     :global(.app.map.app.map td) {
         padding: 0.4em 0.6em;
-        border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
-        color: var(--color-parchment-200);
+        border-bottom: 0.075em solid var(--chrome-gold-soft);
+        color: var(--chrome-text);
         text-shadow: none;
     }
 
@@ -950,9 +1000,9 @@
     :global(.app.map.app.map .tag) {
         font-family: var(--font-mono);
         font-size: 0.72em;
-        background: rgba(176, 141, 74, 0.18);
-        color: var(--color-gold-pale);
-        border: 0.075em solid rgba(176, 141, 74, 0.35);
+        background: var(--chrome-gold-soft);
+        color: var(--chrome-gold);
+        border: 0.075em solid var(--chrome-gold-border);
         border-radius: 0;
         padding: 0.15em 0.5em;
         text-shadow: none;
@@ -961,8 +1011,8 @@
     /* Progress bars used across recruit / craft / build status displays. */
     :global(.app.map.app.map .progress),
     :global(.app.map.app.map .progress-bar) {
-        background: rgba(14, 19, 32, 0.6);
-        border: 0.075em solid rgba(176, 141, 74, 0.2);
+        background: var(--chrome-field-bg);
+        border: 0.075em solid var(--chrome-gold-soft);
         border-radius: 0;
         height: 6px;
         overflow: hidden;
@@ -978,7 +1028,7 @@
     :global(.app.map.app.map .tab-bar) {
         display: flex;
         gap: 0;
-        border-bottom: 0.075em solid rgba(176, 141, 74, 0.3);
+        border-bottom: 0.075em solid var(--chrome-gold-border);
         background: transparent;
     }
     :global(.app.map.app.map .tab),
@@ -989,7 +1039,7 @@
         text-transform: uppercase;
         background: transparent;
         border: none;
-        color: rgba(232, 228, 210, 0.55);
+        color: var(--chrome-text-dim);
         padding: 0.7em 1em;
         cursor: pointer;
         border-bottom: 0.15em solid transparent;
@@ -998,11 +1048,11 @@
     }
     :global(.app.map.app.map .tab:hover),
     :global(.app.map.app.map .tab-bar button:hover) {
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
     }
     :global(.app.map.app.map .tab.active),
     :global(.app.map.app.map .tab-bar button.active) {
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         border-bottom-color: var(--color-aged-gold);
     }
 
@@ -1010,10 +1060,10 @@
     :global(.app.map.app.map .recipe-card),
     :global(.app.map.app.map .build-option),
     :global(.app.map.app.map .structure-card) {
-        background: rgba(26, 32, 48, 0.7);
-        border: 0.075em solid rgba(176, 141, 74, 0.18);
+        background: var(--chrome-card);
+        border: 0.075em solid var(--chrome-gold-soft);
         border-radius: 0;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text);
         text-shadow: none;
     }
     :global(.app.map.app.map .unit-card.selected),
@@ -1079,29 +1129,28 @@
         }
     }
 
+    /* The map/home shells used to force a dark palette regardless of theme.
+       They now derive from the chrome tokens, so generic map components that
+       read these semantic tokens follow the light/dark toggle for free. */
     .app.map, .app.home {
-        --color-background: var(--color-ink-1000);
-        --color-background-gradient-start: var(--color-ink-1000);
-        --color-background-gradient-end: var(--color-ink-900);
-        --color-text-primary: var(--color-parchment-200);
-        --color-text-secondary: var(--color-parchment-400);
-        --color-text: var(--color-parchment-200);
-        --color-heading: var(--color-gold-pale);
-        --color-subheading: var(--color-parchment-400);
-        --color-panel-bg: rgba(26, 32, 48, 0.85);
-        --color-panel-border: rgba(176, 141, 74, 0.3);
-        --color-card-bg: rgba(26, 32, 48, 0.85);
-        --color-card-border: rgba(176, 141, 74, 0.3);
-        --color-link: var(--color-gold-pale);
+        --color-background: var(--chrome-bg);
+        --color-text-primary: var(--chrome-text);
+        --color-text-secondary: var(--chrome-text-dim);
+        --color-text: var(--chrome-text);
+        --color-heading: var(--chrome-gold);
+        --color-subheading: var(--chrome-text-dim);
+        --color-panel-bg: var(--chrome-card-strong);
+        --color-panel-border: var(--chrome-gold-border);
+        --color-card-bg: var(--chrome-card-strong);
+        --color-card-border: var(--chrome-gold-border);
+        --color-link: var(--chrome-gold);
         --color-link-hover: var(--color-aged-gold);
-        --color-shadow: rgba(0, 0, 0, 0.5);
-        --color-button: var(--color-ink-700);
-        --color-button-hover: var(--color-ink-500);
+        --color-shadow: var(--chrome-shadow);
         --color-button-primary: var(--color-aged-gold);
         --color-button-primary-hover: var(--color-gold-pale);
-        --color-button-secondary: var(--color-ink-500);
-        --color-button-secondary-hover: var(--color-ink-300);
-        --color-pale-green: var(--color-gold-pale);
+        --color-button-secondary: var(--chrome-card);
+        --color-button-secondary-hover: var(--chrome-card-strong);
+        --color-pale-green: var(--chrome-gold);
         --color-muted-teal: var(--color-aged-gold);
         --color-bright-accent: var(--color-aged-gold);
     }
@@ -1226,6 +1275,9 @@
         .app.world-scoped .main-content {
             padding-left: 0;
             padding-top: 3.5em;
+            /* LeftRail becomes a fixed 52px bottom tab bar on mobile — reserve
+               space so page content (and its own bottom padding) clears it. */
+            padding-bottom: 52px;
         }
     }
 
@@ -1548,7 +1600,7 @@
     }
     
     :global(.hamburger-icon span) {
-        background-color: var(--color-pale-green);
+        background-color: var(--color-heading);
     }
 
     /* Animation for mobile menu - moved from container to component */

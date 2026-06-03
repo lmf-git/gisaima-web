@@ -197,7 +197,7 @@
     <header class="dossier">
         <!-- Compact Gisaima mark — only surfaces on mobile, where the house
              crest/tagline is hidden, so the bar still carries the brand. -->
-        <a class="ctx-logo" href="/map" aria-label="Gisaima">
+        <a class="ctx-logo" href="/" aria-label="Gisaima home">
             <Logo extraClass="ctx-logo-icon" />
         </a>
 
@@ -332,9 +332,9 @@
         gap: 0.875em;
         height: 3.5em;
         padding: 0 1.15em;
-        background: linear-gradient(180deg, rgba(14, 19, 32, 0.92), rgba(14, 19, 32, 0.78));
-        border-bottom: 0.075em solid rgba(255, 255, 255, 0.08);
-        color: var(--color-parchment-100);
+        background: linear-gradient(180deg, var(--chrome-panel-a), var(--chrome-panel-b));
+        border-bottom: 0.075em solid var(--chrome-border);
+        color: var(--chrome-text);
         font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
         backdrop-filter: blur(0.5em);
     }
@@ -352,7 +352,7 @@
         display: none;
         align-items: center;
         flex-shrink: 0;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
     .ctx-logo :global(.ctx-logo-icon) {
         height: 2em;
@@ -365,7 +365,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.65em;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         text-decoration: none;
         flex-shrink: 0;
     }
@@ -383,12 +383,12 @@
         margin-top: 0.15em;
         white-space: nowrap;
     }
-    .house-sub em { color: var(--color-gold-pale); font-style: normal; }
+    .house-sub em { color: var(--chrome-gold); font-style: normal; }
 
     .rule {
         width: 0.075em;
         height: 1.75em;
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--chrome-hairline);
         flex-shrink: 0;
     }
 
@@ -430,16 +430,16 @@
         align-items: center;
         gap: 0.45em;
         padding: 0 0.85em;
-        border-left: 0.075em solid rgba(255, 255, 255, 0.07);
+        border-left: 0.075em solid var(--chrome-hairline);
     }
     .res li:first-child { border-left: none; }
-    .res-icon.coin  { color: var(--color-gold-pale); }
+    .res-icon.coin  { color: var(--chrome-gold); }
     .res-icon.sage  { color: var(--color-sage-pale, #b8c9b3); }
     .res-icon.gold  { color: var(--color-aged-gold); }
     .res-icon.hill  { color: #a89567; }
     .res-icon.iron  { color: #9fb0bd; }
     .res-val { line-height: 1; }
-    .res-val .n { display: block; font-size: 0.82em; font-weight: 500; color: var(--color-parchment-100); }
+    .res-val .n { display: block; font-size: 0.82em; font-weight: 500; color: var(--chrome-text); }
     .res-val .r { display: block; font-size: 0.55em; opacity: 0.5; letter-spacing: 0.04em; margin-top: 0.15em; }
 
     .spacer { flex: 1 1 auto; }
@@ -449,20 +449,20 @@
         display: inline-flex;
         align-items: center;
         gap: 0.6em;
-        background: rgba(255, 255, 255, 0.06);
-        border: 0.075em solid rgba(255, 255, 255, 0.14);
+        background: var(--chrome-field-bg);
+        border: 0.075em solid var(--chrome-field-border);
         padding: 0.4em 0.85em;
         width: 22em;
         font-family: var(--font-mono);
         font-size: 0.78em;
-        color: rgba(251, 246, 231, 0.55);
+        color: var(--chrome-text-dim);
         flex-shrink: 0;
         transition: border-color 0.15s, background 0.15s;
     }
     .search:focus-within {
-        border-color: rgba(176, 141, 74, 0.6);
-        background: rgba(255, 255, 255, 0.09);
-        color: rgba(251, 246, 231, 0.75);
+        border-color: var(--chrome-gold-border);
+        background: var(--chrome-field-bg);
+        color: var(--chrome-text);
     }
     .search input {
         flex: 1;
@@ -472,14 +472,14 @@
         border: none;
         box-shadow: none;
         outline: none;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         font-family: inherit;
         font-size: inherit;
         padding: 0;
         line-height: 1;
     }
     .search input::placeholder {
-        color: rgba(251, 246, 231, 0.32);
+        color: var(--chrome-text-faint);
     }
     /* Icon and kbd inherit the form's color — no isolated backgrounds or borders */
     .search svg { color: inherit; flex-shrink: 0; }
@@ -498,21 +498,21 @@
         align-items: center;
         gap: 0.5em;
         padding: 0.4em 0.85em;
-        background: rgba(176, 141, 74, 0.12);
-        border: 0.075em solid rgba(176, 141, 74, 0.3);
+        background: var(--chrome-gold-soft);
+        border: 0.075em solid var(--chrome-gold-border);
         font-family: var(--font-mono);
         font-size: 0.78em;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         text-decoration: none;
         flex-shrink: 0;
     }
-    .tick:hover { background: rgba(176, 141, 74, 0.2); }
+    .tick:hover { background: var(--chrome-gold-soft); }
     .tick-dot {
         width: 0.375em;
         height: 0.375em;
         border-radius: 50%;
-        background: var(--color-gold-pale);
-        box-shadow: 0 0 0.5em var(--color-gold-pale);
+        background: var(--chrome-gold);
+        box-shadow: 0 0 0.5em var(--chrome-gold);
         animation: pulse 2.4s ease-in-out infinite;
     }
     @keyframes pulse {
@@ -527,7 +527,7 @@
     .tick-val {
         font-size: 0.85em;
         font-weight: 600;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     @media (max-width: 1200px) {
@@ -572,8 +572,8 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        background: rgba(14, 19, 32, 0.97);
-        border: 0.075em solid rgba(176, 141, 74, 0.4);
+        background: var(--chrome-panel-a);
+        border: 0.075em solid var(--chrome-gold-border);
         border-top: none;
         z-index: 2000;
         max-height: 18em;
@@ -588,13 +588,13 @@
         cursor: pointer;
         font-family: var(--font-mono);
         font-size: 0.78em;
-        color: var(--color-parchment-200, rgba(232, 228, 210, 0.8));
-        border-bottom: 0.075em solid rgba(255, 255, 255, 0.05);
+        color: var(--chrome-text-dim);
+        border-bottom: 0.075em solid var(--chrome-hairline);
         transition: background 0.1s;
     }
     .search-result:hover {
-        background: rgba(176, 141, 74, 0.14);
-        color: var(--color-parchment-100);
+        background: var(--chrome-gold-soft);
+        color: var(--chrome-text);
     }
 
     .result-kind {
@@ -629,6 +629,6 @@
         font-size: 0.68em;
         opacity: 0.4;
         font-style: italic;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
     }
 </style>

@@ -42,8 +42,8 @@
         bottom: 0;
         width: 5em;              /* matches dossier --dossier-left offset */
         z-index: 90;
-        background: linear-gradient(180deg, rgba(14, 19, 32, 0.94) 0%, rgba(19, 25, 41, 0.94) 100%);
-        border-right: 0.075em solid rgba(176, 141, 74, 0.18);
+        background: linear-gradient(180deg, var(--chrome-panel-a) 0%, var(--chrome-panel-b) 100%);
+        border-right: 0.075em solid var(--chrome-gold-soft);
         display: flex;
         flex-direction: column;
         padding: 0.5em 0 0.5em;
@@ -56,7 +56,7 @@
         align-items: center;
         justify-content: center;
         padding: 0.5em 0 0.4em;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
     .brand :global(.rail-logo) {
         width: 4.9em;
@@ -68,7 +68,7 @@
         width: 2em;
         height: 0.075em;
         margin: 0 auto 0.6em;
-        background: rgba(176, 141, 74, 0.3);
+        background: var(--chrome-gold-border);
     }
 
     a {
@@ -78,7 +78,7 @@
         justify-content: center;
         gap: 0.2em;
         padding: 0.55em 0;
-        color: rgba(232, 228, 210, 0.55);
+        color: var(--chrome-text-dim);
         text-decoration: none;
         font-family: var(--font-display);
         font-size: 8px;
@@ -88,12 +88,12 @@
     }
     a span { opacity: 0.85; }
     a:hover {
-        color: var(--color-gold-pale);
-        background: rgba(176, 141, 74, 0.06);
+        color: var(--chrome-gold);
+        background: var(--chrome-gold-soft);
     }
     a.active {
-        color: var(--color-gold-pale);
-        background: rgba(176, 141, 74, 0.16);
+        color: var(--chrome-gold);
+        background: var(--chrome-gold-soft);
         box-shadow: inset 2px 0 0 var(--color-aged-gold);
     }
 
@@ -104,7 +104,7 @@
             top: auto;
             bottom: 0;
             border-right: none;
-            border-top: 0.075em solid rgba(176, 141, 74, 0.18);
+            border-top: 0.075em solid var(--chrome-gold-soft);
             flex-direction: row;
             justify-content: space-around;
             padding: 0;
