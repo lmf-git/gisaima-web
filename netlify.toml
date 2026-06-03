@@ -1,0 +1,28 @@
+# Netlify config for the Gisaima web client (SvelteKit + adapter-netlify).
+#
+# Intentionally does NOT set [build] command/publish or any redirects — the
+# SvelteKit Netlify adapter auto-configures the SSR functions and routing, and
+# overriding those risks breaking it. This file only pins the build Node version
+# and adds response headers, both of which are purely additive.
+
+[build.environment]
+  # Match the API's runtime (and the repo's engines) for reproducible builds.
+  NODE_VERSION = "22"
+
+# Content-hashed build assets never change for a given URL — cache them hard so
+# returning visitors fetch almost nothing.
+[[headers]]
+  for = "/_app/immutable/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Conservative, non-breaking security headers applied site-wide. (CSP is
+# deliberately omitted — it needs per-app testing against the WS origin and any
+# inline styles before it can be enabled safely.)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=()"

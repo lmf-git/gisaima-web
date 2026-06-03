@@ -83,8 +83,22 @@ export const apiPost = (path, body)   => apiFetch(path, { method: 'POST', body }
 let _ws = null;
 let _wsListeners = new Map();   // channel → Set<callback>
 let _reconnectTimer = null;
+let _reconnectAttempts = 0;     // drives exponential backoff
 let _pingTimer = null;          // client-side keepalive
 let _wsClosedIntentionally = false; // set by closeWs() to suppress auto-reconnect
+
+const RECONNECT_BASE_MS = 1000;
+const RECONNECT_MAX_MS  = 30_000;
+
+// Backoff with jitter so that when the (single) server restarts, clients don't
+// all reconnect in lockstep every few seconds and stampede it as it boots.
+function _scheduleReconnect() {
+  const capped = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** _reconnectAttempts);
+  const delay  = capped * (0.5 + Math.random() * 0.5); // 50–100% of the cap
+  _reconnectAttempts++;
+  console.log(`[ws] disconnected — reconnecting in ${Math.round(delay)}ms`);
+  _reconnectTimer = setTimeout(connectWs, delay);
+}
 
 /**
  * Connect (or reconnect) the WebSocket.
@@ -100,6 +114,7 @@ export function connectWs() {
 
   _ws.addEventListener('open', () => {
     console.log('[ws] connected');
+    _reconnectAttempts = 0; // reset backoff on a successful connection
     if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
     // Authenticate so the server can apply fog-of-war filtering
     const token = getToken();
@@ -133,8 +148,7 @@ export function connectWs() {
       console.log('[ws] disconnected (intentional)');
       return;
     }
-    console.log('[ws] disconnected — reconnecting in 3s');
-    _reconnectTimer = setTimeout(connectWs, 3000);
+    _scheduleReconnect();
   });
 
   _ws.addEventListener('error', (e) => console.error('[ws] error', e));
@@ -157,6 +171,7 @@ if (browser) {
     if (document.visibilityState !== 'visible') return;
     if (_wsClosedIntentionally) return; // stay disconnected after an intentional close
     if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
+    _reconnectAttempts = 0; // returning to foreground → reconnect immediately
     // Close any zombie connection (readyState: CLOSING=2 or CLOSED=3)
     if (_ws && _ws.readyState > 1) { _ws = null; }
     connectWs();
@@ -176,15 +191,18 @@ function _messageChannel(msg) {
   return null;
 }
 
-function _sendSubscription(channel) {
+function _sendSubscription(channel)   { _sendChannelOp(channel, 'subscribe'); }
+function _sendUnsubscription(channel)  { _sendChannelOp(channel, 'unsubscribe'); }
+
+function _sendChannelOp(channel, op) {
   if (!_ws || _ws.readyState !== 1) return;
-  // User channel is server-push only — no subscription message needed.
+  // User channel is server-push only — no (un)subscription message needed.
   if (channel === USER_CHANNEL) return;
   const [type, worldId, chunkKey] = channel.split(':');
   const msg = { worldId };
-  if (type === 'chunk') { msg.type = 'subscribe_chunk'; msg.chunkKey = chunkKey; }
-  if (type === 'world') { msg.type = 'subscribe_world'; }
-  if (type === 'chat')  { msg.type = 'subscribe_chat'; }
+  if (type === 'chunk') { msg.type = `${op}_chunk`; msg.chunkKey = chunkKey; }
+  if (type === 'world') { msg.type = `${op}_world`; }
+  if (type === 'chat')  { msg.type = `${op}_chat`; }
   _ws.send(JSON.stringify(msg));
 }
 
@@ -199,7 +217,13 @@ export function wsSubscribe(channel, callback) {
   _sendSubscription(channel);
   return () => {
     const set = _wsListeners.get(channel);
-    if (set) { set.delete(callback); if (!set.size) _wsListeners.delete(channel); }
+    if (set) {
+      set.delete(callback);
+      // Last local listener gone → tell the server to stop broadcasting this
+      // channel to us. Without this, panned-away chunks keep streaming to the
+      // socket, growing per-socket server work as the map is explored.
+      if (!set.size) { _wsListeners.delete(channel); _sendUnsubscription(channel); }
+    }
   };
 }
 
