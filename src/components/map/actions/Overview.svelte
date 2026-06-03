@@ -41,6 +41,13 @@
   
   // Add filter state
   let activeFilter = $state('all');
+
+  // Track narrow viewports: on mobile there isn't room for the "All" tab's
+  // stacked section headers + per-section sort controls, so we drop it and
+  // keep the user on a single concrete filter at a time.
+  let isMobile = $state(false);
+  let mobileQuery;
+  function syncMobile(e) { isMobile = e.matches; }
   
   // Filter definitions
   const filters = [
@@ -167,12 +174,19 @@
     updateTimer = setInterval(() => {
       updateCounter++;
     }, 1000);
+
+    mobileQuery = window.matchMedia('(max-width: 600px)');
+    syncMobile(mobileQuery);
+    mobileQuery.addEventListener('change', syncMobile);
   });
-  
+
   // Clean up timer when component is destroyed
   onDestroy(() => {
     if (updateTimer) {
       clearInterval(updateTimer);
+    }
+    if (mobileQuery) {
+      mobileQuery.removeEventListener('change', syncMobile);
     }
   });
   
@@ -291,6 +305,9 @@
     if (nonEmptyFilters.length === 1) {
       setFilter(nonEmptyFilters[0]);
       collapsedSections[nonEmptyFilters[0]] = false; // Ensure section is expanded
+    } else if (isMobile && activeFilter === 'all' && nonEmptyFilters.length > 0) {
+      // No "All" tab on mobile — land on the most populated concrete filter.
+      setFilter(getSortedFilterTabs()[0].id);
     } else if (nonEmptyFilters.length > 0 && !nonEmptyFilters.includes(activeFilter) && activeFilter !== 'all') {
       setFilter('all');
     }
@@ -366,12 +383,14 @@
   }
 
   // Tabs sorted by entity count descending — most populated type first.
+  // On mobile the "All" tab is omitted: stacked section headers plus their
+  // sort controls don't fit, so we keep a single concrete filter active.
   function getSortedFilterTabs() {
     const allTab = filters.find(f => f.id === 'all');
     const otherTabs = filters
       .filter(f => f.id !== 'all')
       .sort((a, b) => getFilterCount(b.id) - getFilterCount(a.id));
-    return [allTab, ...otherTabs];
+    return isMobile ? otherTabs : [allTab, ...otherTabs];
   }
 
   // Function to display item count for a group
@@ -462,7 +481,7 @@
   <div class="entities-panel">
     <h3 class="title">
       Overview
-      <span class="subtitle">{visibleChunks} chunks visible</span>
+      <span class="subtitle">{visibleChunks} chunks</span>
       
       <!-- Replace the close button to match the size in Details component -->
       <button 
@@ -2195,5 +2214,31 @@
   .toggle-units-btn:hover {
     color: var(--chrome-text);
     background-color: var(--chrome-gold-soft);
+  }
+
+  /* Mobile: the drawer was overflowing the small viewport. Shrink the base
+     font (everything here is em-relative), pull it tight to the screen edges,
+     and cap the scroll area lower so it never eats the whole screen. */
+  @media (max-width: 600px) {
+    .entities-wrapper {
+      font-size: 1.05em;
+      bottom: 0.35em;
+      left: 0.35em;
+      right: 0.35em;
+      max-width: none;
+    }
+
+    .entities-panel {
+      max-width: none;
+    }
+
+    .entities-content {
+      padding: 0.6em;
+      max-height: 48vh;
+    }
+
+    .section-content.expanded {
+      max-height: 11em;
+    }
   }
 </style>

@@ -495,4 +495,21 @@
   .map-container.touch-active {
     touch-action: none;
   }
+
+  /* Mobile: the extra tile count comes from the bumped EXPANDED_*_FACTOR in
+     map.js; enlarge each tile too so the fragment is bigger overall (more
+     surrounding map, larger and more tappable) while still fitting a narrow
+     screen. The higher tile count alone already widens it ~40%; a small tile
+     bump on top keeps each cell tappable without overflowing. */
+  @media (max-width: 600px) {
+    .minimap-grid {
+      grid-template-columns: repeat(var(--grid-cols), var(--mini-tile-size));
+      grid-template-rows: repeat(var(--grid-rows), var(--mini-tile-size));
+      --mini-tile-size: 0.55em;
+    }
+    .map-container {
+      top: 3.2em;
+      right: 0.5em;
+    }
+  }
 </style>

@@ -273,4 +273,12 @@
     color: var(--chrome-gold);
     letter-spacing: 0.06em;
   }
+
+  /* Mobile: the panel's type is all em-relative, so bumping the base font
+     scales the whole list up to a more readable size on small screens. */
+  @media (max-width: 600px) {
+    .achievements-panel {
+      font-size: 1.2em;
+    }
+  }
 </style>

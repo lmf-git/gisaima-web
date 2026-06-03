@@ -198,9 +198,12 @@
         {:else}
           <span class="ds-topbar-name">Tile</span>
         {/if}
-        {#if tile}
-          <span class="ds-topbar-coords">{tile.x},{tile.y}</span>
-          {#if tile.biome?.name}<span class="ds-topbar-biome">{_fmt(tile.biome.name)}</span>{/if}
+        <!-- Coords/biome are tile context. Hidden for the Achievements panel
+             (no tile relevance), and on desktop for Details (the Details panel
+             itself surfaces them, so the topbar copy is redundant there). -->
+        {#if tile && panel !== 'achievements'}
+          <span class="ds-topbar-coords" class:ds-hide-desktop={panel === 'details'}>{tile.x},{tile.y}</span>
+          {#if tile.biome?.name}<span class="ds-topbar-biome" class:ds-hide-desktop={panel === 'details'}>{_fmt(tile.biome.name)}</span>{/if}
         {/if}
       </div>
       <button class="ds-close" onclick={onClose} aria-label="Close dossier">
@@ -489,6 +492,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 7em;
+  }
+
+  /* Details panel: drop the redundant topbar coords/biome on desktop only. */
+  @media (min-width: 601px) {
+    .ds-hide-desktop { display: none; }
   }
 
   .ds-close {

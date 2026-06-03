@@ -425,6 +425,7 @@
         --color-parchment-300: #ecdfb6;
         --color-parchment-400: #d9c89a;
         --color-ink-300: #7d7b6f;
+        --color-ink-400: #646678;
         --color-ink-500: #4b5267;
         --color-ink-700: #2d3548;
         --color-ink-900: #1a2030;
@@ -481,7 +482,10 @@
         --chrome-card-strong: var(--color-parchment-300);
         --chrome-text: var(--color-ink-900);
         --chrome-text-dim: var(--color-ink-500);
-        --chrome-text-faint: var(--color-ink-300);
+        /* Was ink-300 (≈#7d7b6f) — too low-contrast on parchment for the
+           achievements/guide secondary text. Bumped to a darker mid rung; the
+           dark theme redefines the ink ladder so it stays readable there too. */
+        --chrome-text-faint: var(--color-ink-400);
         --chrome-gold: var(--color-aged-gold);
         --chrome-border: rgba(26, 32, 48, 0.18);
         --chrome-border-strong: rgba(26, 32, 48, 0.3);
@@ -608,6 +612,7 @@
         --color-parchment-shadow: #3d485c;
 
         --color-ink-300: #8b91a1;
+        --color-ink-400: #9ba1b0;
         --color-ink-500: #aab0bf;
         --color-ink-700: #d7d2c0;
         --color-ink-900: #f3eeda;

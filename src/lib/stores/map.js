@@ -32,8 +32,14 @@ let terrain;
 
 // Configuration constants
 export const TILE_SIZE = 5;
-export const EXPANDED_COLS_FACTOR = 2.6;
-export const EXPANDED_ROWS_FACTOR = 2;
+// How much wider/taller the loaded (and minimap-rendered) area is than the
+// active grid. Mobile uses a larger ratio: the active grid is small there, so
+// a bigger factor gives the minimap meaningfully more surrounding tiles
+// without loading an unreasonable absolute number of chunks.
+const _isMobileViewport = typeof window !== 'undefined'
+  && window.matchMedia('(max-width: 600px)').matches;
+export const EXPANDED_COLS_FACTOR = _isMobileViewport ? 3.6 : 2.6;
+export const EXPANDED_ROWS_FACTOR = _isMobileViewport ? 3 : 2;
 
 // LocalStorage key prefixes for target coordinates
 const TARGET_X_PREFIX = '-targetX';

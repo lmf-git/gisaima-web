@@ -251,8 +251,10 @@
   // VISIBILITY MANAGEMENT
   let isExiting = $state(false);
   let isVisible = $state(false);
+  let isEntering = $state(false); // true for the first frame so the container can transition in from collapsed
   let isFullyOpen = $state(false); // true once the opening animation completes
   let exitTimeout;
+  let enterFrame;
 
   // Track which buttons are currently visible
   let visibleButtons = $state([]);
@@ -267,10 +269,20 @@
   // Watch isOpen prop changes to trigger animations
   $effect(() => {
     if (isOpen && !isVisible && !isExiting) {
-      // Set component as visible immediately but start with no buttons
+      // Mount in a collapsed state, then flip to the open state on the next
+      // frame so the container's scale/opacity transition actually plays
+      // (a value set in the same frame it mounts wouldn't animate).
       isVisible = true;
+      isEntering = true;
       isFullyOpen = false;
       visibleButtons = [];
+
+      if (enterFrame) cancelAnimationFrame(enterFrame);
+      enterFrame = requestAnimationFrame(() => {
+        enterFrame = requestAnimationFrame(() => {
+          isEntering = false;
+        });
+      });
 
       // Add buttons one by one with staggered animation
       const showInterval = 80; // Same interval as removal for consistency
@@ -316,6 +328,7 @@
   // Clean up on component destroy
   onDestroy(() => {
     if (exitTimeout) clearTimeout(exitTimeout);
+    if (enterFrame) cancelAnimationFrame(enterFrame);
   });
 </script>
 
@@ -325,7 +338,7 @@
   {@const N = availableActions.length || 1}
   {@const size = (R + 14) * 2}
   {@const center = R + 14}
-  <div class="peek-container" class:exiting={isExiting} role="dialog" aria-label="Quick actions">
+  <div class="peek-container" class:entering={isEntering} class:exiting={isExiting} role="dialog" aria-label="Quick actions">
     <svg
       width={size}
       height={size}
@@ -408,15 +421,25 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
     z-index: 800;
     pointer-events: none;
     filter: drop-shadow(0 1em 2em rgba(0, 0, 0, 0.45));
-    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    transition: transform 0.26s cubic-bezier(0.175, 0.885, 0.32, 1.275),
                 opacity 0.22s ease;
   }
-  .peek-container.exiting {
-    transform: translate(-50%, -50%) scale(0.9);
+  /* Reveal: the whole wheel (ring + hub + sectors) scales up out of the
+     centre instead of popping in at full size. */
+  .peek-container.entering {
+    transform: translate(-50%, -50%) scale(0.55);
     opacity: 0;
+  }
+  /* Retract: collapse back toward the centre and fade on close. */
+  .peek-container.exiting {
+    transform: translate(-50%, -50%) scale(0.55);
+    opacity: 0;
+    transition: transform 0.24s cubic-bezier(0.4, 0, 1, 1),
+                opacity 0.2s ease;
   }
 
   .wheel { display: block; pointer-events: none; overflow: visible; }

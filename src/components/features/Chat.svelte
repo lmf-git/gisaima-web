@@ -521,7 +521,15 @@
   }
 
   @media (max-width: 600px) {
-    .chat-container { width: 88vw; max-height: 42vh; }
-    .chat-messages  { max-height: 200px; }
+    /* Bump the base font so the whole (em-relative) panel scales up, widen it
+       to nearly fill the viewport, and give it more vertical room. */
+    .chat-container {
+      font-size: 1.2em;
+      width: 94vw;
+      max-height: 52vh;
+    }
+    .chat-messages  { max-height: 46vh; }
+    /* Extra readability bump for the message body text itself. */
+    .chat-message { font-size: 0.95em; }
   }
 </style>
