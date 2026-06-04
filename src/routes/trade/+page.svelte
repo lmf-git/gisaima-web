@@ -380,7 +380,7 @@
                     <div class="mode-line">
                         <span class="mode-badge" class:naval={routeMode === 'naval'}>
                             <Stamp kind="compass" size={12} />
-                            {routeMode === 'naval' ? 'Naval route (harbour → harbour)' : 'Land caravan'}
+                            {routeMode === 'naval' ? 'Naval — sea lane checked on dispatch' : 'Land caravan'}
                         </span>
                         <span class="crew-badge" class:lack={originCrew === 0}>
                             {originCrew === 0 ? 'No crew available' : `Crew: 1 unit (of ${originCrew})`}
