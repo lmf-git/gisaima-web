@@ -1977,8 +1977,13 @@
               />
             {/if}
 
-            <!-- Only render additional elements when initial animations are complete, don't hide during movement -->
-            {#if shouldRenderDetails}
+            <!-- Render entity details as part of the tile itself so they reveal
+                 together with the terrain. Each tile fades opacity 0→1 during the
+                 staggered intro (see .main-grid.animated .tile); these children
+                 inherit that fade, so structures/groups/players/items appear at the
+                 same moment as their tile instead of popping in ~0.8s later once
+                 the old shouldRenderDetails (animationsComplete) gate cleared. -->
+            {#if $ready}
               <!-- Wall: full-tile border overlay (no subgrid) -->
               {#if cell.structure?.type === 'wall'}
                 <div class="tile-wall-overlay" class:building={cell.structure.status === 'building'}></div>
