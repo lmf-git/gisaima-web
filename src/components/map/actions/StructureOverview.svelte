@@ -25,6 +25,7 @@
     onClose = () => {},
     onAchievement = () => {},
     onShowModal = () => {},
+    onPlaceBuilding = null,
   } = $props();
   
   // Add to the state
@@ -752,11 +753,20 @@
     return BUILDINGS.getBuildingDescription(buildingType);
   }
 
-  // Function to build a new building. Posts directly to the API; the server
-  // assigns a free subgrid cell. The new building appears on the next world tick.
+  // Add a new building. The player picks which sub-tile of the structure it sits
+  // on: hand off to the map's sub-tile picker (onPlaceBuilding), closing this
+  // panel so the structure's subgrid is visible. If no picker is wired, fall back
+  // to posting directly (server auto-assigns a free cell).
   let addingBuilding = $state(null);
   async function buildNewBuilding(buildingType) {
     if (addingBuilding) return;
+
+    if (onPlaceBuilding) {
+      onPlaceBuilding({ x, y, buildingType, structure: tileData?.structure });
+      onClose?.();
+      return;
+    }
+
     addingBuilding = buildingType;
     try {
       await apiPost('/actions/addBuilding', {

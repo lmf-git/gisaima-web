@@ -11,9 +11,9 @@
     let tab = $state('points');
 
     const tabs = [
-        { id: 'points',     label: 'Power' },
-        { id: 'kills',      label: 'Bloodied' },
-        { id: 'structures', label: 'Holdings' }
+        { id: 'points',     label: 'Points' },
+        { id: 'kills',      label: 'Kills' },
+        { id: 'structures', label: 'Structures' }
     ];
 
     const worldId = $derived($game.worldKey);
@@ -162,6 +162,7 @@
     .page {
         position: relative;
         z-index: 2;
+        width: 100%;
         max-width: 1100px;
         margin: 0 auto;
         padding: 7em 2em 4em;

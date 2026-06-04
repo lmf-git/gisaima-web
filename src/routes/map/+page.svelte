@@ -15,7 +15,8 @@
       getWorldInfo,
       setCurrentWorld,
       clearCurrentWorld,
-      subscribeToWorldInfo
+      subscribeToWorldInfo,
+      dayNight
     } from "../../lib/stores/game.js";
     
     import {
@@ -99,7 +100,17 @@
     const combinedLoading = $derived(
         loading || $game.worldLoading || !$isAuthReady || ($ready && !$initialEntitiesLoaded)
     );
-    
+
+    // Keep the chunk loader subscribed for the whole page lifetime. The loader
+    // lives in the `chunks` store and only runs while something reads
+    // `$coordinates`; the only other reader is <Grid>, which is hidden behind the
+    // loading overlay until `initialEntitiesLoaded` flips true. That overlay is
+    // itself gated on the loader running — so without an independent subscriber
+    // the two deadlock when returning to the map after cleanup() reset the flag
+    // (e.g. navigating back from a left-rail page). Reading $coordinates here
+    // keeps the loader warm so it fires as soon as the map is ready.
+    $effect(() => { void $coordinates; });
+
     const isDragging = $derived($map.isDragging);
     
     let isProcessingClick = false;
@@ -124,6 +135,15 @@
         !$game?.player?.alive ||
         dossierPanel !== null ||
         isTutorialVisible
+    );
+
+    // What blocks the action wheel (Peek). The tutorial is deliberately excluded:
+    // its overlay is click-through and several steps ask the player to open the
+    // wheel and pick an action, so the wheel must stay usable while it guides.
+    const peekBlocked = $derived(
+        buildingPlacementMode ||
+        !$game?.player?.alive ||
+        (dossierPanel !== null && dossierPanel !== 'help')
     );
 
     let showMinimap = $state(false); // Changed from true to false - default closed
@@ -551,87 +571,24 @@
         };
     }
 
+    // A structure occupies the whole tile the group stands on — there is no
+    // sub-tile to choose. (Sub-tiles are only for placing buildings *inside* an
+    // existing structure; see StructureOverview's add-building flow.) Build it
+    // directly on the group's tile.
     async function handleBuildRequest(buildData) {
         closeModal();
-
-        // Walls cover the whole tile — no subgrid placement step
-        if (buildData.structureType === 'wall') {
-            try {
-                const result = await apiPost('/actions/buildStructure', {
-                    worldId: $game.worldKey,
-                    groupId: buildData.groupId,
-                    tileX: buildData.tileX,
-                    tileY: buildData.tileY,
-                    structureType: buildData.structureType,
-                    structureName: buildData.structureName
-                });
-                if (result.success) {
-                    const tileKey = `${buildData.tileX},${buildData.tileY}`;
-                    entities.update(current => {
-                        const tileGroups = current.groups[tileKey];
-                        if (!tileGroups) return current;
-                        return { ...current, groups: { ...current.groups, [tileKey]: tileGroups.map(g => g.id === buildData.groupId ? { ...g, status: 'building' } : g) } };
-                    });
-                }
-            } catch (e) { console.error('Error building wall:', e); }
-            return;
-        }
-
-        let allowed = null;
-        if (buildData.requiresWaterEdge) {
-            const coords = get(coordinates);
-            const { tileX, tileY } = buildData;
-            const WATER_EDGES = [
-                { dx: 0, dy: -1, cells: [0, 1, 2] },
-                { dx: 0, dy:  1, cells: [6, 7, 8] },
-                { dx: -1, dy: 0, cells: [0, 3, 6] },
-                { dx:  1, dy: 0, cells: [2, 5, 8] },
-            ];
-            const allowedSet = new Set();
-            for (const { dx, dy, cells } of WATER_EDGES) {
-                const n = coords.find(c => c.x === tileX + dx && c.y === tileY + dy);
-                if (n && (n.biome?.water || n.riverValue > 0.2 || n.lakeValue > 0.2)) {
-                    cells.forEach(i => allowedSet.add(i));
-                }
-            }
-            allowed = allowedSet.size > 0 ? allowedSet : null;
-        }
-
-        allowedSubCells = allowed;
-        pendingBuildingData = buildData;
-        buildingPlacementMode = true;
-    }
-
-    async function handleSubCellSelect(subCellIndex) {
-        buildingPlacementMode = false;
-        allowedSubCells = null;
-
-        if (subCellIndex === null) {
-            pendingBuildingData = null;
-            return;
-        }
-
-        const data = pendingBuildingData;
-        pendingBuildingData = null;
-
-        const subRow = Math.floor(subCellIndex / 3);
-        const subCol = subCellIndex % 3;
 
         try {
             const result = await apiPost('/actions/buildStructure', {
                 worldId: $game.worldKey,
-                groupId: data.groupId,
-                tileX: data.tileX,
-                tileY: data.tileY,
-                structureType: data.structureType,
-                structureName: data.structureName,
-                subCell: subCellIndex,
-                subRow,
-                subCol
+                groupId: buildData.groupId,
+                tileX: buildData.tileX,
+                tileY: buildData.tileY,
+                structureType: buildData.structureType,
+                structureName: buildData.structureName
             });
-
             if (result.success) {
-                const tileKey = `${data.tileX},${data.tileY}`;
+                const tileKey = `${buildData.tileX},${buildData.tileY}`;
                 entities.update(current => {
                     const tileGroups = current.groups[tileKey];
                     if (!tileGroups) return current;
@@ -640,14 +597,62 @@
                         groups: {
                             ...current.groups,
                             [tileKey]: tileGroups.map(g =>
-                                g.id === data.groupId ? { ...g, status: 'building' } : g
+                                g.id === buildData.groupId ? { ...g, status: 'building' } : g
                             )
                         }
                     };
                 });
             }
-        } catch (error) {
-            console.error('Error starting building:', error);
+        } catch (e) {
+            console.error('Error building structure:', e);
+        }
+    }
+
+    // A player chose to add a building to the structure on their tile. Open the
+    // sub-tile picker (Grid's placement subgrid) with the already-occupied cells
+    // excluded; the actual placement is finalised in handleSubCellSelect.
+    function handlePlaceBuildingRequest({ x, y, buildingType, structure }) {
+        const level = structure?.level || 0;
+        const subN = level >= 5 ? 5 : level >= 3 ? 4 : 3;
+
+        const occupied = new Set();
+        for (const key in (structure?.buildings || {})) {
+            const b = structure.buildings[key];
+            if (b && Number.isInteger(b.subRow) && Number.isInteger(b.subCol)) {
+                occupied.add(b.subRow * subN + b.subCol);
+            }
+        }
+        const allowed = new Set();
+        for (let i = 0; i < subN * subN; i++) if (!occupied.has(i)) allowed.add(i);
+
+        allowedSubCells = allowed;
+        pendingBuildingData = { kind: 'building', x, y, buildingType, subN };
+        buildingPlacementMode = true;
+    }
+
+    async function handleSubCellSelect(subCellIndex) {
+        buildingPlacementMode = false;
+        allowedSubCells = null;
+
+        const data = pendingBuildingData;
+        pendingBuildingData = null;
+
+        if (subCellIndex === null || !data) return;
+
+        // The only flow that uses the sub-tile picker now is placing a building
+        // inside an existing structure. `subCell` is the flat row*subN+col index.
+        if (data.kind === 'building') {
+            try {
+                await apiPost('/actions/addBuilding', {
+                    worldId: $game.worldKey,
+                    x: data.x,
+                    y: data.y,
+                    buildingType: data.buildingType,
+                    subCell: subCellIndex,
+                });
+            } catch (error) {
+                console.error('Error adding building:', error);
+            }
         }
     }
 
@@ -914,10 +919,11 @@
                 peekTile = null;
             }
 
-            // If the dossier is open, any tile click should close it and open the
-            // wheel menu for the clicked tile.
+            // If a dossier panel is open, any tile click should close it and open
+            // the wheel for the clicked tile. The tutorial ('help') is exempt — it
+            // coexists with the wheel, so leave it up and just open the wheel.
             if (dossierPanel !== null) {
-                dossierPanel = null;
+                if (dossierPanel !== 'help') dossierPanel = null;
                 moveTarget(coords.x, coords.y, true);
                 // Defer so the dossier-close flows through modalOpen before Grid opens Peek.
                 setTimeout(() => {
@@ -1228,7 +1234,7 @@
             onAddPathPoint={handlePathPoint}
             onUndoPoint={undoLastPathPoint}
             customPathPoints={currentPath}
-            modalOpen={isAnyModalOpen}
+            modalOpen={peekBlocked}
             openPeekTrigger={openPeekTrigger}
             pathDrawingGroup={pathDrawingGroup}
             buildingPlacementMode={buildingPlacementMode}
@@ -1238,6 +1244,15 @@
                 if (isPathDrawingMode) handlePathDrawingCancel();
             }}
         />
+
+        <!-- Day/night ambient tint. Darkens and cools the map toward midnight;
+             clears at noon. Non-interactive, sits above terrain but below HUD. -->
+        <div
+            class="daynight-tint"
+            class:night={$dayNight.isNight}
+            style="opacity: {(1 - $dayNight.daylight) * 0.62};"
+            aria-hidden="true"
+        ></div>
 
         {#if $ready}
             <Axes />
@@ -1437,6 +1452,7 @@
                 onSwitchPanel={(p) => { dossierPanel = p; }}
                 onStartPathDrawing={startPathDrawing}
                 onBuildRequest={handleBuildRequest}
+                onPlaceBuilding={handlePlaceBuildingRequest}
             />
         {/if}
     {/if}
@@ -1447,6 +1463,27 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
+    }
+
+    /* Day/night veil. Opacity is set inline from the daylight factor; the colour
+       cools toward a deep indigo at night. mix-blend-mode keeps terrain readable
+       rather than flatly greying it. */
+    .daynight-tint {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        background: radial-gradient(120% 120% at 50% 30%,
+            rgba(20, 28, 66, 0.55) 0%,
+            rgba(8, 12, 34, 0.9) 100%);
+        mix-blend-mode: multiply;
+        transition: opacity 4s linear;
+        will-change: opacity;
+    }
+    .daynight-tint.night {
+        background: radial-gradient(120% 120% at 50% 24%,
+            rgba(14, 20, 52, 0.7) 0%,
+            rgba(4, 7, 24, 0.96) 100%);
     }
 
     .map.dragging {
@@ -1582,9 +1619,9 @@
     }
 
     .control-button:hover:not(:disabled) {
-        background-color: var(--chrome-gold-soft);
+        background-color: var(--chrome-card);
         border-color: var(--chrome-gold);
-        color: var(--chrome-text);
+        color: var(--chrome-gold);
     }
 
     .control-button.active {

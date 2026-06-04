@@ -3,7 +3,7 @@
   import { derived } from "svelte/store";
 
   import { user } from '../../../lib/stores/user';
-  import { game, currentPlayer } from "../../../lib/stores/game.js";
+  import { game, currentPlayer, dayNight } from "../../../lib/stores/game.js";
   import {
     map,
     ready,
@@ -2021,7 +2021,7 @@
                       {#if cellBuilding && cell.structure.status !== 'building'}
                         {@const BIcon = STRUCTURE_ICONS[cellBuilding.type] ?? Structure}
                         <div class="subgrid-structure-icon subgrid-building-icon" title={cellBuilding.name || cellBuilding.type}>
-                          <BIcon size="85%" extraClass="structure-icon {cellBuilding.type}-icon" />
+                          <BIcon size="85%" night={$dayNight.isNight} extraClass="structure-icon {cellBuilding.type}-icon" />
                         </div>
                       {:else if !cell.isCenter && row === iconRow && col === iconCol}
                         {@const Icon = STRUCTURE_ICONS[cell.structure.type] ?? Structure}
@@ -2031,7 +2031,7 @@
                           {:else if cell.structure.type === 'spawn'}
                             <Torch size="90%" extraClass="spawn-icon" />
                           {:else}
-                            <Icon size="90%" extraClass="structure-icon {cell.structure.type}-icon" />
+                            <Icon size="90%" night={$dayNight.isNight} extraClass="structure-icon {cell.structure.type}-icon" />
                           {/if}
                         </div>
                       {/if}
@@ -2089,7 +2089,7 @@
                   {#if cell.structure.type === 'spawn'}
                     <Torch size="70%" extraClass="spawn-icon" />
                   {:else}
-                    <Structure size="70%" extraClass="structure-icon {cell.structure.type}-icon" />
+                    <Structure size="70%" night={$dayNight.isNight} extraClass="structure-icon {cell.structure.type}-icon" />
                   {/if}
                 </div>
               {/if}
@@ -2342,27 +2342,27 @@
     justify-content: center;
     position: relative;
     transition: background-color 0.15s ease-out, outline 0.1s ease-out;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--chrome-field-bg);
   }
 
   /* Placement-mode interactive cells */
   .subgrid-cell.placement-selectable {
     cursor: pointer;
-    outline: 1px solid rgba(255, 255, 255, 0.2);
+    outline: 1px solid var(--chrome-gold-border);
     outline-offset: -1px;
   }
 
   .subgrid-cell.placement-hovered {
-    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline: 2px solid var(--chrome-gold);
     outline-offset: -2px;
-    filter: brightness(1.35);
+    background-color: var(--chrome-gold-soft);
     z-index: 5;
   }
 
   .subgrid-cell.placement-selected {
-    outline: 2px solid rgba(80, 200, 120, 0.95);
+    outline: 2px solid var(--color-sage);
     outline-offset: -2px;
-    filter: brightness(1.2);
+    background-color: rgba(111, 140, 122, 0.2);
     z-index: 6;
   }
 
@@ -2391,7 +2391,7 @@
 
   /* Building-placement overlay hint */
   .building-placement .tile.center .structure-subgrid.placement-mode {
-    box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.5), 0 0 20px rgba(80, 200, 120, 0.2);
+    box-shadow: 0 0 0 3px var(--chrome-gold-border), 0 0 20px var(--chrome-gold-soft);
   }
 
   /* Building placement banner */
@@ -2403,35 +2403,41 @@
     display: flex;
     align-items: center;
     gap: 1em;
-    background: rgba(10, 20, 30, 0.88);
-    border: 1px solid rgba(80, 200, 120, 0.5);
+    background: var(--chrome-panel-a);
+    border: 1px solid var(--chrome-gold-border);
     border-radius: 0.5em;
     padding: 0.6em 1.2em;
     z-index: 50;
     pointer-events: auto;
     backdrop-filter: blur(4px);
-    box-shadow: 0 0 16px rgba(80, 200, 120, 0.2);
+    box-shadow: 0 0 16px var(--chrome-shadow);
   }
 
   .placement-banner-text {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9em;
-    letter-spacing: 0.03em;
+    color: var(--chrome-text);
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
   .placement-cancel-btn {
-    background: rgba(200, 60, 60, 0.25);
-    border: 1px solid rgba(200, 60, 60, 0.5);
-    color: rgba(255, 180, 180, 0.9);
+    background: transparent;
+    border: 1px solid var(--chrome-border);
+    color: var(--chrome-text);
     border-radius: 0.3em;
     padding: 0.3em 0.8em;
-    font-size: 0.85em;
+    font-family: var(--font-display);
+    font-size: 0.75em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
 
   .placement-cancel-btn:hover {
-    background: rgba(200, 60, 60, 0.45);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
   }
 
   /* Construction state */

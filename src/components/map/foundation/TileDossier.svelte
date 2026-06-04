@@ -32,6 +32,7 @@
     onSwitchPanel = () => {},      // called to switch to a different panel
     onStartPathDrawing = () => {},
     onBuildRequest = () => {},
+    onPlaceBuilding = () => {},
   } = $props();
 
   // Unit details sub-panel state (lifted from Details)
@@ -259,7 +260,7 @@
         <div class="ds-panel"><Achievements onClose={onClose} /></div>
 
       {:else if panel === 'inspect' && tile}
-        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} /></div>
+        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} onPlaceBuilding={onPlaceBuilding} /></div>
 
       {:else if panel === 'details' && !selectedUnit}
         <div class="ds-panel"><Details

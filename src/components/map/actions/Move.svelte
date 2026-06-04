@@ -135,7 +135,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -199,20 +199,20 @@
 
   .group-name {
     font-weight: 500;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-units {
     font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-faint);
   }
 
   .info-box {
     padding: 0.6em;
-    background-color: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background-color: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     text-align: center;
   }
 
@@ -220,7 +220,7 @@
     padding: 0.7em;
     font-size: 0.9em;
     text-align: center;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .message.error {
@@ -252,12 +252,12 @@
 
   .cancel-button {
     background: transparent;
-    color: var(--color-parchment-200);
-    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    color: var(--chrome-text);
+    border: 0.075em solid var(--chrome-gold-border);
   }
 
   .cancel-button:hover:not(:disabled) {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-gold-soft);
   }
 
   .action-button {

@@ -271,17 +271,19 @@
         {@const isSystem = message.type === 'system'}
         {@const isEvent = message.type === 'event'}
         {@const isMonster = message.category === 'monster'}
+        {@const isOwn = isUser && message.userId === currentUid}
 
         <div
           class="chat-message"
           class:system-message={isSystem && !isMonster}
           class:event-message={isEvent && !isMonster}
           class:monster-message={isMonster}
-          class:player-message={isUser}
+          class:player-message={isUser && !isOwn}
+          class:own-message={isOwn}
           data-timestamp={message.timestamp}
         >
           {#if isUser}
-            <span class="message-user">{message.userName || 'Anonymous'}:</span>
+            <span class="message-user" class:own-name={isOwn}>{isOwn ? 'You' : (message.userName || 'Anonymous')}:</span>
           {/if}
           <span class="message-text">{message.text}</span>
           <span class="message-time">{getMessageTime(message.timestamp)}</span>
@@ -515,6 +517,16 @@
   .player-message {
     background: rgba(60,110,60,0.08);
     border-color: rgba(80,140,80,0.18);
+  }
+
+  .own-message {
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
+    border-left: 2px solid var(--chrome-gold);
+  }
+
+  .own-name {
+    color: var(--chrome-gold);
   }
 
   .error {

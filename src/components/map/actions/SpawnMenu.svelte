@@ -360,7 +360,7 @@
   .spawn-menu-wrapper {
     position: fixed;
     inset: 0;
-    background: rgba(6, 9, 18, 0.82);
+    background: var(--chrome-backdrop);
     backdrop-filter: blur(0.25em);
     display: flex;
     justify-content: center;
@@ -374,14 +374,14 @@
     width: 90%;
     max-width: 480px;
     max-height: 88vh;
-    background: linear-gradient(160deg, rgba(14,19,32,0.98) 0%, rgba(10,13,24,0.98) 100%);
-    border: 0.075em solid rgba(176, 141, 74, 0.4);
-    box-shadow: 0 0.5em 3em rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.03);
+    background: linear-gradient(160deg, var(--chrome-panel-a), var(--chrome-panel-b));
+    border: 0.075em solid var(--chrome-gold-border);
+    box-shadow: 0 0.5em 3em var(--chrome-shadow), inset 0 1px 0 var(--chrome-gold-soft);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
-    color: var(--color-parchment-100, #fbf6e7);
+    font-family: var(--font-body);
+    color: var(--chrome-text);
   }
 
   .modal-header {
@@ -389,8 +389,8 @@
     align-items: center;
     justify-content: center;
     padding: 0.85em 1.2em;
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.2);
-    background: rgba(176, 141, 74, 0.06);
+    border-bottom: 0.075em solid var(--chrome-gold-border);
+    background: var(--chrome-gold-soft);
   }
 
   h2 {
@@ -400,14 +400,14 @@
     font-weight: 400;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
   }
 
   .content {
     padding: 1em 1.2em;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(176,141,74,0.25) transparent;
+    scrollbar-color: var(--chrome-gold-border) transparent;
     max-height: calc(88vh - 3.5em);
   }
 
@@ -417,7 +417,7 @@
     gap: 0.8em;
     margin-bottom: 1em;
     padding-bottom: 0.8em;
-    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
+    border-bottom: 0.075em solid var(--chrome-hairline);
   }
 
   .death-message-container {
@@ -439,7 +439,7 @@
     font-family: var(--font-editorial, serif);
     font-style: italic;
     font-size: 0.95em;
-    color: var(--color-wax-red, #a83232);
+    color: var(--color-wax-red);
   }
 
   .race-icon {
@@ -452,20 +452,20 @@
   .welcome-text {
     font-family: var(--font-editorial, serif);
     font-size: 0.95em;
-    color: rgba(232, 228, 210, 0.75);
+    color: var(--chrome-text-dim);
   }
-  .welcome-text strong { color: var(--color-parchment-100); }
+  .welcome-text strong { color: var(--chrome-text); }
 
   :global(.spawn-race-icon) {
     width: 2em;
     height: 2em;
-    fill: var(--color-gold-pale, #d4b170);
+    fill: var(--chrome-gold);
     stroke: none;
   }
 
   .error-message {
     background: rgba(139, 32, 32, 0.12);
-    color: var(--color-wax-red, #a83232);
+    color: var(--color-wax-red);
     border: 0.075em solid rgba(139, 32, 32, 0.35);
     padding: 0.55em 0.8em;
     margin: 0.6em 0;
@@ -480,13 +480,13 @@
     max-height: 18em;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(176,141,74,0.2) transparent;
+    scrollbar-color: var(--chrome-gold-border) transparent;
     margin-bottom: 1em;
   }
 
   .spawn-item {
-    background: rgba(255,255,255,0.03);
-    border: 0.075em solid rgba(176, 141, 74, 0.2);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
     padding: 0.75em 0.9em;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
@@ -500,25 +500,25 @@
   }
 
   .spawn-item:hover {
-    background: rgba(176, 141, 74, 0.08);
-    border-color: rgba(176, 141, 74, 0.45);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
   }
 
   .spawn-item:focus-visible {
-    outline: 0.12em solid var(--color-aged-gold, #b08d4a);
+    outline: 0.12em solid var(--chrome-gold);
     outline-offset: 0.1em;
   }
 
   .spawn-item.selected {
-    background: rgba(176, 141, 74, 0.12);
-    border-color: var(--color-aged-gold, #b08d4a);
-    box-shadow: inset 0.2em 0 0 var(--color-aged-gold, #b08d4a);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold);
+    box-shadow: inset 0.2em 0 0 var(--chrome-gold);
   }
 
   .spawn-item-content { flex: 1; min-width: 0; }
 
   :global(.spawn-icon) {
-    color: var(--color-gold-pale, #d4b170);
+    color: var(--chrome-gold);
     flex-shrink: 0;
   }
 
@@ -528,7 +528,7 @@
     font-size: 0.82em;
     font-weight: 400;
     letter-spacing: 0.1em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .spawn-description {
@@ -536,7 +536,7 @@
     font-style: italic;
     font-size: 0.82em;
     margin: 0 0 0.4em;
-    color: rgba(232, 228, 210, 0.6);
+    color: var(--chrome-text-faint);
   }
 
   .spawn-meta {
@@ -550,8 +550,8 @@
     font-family: var(--font-mono);
     font-size: 0.7em;
     letter-spacing: 0.1em;
-    color: var(--color-aged-gold, #b08d4a);
-    background: rgba(176, 141, 74, 0.1);
+    color: var(--chrome-gold);
+    background: var(--chrome-gold-soft);
     padding: 0.15em 0.5em;
     text-transform: uppercase;
   }
@@ -559,7 +559,7 @@
   .spawn-coords {
     font-family: var(--font-mono);
     font-size: 0.7em;
-    color: rgba(232, 228, 210, 0.4);
+    color: var(--chrome-text-faint);
     letter-spacing: 0.06em;
   }
 
@@ -575,9 +575,9 @@
     font-size: 0.75em;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    background: var(--color-aged-gold, #b08d4a);
-    color: var(--color-ink-900, #0e1320);
-    border: 0.075em solid var(--color-aged-gold, #b08d4a);
+    background: var(--chrome-gold);
+    color: var(--color-ink-900);
+    border: 0.075em solid var(--chrome-gold);
     padding: 0.7em 2em;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
@@ -589,8 +589,8 @@
   }
 
   .spawn-button:hover:not(:disabled) {
-    background: var(--color-gold-pale, #d4b170);
-    border-color: var(--color-gold-pale, #d4b170);
+    background: var(--color-gold-pale);
+    border-color: var(--color-gold-pale);
   }
 
   .spawn-button:disabled {
@@ -603,8 +603,8 @@
   .spinner {
     width: 0.9em;
     height: 0.9em;
-    border: 0.12em solid rgba(14, 19, 32, 0.3);
-    border-top-color: var(--color-ink-900, #0e1320);
+    border: 0.12em solid var(--chrome-hairline);
+    border-top-color: var(--color-ink-900);
     border-radius: 50%;
     animation: spin 0.85s linear infinite;
     display: inline-block;

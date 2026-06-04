@@ -49,6 +49,7 @@
     .page {
         position: relative;
         z-index: 2;
+        width: 100%;
         max-width: 1100px;
         margin: 0 auto;
         padding: 7em 2em 4em;

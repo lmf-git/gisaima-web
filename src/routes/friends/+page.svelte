@@ -10,20 +10,26 @@
     let friends = $state([]);          // [{ uid, displayName }]
     let incoming = $state([]);         // [{ from, displayName, createdAt }]
     let outgoing = $state([]);         // [{ to, displayName, createdAt }]
-    let players = $state([]);          // [{ uid, displayName }] — realm directory
     let loading = $state(true);
     let error = $state(null);
     let busy = $state(false);
 
+    // Player search
+    let query = $state('');
+    let results = $state([]);          // [{ uid, displayName }]
+    let searching = $state(false);
+    let searched = $state(false);
+    let searchSeq = 0;
+
     const worldId = $derived($game.worldKey);
     const wid = $derived(encodeURIComponent($game.worldKey || ''));
 
-    // Players we can still send a request to.
+    // Players already in a relationship — filtered out of search results.
     const friendUids = $derived(new Set(friends.map(f => f.uid)));
     const outgoingUids = $derived(new Set(outgoing.map(r => r.to)));
     const incomingUids = $derived(new Set(incoming.map(r => r.from)));
     const candidates = $derived(
-        players.filter(p =>
+        results.filter(p =>
             p.uid !== $user?.uid &&
             !friendUids.has(p.uid) &&
             !outgoingUids.has(p.uid) &&
@@ -35,29 +41,42 @@
         if (!worldId) { loading = false; return; }
         try {
             loading = true;
-            const [f, r, ranks] = await Promise.all([
+            const [f, r] = await Promise.all([
                 apiGet(`/worlds/${wid}/friends`),
                 apiGet(`/worlds/${wid}/friends/requests`),
-                apiGet(`/worlds/${wid}/rankings`).catch(() => null),
             ]);
             friends  = f?.friends || [];
             incoming = r?.incoming || [];
             outgoing = r?.outgoing || [];
-            // Build a realm directory from the ranking rows (each has uid + displayName).
-            const seen = new Map();
-            for (const list of Object.values(ranks || {})) {
-                if (!Array.isArray(list)) continue;
-                for (const row of list) {
-                    if (row?.uid && !seen.has(row.uid)) seen.set(row.uid, row.displayName || 'Unknown');
-                }
-            }
-            players = [...seen].map(([uid, displayName]) => ({ uid, displayName }));
             error = null;
         } catch (e) {
             error = e.message;
         } finally {
             loading = false;
         }
+    }
+
+    async function search() {
+        const term = query.trim();
+        if (term.length < 2) { results = []; searched = false; return; }
+        const seq = ++searchSeq;
+        searching = true;
+        try {
+            const r = await apiGet(`/worlds/${wid}/players/search?q=${encodeURIComponent(term)}`);
+            if (seq !== searchSeq) return; // a newer search superseded this one
+            results = r?.players || [];
+            searched = true;
+        } catch (e) {
+            if (seq === searchSeq) { results = []; searched = true; }
+        } finally {
+            if (seq === searchSeq) searching = false;
+        }
+    }
+
+    let debounce;
+    function onInput() {
+        clearTimeout(debounce);
+        debounce = setTimeout(search, 300);
     }
 
     async function act(fn) {
@@ -146,8 +165,19 @@
         {#if $user && !$user.isAnonymous}
             <section class="block">
                 <div class="eyebrow">Add a friend</div>
-                {#if !candidates.length}
-                    <p class="empty italic">No other players to add right now.</p>
+                <input
+                    class="search"
+                    type="search"
+                    placeholder="Search players by name…"
+                    bind:value={query}
+                    oninput={onInput}
+                />
+                {#if query.trim().length < 2}
+                    <p class="empty italic">Type a name to find players.</p>
+                {:else if searching}
+                    <p class="empty italic">Searching…</p>
+                {:else if !candidates.length}
+                    <p class="empty italic">{searched ? 'No players found.' : ''}</p>
                 {:else}
                     <ul class="list">
                         {#each candidates as p}
@@ -165,11 +195,13 @@
 </div>
 
 <style>
-    .page { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
+    .page { position: relative; z-index: 2; width: 100%; max-width: 1100px; margin: 0 auto; padding: 7em 2em 4em; color: var(--color-ink-900); }
     .eyebrow.wax { color: var(--color-wax-red); }
     h1 { font-family: var(--font-display); font-size: 2.8rem; letter-spacing: 0.04em; margin: 0.2em 0; }
     .lede { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0 0 1em; }
     .block { margin: 2em 0; }
+    .search { width: 100%; box-sizing: border-box; margin-top: 0.8em; padding: 0.7em 1em; font-family: var(--font-body); font-size: 1rem; color: var(--color-ink-900); background: var(--color-parchment-100); border: 1px solid rgba(26, 32, 48, 0.3); }
+    .search:focus { outline: none; border-color: var(--color-ink-900); }
     @media (max-width: 600px) {
         .page { padding: 6em 1.2em 3em; }
         h1 { font-size: 1.9rem; }

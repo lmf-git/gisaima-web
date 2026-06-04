@@ -201,32 +201,42 @@
         </div>
     </section>
 
-    <section class="tri">
+    <section class="roadmap-section">
         <div class="reveal">
             <div class="eyebrow gold">What comes next</div>
             <h3>Roadmap</h3>
             <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
         </div>
-        <div class="reveal tri-feature">
-            <div class="eyebrow gold">Consequences of war</div>
-            <h3>Capture &amp; Ransom</h3>
-            <p class="roadmap-note">Defeat enemies and take them prisoner. Negotiate ransoms for coin or leave them to rot.
-                Battles loot automatically — carry valuable gear at your peril.
-                Siege fortresses for 15 game days to raze them to ruins.</p>
-            <a class="tri-link" href="/guide#battles">
-                Read the combat guide
-                <Stamp kind="eye" size={12} />
-            </a>
-        </div>
-        <div class="reveal tri-feature">
-            <div class="eyebrow gold">Permanent stakes</div>
-            <h3>Lives &amp; Permadeath</h3>
-            <p class="roadmap-note">Characters die for good. Play one of five races, earn new lives through reproduction,
-                and pass traits to your offspring. Your legacy outlasts your body — but only if you earn it.</p>
-            <a class="tri-link" href="/guide#character-development">
-                Read the character guide
-                <Stamp kind="eye" size={12} />
-            </a>
+    </section>
+
+    <section class="features-section">
+        <header class="features-head reveal">
+            <div class="eyebrow gold">Features</div>
+            <h2>What the realm demands</h2>
+            <div class="flourish-wrap"><Flourish /></div>
+        </header>
+        <div class="features-grid">
+            <div class="reveal feature-card">
+                <div class="eyebrow gold">Consequences of war</div>
+                <h3>Capture &amp; Ransom</h3>
+                <p class="feature-desc">Defeat enemies and take them prisoner. Negotiate ransoms for coin or leave them to rot.
+                    Battles loot automatically — carry valuable gear at your peril.
+                    Siege fortresses for 15 game days to raze them to ruins.</p>
+                <a class="tri-link" href="/guide#battles">
+                    Read the combat guide
+                    <Stamp kind="eye" size={12} />
+                </a>
+            </div>
+            <div class="reveal feature-card">
+                <div class="eyebrow gold">Permanent stakes</div>
+                <h3>Lives &amp; Permadeath</h3>
+                <p class="feature-desc">Characters die for good. Play one of five races, earn new lives through reproduction,
+                    and pass traits to your offspring. Your legacy outlasts your body — but only if you earn it.</p>
+                <a class="tri-link" href="/guide#character-development">
+                    Read the character guide
+                    <Stamp kind="eye" size={12} />
+                </a>
+            </div>
         </div>
     </section>
 </div>
@@ -441,17 +451,19 @@
         margin: 0;
     }
 
-    .tri {
+    .roadmap-section {
         position: relative;
         z-index: 2;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 4em 4em;
-        display: grid;
-        grid-template-columns: 1.2fr 1fr 1fr;
-        gap: 2.4em;
+        padding: 0 4em 3em;
     }
-    .tri h3 { font-family: var(--font-display); font-size: 1.4rem; margin: 0.4em 0 1em; color: var(--chrome-text); }
+    .roadmap-section h3 {
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        margin: 0.4em 0 0.6em;
+        color: var(--chrome-text);
+    }
     .roadmap-note {
         margin: 0.6em 0 0;
         font-family: var(--font-editorial);
@@ -459,9 +471,47 @@
         font-size: 0.95rem;
         color: var(--chrome-text-dim);
     }
-    .tri-feature {
+
+    .features-section {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 4em 5em;
+    }
+    .features-head {
+        text-align: center;
+        margin-bottom: 2.5em;
+    }
+    .features-head h2 {
+        font-family: var(--font-display);
+        font-size: 2.4rem;
+        letter-spacing: 0.04em;
+        color: var(--chrome-text);
+        margin: 0.3em 0 0.6em;
+    }
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.4em;
+    }
+    .feature-card {
         border-top: 1px solid var(--color-aged-gold);
-        padding-top: 1.2em;
+        padding-top: 1.5em;
+    }
+    .feature-card h3 {
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        margin: 0.4em 0 0.8em;
+        color: var(--chrome-text);
+    }
+    .feature-desc {
+        font-family: var(--font-editorial);
+        font-style: italic;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        color: var(--chrome-text-dim);
+        margin: 0;
     }
     .tri-link {
         display: inline-flex;
@@ -485,7 +535,9 @@
         .astrolabe { max-width: 380px; margin: 0 auto; }
         .pillars { padding: 2em 1.5em 4em; }
         .pillar-grid { grid-template-columns: 1fr 1fr; gap: 1.5em; }
-        .tri { grid-template-columns: 1fr; padding: 0 1.5em 4em; gap: 3em; }
+        .roadmap-section { padding: 0 1.5em 2em; }
+        .features-section { padding: 0 1.5em 4em; }
+        .features-grid { grid-template-columns: 1fr; gap: 3em; }
     }
     @media (max-width: 520px) {
         .pillar-grid { grid-template-columns: 1fr; }

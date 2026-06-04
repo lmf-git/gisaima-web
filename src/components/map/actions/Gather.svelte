@@ -234,7 +234,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -242,37 +242,37 @@
     padding: 1em;
     overflow-y: auto;
     flex: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .description {
     margin-bottom: 1.5em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .location-info {
     margin-bottom: 1.5em;
-    background: rgba(176, 141, 74, 0.05);
+    background: var(--chrome-field-bg);
     padding: 1em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .terrain {
     display: flex;
     align-items: center;
     font-size: 1.1em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .terrain-color {
     width: 1em;
     height: 1em;
     margin-right: 0.5em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .terrain-name {
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     font-weight: 500;
   }
 
@@ -302,12 +302,12 @@
     display: flex;
     align-items: center;
     padding: 0.8em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-border);
     cursor: pointer;
-    background: rgba(176, 141, 74, 0.05);
+    background: var(--chrome-field-bg);
     transition: background-color 0.2s;
     text-align: left;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-item:hover:not(:disabled) {
@@ -331,12 +331,12 @@
   .group-name {
     font-weight: 500;
     margin-bottom: 0.2em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-units {
     font-size: 0.8em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-faint);
   }
 
   .toggle-row {
@@ -346,7 +346,7 @@
     margin-bottom: 1em;
     cursor: pointer;
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .error {
@@ -360,9 +360,9 @@
   .status {
     padding: 0.8em;
     margin-bottom: 1em;
-    background-color: rgba(176, 141, 74, 0.08);
-    border-left: 3px solid rgba(176, 141, 74, 0.4);
-    color: var(--color-parchment-200);
+    background-color: var(--chrome-gold-soft);
+    border-left: 3px solid var(--chrome-gold-border);
+    color: var(--chrome-text-dim);
   }
 
   .actions {
@@ -374,18 +374,18 @@
   .close-btn-secondary {
     padding: 0.6em 1em;
     background: transparent;
-    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    border: 0.075em solid var(--chrome-gold-border);
     cursor: pointer;
     font-family: var(--font-display);
     font-size: 0.85em;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     transition: background-color 0.2s;
   }
 
   .close-btn-secondary:hover {
-    background: rgba(176, 141, 74, 0.08);
+    background: var(--chrome-gold-soft);
   }
 
   .cancel-btn, .gather-btn {
@@ -402,12 +402,12 @@
 
   .cancel-btn {
     background: transparent;
-    color: var(--color-parchment-200);
-    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    color: var(--chrome-text);
+    border: 0.075em solid var(--chrome-gold-border);
   }
 
   .cancel-btn:hover:not(:disabled) {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-gold-soft);
   }
 
   .gather-btn {
@@ -428,13 +428,13 @@
   .empty-state {
     text-align: center;
     padding: 2em 1em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-style: italic;
   }
 
   .empty-state p {
     margin-bottom: 1em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .no-tile {

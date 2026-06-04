@@ -1403,7 +1403,7 @@
 
     .map .links a,
     .home .links a {
-        color: rgba(232, 228, 210, 0.75);
+        color: var(--chrome-text-dim);
     }
 
     .links a:hover,

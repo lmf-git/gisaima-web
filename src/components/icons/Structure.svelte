@@ -1,12 +1,13 @@
 <script>
-  const { size = '1em', extraClass = '' } = $props();
+  const { size = '1em', extraClass = '', night = false } = $props();
 </script>
 
-<svg 
-  class="structure-icon {extraClass}" 
-  width={size} 
-  height={size} 
-  viewBox="0 0 512 512"  
+<svg
+  class="structure-icon {extraClass}"
+  class:night
+  width={size}
+  height={size}
+  viewBox="0 0 512 512"
   fill="currentColor"
   aria-hidden="true"
 >
@@ -33,6 +34,13 @@
       357.254,288.339 383.22,288.339 400.18,288.339 426.148,288.339 443.103,288.339 469.074,288.339 486.029,288.339 498.124,288.339 
       512,288.339 512,232.339"/>
   </g>
+  <!-- Warm light spilling from the gateways after dark -->
+  <g class="lights">
+    <rect x="276.611" y="261.066" width="20.121" height="34.877"/>
+    <rect x="209.544" y="261.066" width="20.118" height="34.877"/>
+    <rect x="67.315" y="341.552" width="20.118" height="34.877"/>
+    <rect x="424.564" y="341.552" width="20.122" height="34.877"/>
+  </g>
 </svg>
 
 <style>
@@ -45,4 +53,7 @@
   .structure-icon:hover {
     transform: scale(1.1);
   }
+
+  .lights { fill: #ffd24a; opacity: 0; transition: opacity 2.5s ease; }
+  .structure-icon.night .lights { opacity: 1; filter: drop-shadow(0 0 6px #ffae2e); }
 </style>

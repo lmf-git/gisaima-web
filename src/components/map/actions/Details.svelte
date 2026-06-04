@@ -31,6 +31,7 @@
   import Hammer from '../../icons/Hammer.svelte';
   import Unit from '../../icons/Unit.svelte';
   import Race from '../../icons/Race.svelte';
+  import ItemIcon from '../../icons/ItemIcon.svelte';
   import GroupStatus from './GroupStatus.svelte';
   const {
     onClose = () => {},
@@ -1012,22 +1013,19 @@
                             <div class="group-items-list">
                               {#if Array.isArray(group.items)}
                                 {#each group.items as item}
+                                  {@const itemCode = (item.id || item.type || '').toUpperCase()}
                                   <div class="group-item {getRarityClass(item.rarity)}">
+                                    <div class="item-icon-wrap">
+                                      <ItemIcon code={itemCode} extraClass="group-item-icon" />
+                                    </div>
                                     <div class="item-name">
                                       {item.name || _fmt(item.type) || "Unknown Item"}
                                       {#if item.quantity > 1}
                                         <span class="item-quantity">×{item.quantity}</span>
                                       {/if}
                                     </div>
-                                    {#if item.type || item.rarity}
-                                      <div class="item-details">
-                                        {#if item.type}
-                                          <span class="item-type-tag">{_fmt(item.type)}</span>
-                                        {/if}
-                                        {#if item.rarity && item.rarity !== 'common'}
-                                          <span class="item-rarity-tag {item.rarity.toLowerCase()}">{_fmt(item.rarity)}</span>
-                                        {/if}
-                                      </div>
+                                    {#if item.rarity && item.rarity !== 'common'}
+                                      <span class="item-rarity-tag {item.rarity.toLowerCase()}">{_fmt(item.rarity)}</span>
                                     {/if}
                                   </div>
                                 {/each}
@@ -1036,22 +1034,20 @@
                                   {@const qty = typeof item === 'number' ? item : (item.quantity || 1)}
                                   {@const itemObj = typeof item === 'object' ? item : null}
                                   {@const itemDef = ITEMS[itemId] || ITEMS[String(itemId).toUpperCase()]}
+                                  {@const itemCode = String(itemId).toUpperCase()}
                                   <div class="group-item {getRarityClass(itemObj?.rarity || itemDef?.rarity)}">
+                                    <div class="item-icon-wrap">
+                                      <ItemIcon code={itemCode} extraClass="group-item-icon" />
+                                    </div>
                                     <div class="item-name">
                                       {itemObj?.name || itemDef?.name || _fmt(itemObj?.type) || _fmt(itemId) || "Unknown Item"}
                                       {#if qty > 1}
                                         <span class="item-quantity">×{qty}</span>
                                       {/if}
                                     </div>
-                                    {#if itemObj?.type || itemObj?.rarity}
-                                      <div class="item-details">
-                                        {#if itemObj?.type}
-                                          <span class="item-type-tag">{_fmt(itemObj.type)}</span>
-                                        {/if}
-                                        {#if itemObj?.rarity && itemObj.rarity !== 'common'}
-                                          <span class="item-rarity-tag {itemObj.rarity.toLowerCase()}">{_fmt(itemObj.rarity)}</span>
-                                        {/if}
-                                      </div>
+                                    {#if (itemObj?.rarity || itemDef?.rarity) && (itemObj?.rarity || itemDef?.rarity) !== 'common'}
+                                      {@const rarity = itemObj?.rarity || itemDef?.rarity}
+                                      <span class="item-rarity-tag {rarity.toLowerCase()}">{_fmt(rarity)}</span>
                                     {/if}
                                   </div>
                                 {/each}
@@ -1288,18 +1284,19 @@
           {#if !collapsedSections.items}
             <div class="section-content" transition:slide|local={{ duration: 300 }}>
               {#each sortedItems as item}
+                {@const itemCode = (item.id || item.type || '').toUpperCase()}
                 <div class="entity item {getRarityClass(item.rarity)}">
+                  <div class="entity-icon">
+                    <ItemIcon code={itemCode} extraClass="tile-item-icon" />
+                  </div>
                   <div class="entity-info">
                     <div class="entity-name">
                       {item.name || _fmt(item.type) || "Unknown Item"}
-                    </div>
-                    <div class="entity-details">
-                      {#if item.type}
-                        <span class="item-type">{_fmt(item.type)}</span>
-                      {/if}
                       {#if item.quantity > 1}
                         <span class="item-quantity">×{item.quantity}</span>
                       {/if}
+                    </div>
+                    <div class="entity-details">
                       {#if item.rarity && item.rarity !== 'common'}
                         <span class="item-rarity {item.rarity}">{_fmt(item.rarity)}</span>
                       {/if}
@@ -1924,8 +1921,13 @@
   }
   
   .item-count {
-    color: #2d8659;
+    color: var(--color-sage-deep);
     font-weight: 500;
+  }
+
+  .entity.item .entity-icon {
+    color: var(--chrome-gold);
+    flex-shrink: 0;
   }
 
   .entity.item.uncommon {
@@ -2473,7 +2475,7 @@
   .toggle-units-btn {
     background: none;
     border: none;
-    color: rgba(212, 177, 112, 0.95);
+    color: var(--chrome-gold);
     cursor: pointer;
     font-size: 0.9em;
     margin-left: 0.5em;
@@ -2580,7 +2582,9 @@
   
   .group-item {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4em;
     padding: 0.3em 0.5em;
     border-radius: 0.2em;
     background-color: var(--chrome-field-bg);
@@ -2588,6 +2592,27 @@
     width: 48%;
     min-width: 120px;
     box-sizing: border-box;
+  }
+
+  .item-icon-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: var(--chrome-gold);
+  }
+
+  :global(.group-item-icon) {
+    display: block;
+    fill: currentColor;
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  :global(.tile-item-icon) {
+    display: block;
+    fill: currentColor;
+    width: 1.6em;
+    height: 1.6em;
   }
 
   .unit-info {

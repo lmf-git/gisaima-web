@@ -454,7 +454,7 @@
     /* Resource cells */
     .res {
         list-style: none;
-        padding: 0;
+        padding: 0.3em 0;
         margin: 0;
         display: inline-flex;
         align-items: center;

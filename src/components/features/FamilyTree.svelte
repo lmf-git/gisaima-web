@@ -5,10 +5,12 @@
   // tree out in generation rows derived from each life's max parent depth.
   import { onMount } from 'svelte';
   import { apiGet } from '$lib/api.js';
+  import { eraLabel, span } from '$lib/era.js';
 
   const { worldId = null, currentLifeId = null } = $props();
 
   let lives = $state([]);
+  let currentTick = $state(0);
   let loading = $state(true);
   let error = $state(null);
 
@@ -16,8 +18,12 @@
   async function load() {
     if (!worldId) { loading = false; return; }
     try {
-      const r = await apiGet(`/worlds/${encodeURIComponent(worldId)}/lives`);
+      const [r, world] = await Promise.all([
+        apiGet(`/worlds/${encodeURIComponent(worldId)}/lives`),
+        apiGet(`/worlds/${encodeURIComponent(worldId)}`).catch(() => null),
+      ]);
       lives = r?.items || [];
+      currentTick = Number(world?.info?.tickCount) || 0;
     } catch (e) {
       error = e?.message || 'Failed to load lineage';
     } finally {
@@ -65,8 +71,16 @@
       .join(' & ');
   }
 
-  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString() : null);
   const isActive = (life) => currentLifeId && String(life._id) === String(currentLifeId);
+
+  // In-world reckoning. Born tick → "Age II · Year 47"; lifespan in years runs
+  // to the death tick, or to the realm's current tick for the still-living.
+  const bornLabel = (life) => eraLabel(life.bornTick) || 'the Elder Days';
+  function lifespan(life) {
+    const years = span(life.bornTick, life.died ? life.diedTick : currentTick);
+    if (years === null) return null;
+    return life.died ? `lived ${years} yr${years === 1 ? '' : 's'}` : `${years} yr${years === 1 ? '' : 's'} on`;
+  }
 </script>
 
 <div class="family-tree">
@@ -100,7 +114,8 @@
                 {#if life.sex}<span class="ft-tag">{life.sex === 'f' ? '♀' : '♂'}</span>{/if}
               </div>
               <div class="ft-dates">
-                {fmtDate(life.born)}{#if life.died} – {fmtDate(life.died)}{/if}
+                {bornLabel(life)}{#if life.died && eraLabel(life.diedTick)} – {eraLabel(life.diedTick)}{/if}
+                {#if lifespan(life)}<span class="ft-span"> · {lifespan(life)}</span>{/if}
               </div>
               {#if parentNames(life)}
                 <div class="ft-parents">child of {parentNames(life)}</div>
@@ -175,6 +190,7 @@
     font-size: 10px;
     color: var(--color-ink-500);
   }
+  .ft-span { opacity: 0.8; font-style: italic; }
   .ft-parents {
     font-family: var(--font-editorial);
     font-style: italic;

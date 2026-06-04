@@ -180,6 +180,21 @@
     };
   }
 
+  // A step is "already done" when its linked achievement is unlocked — the
+  // player has performed that action before (e.g. they've mobilised, so they
+  // carry the 'mobilised'/leader achievement). Such steps are skipped.
+  function isStepDone(i) {
+    const a = STEPS[i]?.achievement;
+    return !!(a && playerAchievements[a]);
+  }
+  // First step at or after `start` the player hasn't already completed. Never
+  // skips past the final step.
+  function firstUnfinishedFrom(start) {
+    let i = Math.max(0, Math.min(start, totalSteps - 1));
+    while (i < totalSteps - 1 && isStepDone(i)) i++;
+    return i;
+  }
+
   function goTo(index) {
     stepIndex = Math.max(0, Math.min(index, totalSteps - 1));
     localStorage.setItem('tutorial-step', String(stepIndex));
@@ -187,7 +202,7 @@
   }
 
   function next() {
-    if (stepIndex < totalSteps - 1) goTo(stepIndex + 1);
+    if (stepIndex < totalSteps - 1) goTo(firstUnfinishedFrom(stepIndex + 1));
     else finish();
   }
 
@@ -269,39 +284,32 @@
     if (isInteractive && stepUnlocked) advanceFromAction();
   });
 
-  // Card positioning: prefer above the spotlight, fall back to below, or centred.
-  const cardStyle = $derived.by(() => {
-    if (!spotlightRect) return 'top:50%;left:50%;transform:translate(-50%,-50%)';
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
-    const vh = typeof window !== 'undefined' ? window.innerHeight : 600;
-    const cardH = 220;
-    const cardW = Math.min(340, vw - 32);
-    const spaceAbove = spotlightRect.top;
-    const spaceBelow = vh - (spotlightRect.top + spotlightRect.height);
-    let top, left;
-    if (spaceAbove >= cardH + 16) {
-      top = spotlightRect.top - cardH - 12;
-    } else if (spaceBelow >= cardH + 16) {
-      top = spotlightRect.top + spotlightRect.height + 12;
-    } else {
-      top = Math.max(16, (vh - cardH) / 2);
-    }
-    left = Math.max(16, Math.min(spotlightRect.left + spotlightRect.width / 2 - cardW / 2, vw - cardW - 16));
-    return `top:${top}px;left:${left}px;width:${cardW}px`;
+  // On first load (once achievements are known), jump past any opening steps the
+  // player has already completed in a prior session, so returning players aren't
+  // walked back through actions they know.
+  let didInitSkip = false;
+  $effect(() => {
+    void playerAchievements;
+    if (didInitSkip || !$currentPlayer) return;
+    didInitSkip = true;
+    const target = firstUnfinishedFrom(stepIndex);
+    if (target !== stepIndex) goTo(target);
   });
+
+  // The card is docked in the TileDossier panel, but the spotlight overlay must
+  // cover the whole viewport. The dossier has `transform`/`overflow:hidden`,
+  // which would clip a fixed child, so portal the overlay out to <body>. Scoped
+  // styles still apply because the element keeps its Svelte class.
+  function portal(node) {
+    document.body.appendChild(node);
+    return { destroy() { node.remove(); } };
+  }
 </script>
 
-<!-- Full-screen overlay -->
-<div
-  class="tutorial-overlay"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Interactive tutorial"
-  onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); }}
-  tabindex="-1"
->
+<!-- Spotlight overlay — portaled to <body> so the dossier can't clip it -->
+<div class="tutorial-overlay" use:portal aria-hidden="true">
   <!-- Dark backdrop with spotlight hole via SVG mask -->
-  <svg class="backdrop" aria-hidden="true">
+  <svg class="backdrop">
     <defs>
       <mask id="spotlight-mask">
         <!-- White = show backdrop (dark), black = hide backdrop (reveal) -->
@@ -328,9 +336,16 @@
       style="top:{spotlightRect.top}px;left:{spotlightRect.left}px;width:{spotlightRect.width}px;height:{spotlightRect.height}px"
     ></div>
   {/if}
+</div>
 
-  <!-- Instruction card -->
-  <div class="tutorial-card" style={cardStyle}>
+<!-- Instruction card — docked in the TileDossier panel -->
+<div
+  class="tutorial-card"
+  role="dialog"
+  aria-label="Interactive tutorial"
+  onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); }}
+  tabindex="-1"
+>
     <div class="card-progress">
       {#each STEPS as _, i}
         <button
@@ -387,19 +402,18 @@
       </div>
       <button class="skip-btn" onclick={skip}>Skip tutorial</button>
     </div>
-  </div>
 </div>
 
 <style>
   .tutorial-overlay {
     position: fixed;
     inset: 0;
-    z-index: 8000;
-    /* Clicks pass through to the map/wheel; only the card captures input so the
-       player can open the wheel and pick actions while the tutorial guides. */
+    /* Above the map and action wheel (z-index 800) so they dim, but below the
+       TileDossier (z-index 1100) so the docked card stays bright. */
+    z-index: 1050;
+    /* Click-through: the player can still open the wheel and pick actions. */
     pointer-events: none;
   }
-  .tutorial-overlay:focus { outline: none; }
 
   .backdrop {
     position: absolute;
@@ -424,23 +438,20 @@
     50%       { box-shadow: 0 0 0 1px rgba(176,141,74,0.5), 0 0 18px 4px rgba(176,141,74,0.4); }
   }
 
-  /* ── Card ── */
+  /* ── Card ── (docked inside the TileDossier panel) */
   .tutorial-card {
-    position: fixed;
+    position: relative;
+    width: 100%;
     background: var(--chrome-bg, #141820);
     border: 1px solid var(--chrome-gold-border, #5a4520);
     color: var(--chrome-text, #e8e0cc);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
-    box-shadow: 0 4px 32px rgba(0,0,0,0.6);
     display: flex;
     flex-direction: column;
     gap: 0;
-    z-index: 8001;
-    max-width: 340px;
-    min-width: 260px;
-    /* Re-enable input on the card itself (overlay is click-through). */
     pointer-events: auto;
   }
+  .tutorial-card:focus { outline: none; }
 
   /* Progress dots */
   .card-progress {

@@ -7,6 +7,7 @@ import { browser } from '$app/environment';
 import { apiGet, apiPost, wsWorld, wsUser } from '$lib/api.js';
 import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
 import { user, isAuthReady as userAuthReady } from './user.js';
+import { dayCycle } from '$lib/era.js';
 // Intentionally not importing from map.js to avoid circular dependency.
 // (map.js imports `game` from this file; game.js must not import from map.js)
 const _TARGET_X_SUFFIX = '-targetX';
@@ -62,6 +63,10 @@ export const worldInfo = writable({
   loading: false, name: null, description: null, seed: null,
   lastTick: null, speed: 1, size: null, center: { x: 0, y: 0 }, spawns: {}
 });
+
+// The sky's current state, derived from the world's tick count. Drives the
+// map's ambient tint and whether structures light their torches.
+export const dayNight = derived(worldInfo, $w => dayCycle($w?.tickCount));
 
 export const nextWorldTick = derived(worldInfo, $w => {
   if (!$w?.lastTick) return null;

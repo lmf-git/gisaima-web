@@ -4,6 +4,7 @@
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
 
   import StructureIcon from '../../icons/StructureIcon.svelte';
+  import Info from '../../icons/Info.svelte';
 
   import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore, coordinates } from '../../../lib/stores/map';
@@ -455,7 +456,7 @@
         
         {#if waterValidationError}
           <div class="validation-error water-error">
-            <span class="error-icon">⚠️</span>
+            <Info extraClass="error-icon" />
             {waterValidationError}
           </div>
         {/if}
@@ -500,7 +501,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -518,8 +519,8 @@
 
   .location-info {
     margin-bottom: 1em;
-    background-color: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background-color: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
     padding: 0.8em;
   }
 
@@ -532,7 +533,7 @@
   }
 
   .attribute-label {
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-faint);
     font-weight: 500;
     min-width: 40px;
     flex-shrink: 0;
@@ -544,7 +545,7 @@
 
   .attribute-value {
     flex-grow: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     display: flex;
     align-items: center;
   }
@@ -555,7 +556,7 @@
     height: 1em;
     margin-right: 0.5em;
     vertical-align: middle;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .structure-tag {
@@ -571,7 +572,7 @@
     padding: 1em 1.5em 1.5em;
     overflow-y: auto;
     flex: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .build-content {
@@ -593,8 +594,8 @@
   .structure-details-section {
     margin-bottom: 1.2em;
     padding: 1em;
-    background: rgba(176, 141, 74, 0.03);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .groups-list {
@@ -607,20 +608,20 @@
     display: flex;
     align-items: center;
     padding: 0.7em;
-    background: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
     cursor: pointer;
     transition: background-color 0.2s;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-item:hover {
-    background: rgba(176, 141, 74, 0.1);
+    background: var(--chrome-gold-soft);
   }
 
   .group-item.selected {
-    border-color: rgba(176, 141, 74, 0.6);
-    background: rgba(176, 141, 74, 0.14);
+    border-color: var(--chrome-gold);
+    background: var(--chrome-gold-soft);
   }
 
   .group-info {
@@ -631,14 +632,14 @@
     font-weight: 600;
     font-size: 1.05em;
     margin-bottom: 0.3em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-details {
     display: flex;
     gap: 0.8em;
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .race-tag,
@@ -646,24 +647,24 @@
   .resources-tag {
     padding: 0.2em 0.5em;
     font-size: 0.8em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .race-tag {
-    background: rgba(176, 141, 74, 0.08);
-    color: var(--color-parchment-200);
+    background: var(--chrome-gold-soft);
+    color: var(--chrome-text-dim);
   }
 
   .strength-tag {
-    background: rgba(91, 26, 31, 0.12);
-    border-color: rgba(91, 26, 31, 0.3);
-    color: var(--color-parchment-200);
+    background: rgba(91, 26, 31, 0.08);
+    border-color: rgba(91, 26, 31, 0.2);
+    color: var(--chrome-text-dim);
   }
 
   .resources-tag {
-    background: rgba(176, 141, 74, 0.1);
-    border-color: rgba(176, 141, 74, 0.3);
-    color: var(--color-parchment-200);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
+    color: var(--chrome-text-dim);
   }
 
   .structures-list {
@@ -674,38 +675,38 @@
 
   .structure-item {
     padding: 0.8em;
-    background: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
     cursor: pointer;
     transition: background-color 0.2s;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .structure-item:hover {
-    background: rgba(176, 141, 74, 0.1);
+    background: var(--chrome-gold-soft);
   }
 
   .structure-item.selected {
-    border-color: rgba(176, 141, 74, 0.6);
-    background: rgba(176, 141, 74, 0.14);
+    border-color: var(--chrome-gold);
+    background: var(--chrome-gold-soft);
   }
 
   .structure-item.missing-resources.selected {
-    border-color: rgba(91, 26, 31, 0.5);
-    background: rgba(91, 26, 31, 0.08);
+    border-color: rgba(91, 26, 31, 0.4);
+    background: rgba(91, 26, 31, 0.06);
   }
 
   .structure-name {
     font-weight: 600;
     font-size: 1.1em;
     margin-bottom: 0.4em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .structure-description {
     font-size: 0.9em;
     margin-bottom: 0.8em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     line-height: 1.4;
     font-family: var(--font-editorial);
     font-style: italic;
@@ -722,9 +723,9 @@
     display: flex;
     align-items: center;
     padding: 0.3em 0.6em;
-    background: rgba(176, 141, 74, 0.08);
-    border: 0.075em solid rgba(176, 141, 74, 0.2);
-    color: var(--color-parchment-200);
+    background: var(--chrome-gold-soft);
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-text-dim);
     font-size: 0.9em;
   }
 
@@ -765,7 +766,7 @@
   .build-time {
     font-size: 0.9em;
     padding: 0.4em 0;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-mono);
   }
 
@@ -787,11 +788,11 @@
 
   .text-input {
     padding: 0.6em;
-    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    border: 0.075em solid var(--chrome-field-border);
     font-size: 1em;
     width: 100%;
-    background: rgba(26, 32, 48, 0.6);
-    color: var(--color-parchment-200);
+    background: var(--chrome-field-bg);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -803,14 +804,14 @@
   .next-tick-info {
     margin-top: 1em;
     padding: 0.8em;
-    background: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .next-tick-time {
     font-size: 0.9em;
     margin-bottom: 0.3em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-mono);
   }
 
@@ -853,12 +854,12 @@
 
   .cancel-btn {
     background: transparent;
-    color: var(--color-parchment-200);
-    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    color: var(--chrome-text);
+    border: 0.075em solid var(--chrome-gold-border);
   }
 
   .cancel-btn:hover {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-gold-soft);
   }
 
   .build-btn {
@@ -878,7 +879,7 @@
   .no-groups,
   .no-tile {
     text-align: center;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-size: 0.9em;
     padding: 1em;
     font-style: italic;
@@ -887,8 +888,8 @@
   .build-status {
     margin-top: 1em;
     padding: 0.8em;
-    background: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-border);
   }
 
   .progress-bar {
@@ -906,7 +907,7 @@
 
   .time-remaining {
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-mono);
   }
 
@@ -916,23 +917,12 @@
     gap: 1em;
     margin-top: 0.5em;
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-mono);
   }
 
   .build-time, .durability {
     padding: 0.4em 0;
-  }
-
-  .durability {
-    display: flex;
-    align-items: center;
-  }
-
-  .durability::before {
-    content: '🛡️';
-    margin-right: 0.3em;
-    font-size: 1em;
   }
 
   .validation-error {
@@ -941,16 +931,19 @@
     margin: 0.8em 0;
     display: flex;
     align-items: center;
+    gap: 0.5em;
   }
 
   .water-error {
-    background: rgba(176, 141, 74, 0.08);
-    border: 0.075em solid rgba(176, 141, 74, 0.3);
-    color: var(--color-gold-pale);
+    background: var(--chrome-gold-soft);
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-gold);
   }
 
-  .error-icon {
-    margin-right: 0.5em;
-    font-size: 1.1em;
+  :global(.error-icon) {
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    color: inherit;
   }
 </style>

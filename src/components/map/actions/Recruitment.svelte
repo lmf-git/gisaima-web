@@ -824,31 +824,20 @@
                         <!-- Only show quantity selection and recruitment UI if the unit is available -->
                         {#if selectedUnit.available}
                             <!-- Quantity selection -->
-                            <div class="form-group">
-                                <label for="quantity">Quantity</label>
+                            <div class="form-group quantity-group">
+                                <label>Quantity</label>
                                 <div class="quantity-control">
                                     <button
                                         class="quantity-button"
                                         onclick={() => (quantity = Math.max(1, quantity - 1))}
                                         disabled={isLoading || quantity <= 1}
-                                    >
-                                        -
-                                    </button>
-                                    <input
-                                        type="number"
-                                        id="quantity"
-                                        bind:value={quantity}
-                                        min="1"
-                                        max="100"
-                                        disabled={isLoading}
-                                    />
+                                    >−</button>
+                                    <span class="quantity-display">{quantity}</span>
                                     <button
                                         class="quantity-button"
                                         onclick={() => (quantity = Math.min(100, quantity + 1))}
                                         disabled={isLoading || quantity >= 100}
-                                    >
-                                        +
-                                    </button>
+                                    >+</button>
                                 </div>
                             </div>
 
@@ -1419,21 +1408,23 @@
         cursor: not-allowed;
     }
 
-    input[type="number"] {
+    .quantity-display {
         width: 4rem;
         height: 2.5rem;
-        text-align: center;
-        padding: 0 0.5rem;
-        border: 0.075em solid rgba(176, 141, 74, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 0.075em solid var(--chrome-border);
         font-size: 1rem;
         color: var(--chrome-text);
         background: var(--chrome-field-bg);
         font-family: var(--font-mono);
     }
 
-    input[type="number"]:focus {
-        outline: none;
-        border-color: var(--chrome-gold);
+    .quantity-group {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 0.075em solid var(--chrome-hairline);
     }
 
     .time-info {
