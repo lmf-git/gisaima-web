@@ -31,6 +31,7 @@
         hasTileContent,
         entities,
         currentPlayerPosition,
+        initialEntitiesLoaded,
         loadTargetFromLocalStorage,
         clearSavedTargetPosition
     } from "../../lib/stores/map.js";
@@ -92,7 +93,12 @@
     let followPlayerPosition = $state(true); // Add new state to control position following
     let lastKnownPlayerPosition = $state(null); // Track the last known player position
 
-    const combinedLoading = $derived(loading || $game.worldLoading || !$isAuthReady);
+    // Keep the overlay up until the map is ready AND the first batch of chunk
+    // data has loaded, so terrain, structures and players appear together rather
+    // than the entities popping in on top of already-visible tiles.
+    const combinedLoading = $derived(
+        loading || $game.worldLoading || !$isAuthReady || ($ready && !$initialEntitiesLoaded)
+    );
     
     const isDragging = $derived($map.isDragging);
     
@@ -1201,6 +1207,8 @@
                     Loading world data...
                 {:else if !$ready}
                     Initializing map...
+                {:else if !$initialEntitiesLoaded}
+                    Loading terrain and structures...
                 {:else}
                     Preparing world...
                 {/if}

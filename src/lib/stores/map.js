@@ -127,6 +127,13 @@ export const entities = writable({
 
 export const ready = derived(map, $map => $map.ready);
 
+// Flips true once the first batch of chunk HTTP fetches (the chunks around the
+// initial target) has resolved. The map page keeps its loading overlay up until
+// this is true so terrain, structures, players and groups all appear together
+// instead of the entities popping in on top of already-visible tiles.
+export const initialEntitiesLoaded = writable(false);
+let _initialLoadTracked = false;
+
 // Derived store that tracks the player's real-time position.
 // Priority 1: live tile from chunk WebSocket data — either a standalone player
 //   entity (entities.players) or, when the character is mobilised into a unit
@@ -607,12 +614,16 @@ export const chunks = derived(
     });
 
     // Process chunks in order of priority
+    const initialFetches = [];
     for (const chunk of chunksToLoad) {
       try {
         // Fetch initial chunk data via HTTP
-        apiGet(`/worlds/${worldId}/chunks/${chunk.chunkKey}`)
+        const fetchPromise = apiGet(`/worlds/${worldId}/chunks/${chunk.chunkKey}`)
           .then(tiles => { if (tiles) processChunkData(tiles, chunk.chunkKey); })
           .catch(e => console.error(`Error loading chunk ${chunk.chunkKey}:`, e));
+
+        // Only the first load (when the overlay is still up) needs to be awaited.
+        if (!_initialLoadTracked) initialFetches.push(fetchPromise);
 
         // Subscribe to real-time updates via WebSocket
         const unsubscribe = wsChunk(worldId, chunk.chunkKey, (msg) => {
@@ -622,6 +633,18 @@ export const chunks = derived(
         chunkSubscriptions.set(chunk.chunkKey, unsubscribe);
       } catch (err) {
         console.error(`Failed to subscribe to chunk ${chunk.chunkKey}:`, err);
+      }
+    }
+
+    // First time the map becomes ready and queues its surrounding chunks, wait
+    // for that whole batch to resolve before signalling entities are ready to
+    // show. Subsequent target moves don't re-gate the overlay.
+    if (!_initialLoadTracked) {
+      _initialLoadTracked = true;
+      if (initialFetches.length) {
+        Promise.allSettled(initialFetches).then(() => initialEntitiesLoaded.set(true));
+      } else {
+        initialEntitiesLoaded.set(true);
       }
     }
 
@@ -1087,6 +1110,10 @@ export function switchWorld(worldId) {
     }
     chunkSubscriptions.clear();
 
+    // New world means a fresh initial load — re-gate the loading overlay.
+    _initialLoadTracked = false;
+    initialEntitiesLoaded.set(false);
+
     // Update map store with new world ID
     map.update(state => ({ ...state, world: worldId }));
   }
@@ -1116,6 +1143,10 @@ export function cleanup() {
     }
   }
   chunkSubscriptions.clear();
+
+  // Reset initial-load gating so the overlay waits again on next mount.
+  _initialLoadTracked = false;
+  initialEntitiesLoaded.set(false);
 
   // Reset stores
   map.set({

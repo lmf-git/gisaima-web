@@ -480,10 +480,14 @@
       const dragAccumX = (state.dragAccumX || 0) + deltaX;
       const dragAccumY = (state.dragAccumY || 0) + deltaY;
 
-      // More fluid movement by using Math.floor instead of Math.round
-      // This ensures more consistent movement direction with less oscillation
-      const cellsMovedX = Math.floor(dragAccumX / adjustedTileSize);
-      const cellsMovedY = Math.floor(dragAccumY / adjustedTileSize);
+      // Use Math.round so the tile-boundary crossing is symmetric: the centre
+      // tile keeps the accumulator range [-tileSize/2, tileSize/2) in BOTH
+      // directions. Math.floor biased the dead-zone to [0, tileSize), which made
+      // left/up drags shift a whole tile on the tiniest movement while right/down
+      // drags needed a full tile — so releasing always landed on a neighbouring
+      // tile rather than the one the user aimed to centre.
+      const cellsMovedX = Math.round(dragAccumX / adjustedTileSize);
+      const cellsMovedY = Math.round(dragAccumY / adjustedTileSize);
 
       if (cellsMovedX === 0 && cellsMovedY === 0) {
         // No tile crossed yet — show sub-tile visual offset so drag feels immediate
@@ -1297,32 +1301,23 @@
   function setupGestureHandling() {
     if (typeof window === 'undefined' || !mapElement) return;
     
-    // Improved wheel event handler for trackpad pinch/zoom AND mouse wheel with Ctrl
+    // Wheel event handler: zoom on scroll (plain scroll, trackpad pinch, or ctrl+scroll)
     const wheelHandler = (e) => {
-      // Check for pinch-zoom gesture (trackpad or mouse + ctrl)
-      if (e.ctrlKey || Math.abs(e.deltaY) % 1 !== 0) {
-        e.preventDefault();
-        
-        // Calculate zoom direction
-        const isZoomIn = e.deltaY < 0;
-        
-        // For pinch gestures, update visual feedback immediately
-        if (isZoomIn) {
-          // Visual feedback - immediate but small change
-          zoomLevel += 0.05;
-        } else if (zoomLevel > 0.55) {
-          // Visual feedback - immediate but small change
-          zoomLevel -= 0.05;
-        }
-        
-        // Update tile size visually right away
-        currentTileSize = TILE_SIZE * zoomLevel;
-        
-        // Then use debounced function for the expensive resize
-        debouncedWheelZoom(isZoomIn);
-        
-        return false;
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+
+      const isZoomIn = e.deltaY < 0;
+
+      // Immediate visual feedback
+      if (isZoomIn) {
+        zoomLevel += 0.05;
+      } else if (zoomLevel > 0.55) {
+        zoomLevel -= 0.05;
       }
+
+      currentTileSize = TILE_SIZE * zoomLevel;
+
+      debouncedWheelZoom(isZoomIn);
     };
     
     // Handle special Safari/Mac gesture events 
@@ -1798,7 +1793,7 @@
     ontouchcancel={handleTouchEnd}
     onclick={handleGridClick}
     onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleGridClick(e)}
-    onwheel={(e) => e.ctrlKey && e.preventDefault()}
+    onwheel={(e) => e.preventDefault()}
     class:moving={isMoving}
     class:path-drawing={!!isPathDrawingMode}
     style="--terrain-color: {backgroundColor};"
@@ -1809,8 +1804,10 @@
       : "Interactive coordinate map. Use WASD or arrow keys to navigate."}
   >    
     {#if $ready}
-      <!-- Only render paths when animations are complete AND not moving -->
-      {#if shouldRenderDetails}
+      <!-- Only render paths when animations are complete AND not moving.
+           Paths are positioned over the non-translated viewport, so they read
+           as unstable while the grid is mid-drag — hide them until it settles. -->
+      {#if shouldRenderPaths}
         <svg class="path-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
           <!-- Custom path drawing group -->
           {#if isPathDrawingMode && customPathPoints && customPathPoints.length > 0}
