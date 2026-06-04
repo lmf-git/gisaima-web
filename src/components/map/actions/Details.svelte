@@ -770,49 +770,6 @@
 
 <div class="details-modal" key={renderKey}>
     <div class="modal-content">
-      <!-- Combined terrain and actions in a single core section -->
-      {#if detailsData?.structure}
-      <div class="core-section">
-        <div class="core-content">
-          <!-- Desktop two-column layout container -->
-          <div class="tile-info-container">
-            <div class="structure-column">
-                <div class="attribute">
-                  <span class="attribute-label">Name</span>
-                  <span class="attribute-value structure-name">
-                    {detailsData.structure.name || _fmt(detailsData.structure.type) || 'Unnamed Structure'}
-                    {#if isOwnedByCurrentPlayer(detailsData.structure)}
-                      <span class="entity-badge owner-badge">Yours</span>
-                    {/if}
-                    {#if detailsData.structure.status === 'building'}
-                      <span class="entity-badge building-badge">Building</span>
-                    {/if}
-                    {#if detailsData.structure.battleId}
-                      <span class="entity-badge fighting">Under Attack</span>
-                    {/if}
-                  </span>
-                </div>
-                
-                <div class="attribute">
-                  <span class="attribute-label">Type</span>
-                  <span class="attribute-value structure-type">
-                    <span class="structure-type-icon-container">
-                      {#if detailsData.structure.type === 'spawn'}
-                        <Torch size="1.2em" extraClass="structure-type-icon" />
-                      {:else}
-                        <Structure size="1.2em" extraClass="structure-type-icon {detailsData.structure.type}-icon" />
-                      {/if}
-                    </span>
-                    {_fmt(detailsData.structure.type)}
-                  </span>
-                </div>
-              </div>
-
-          </div>
-        </div>
-      </div>
-      {/if}
-
       <!-- Empty-tile potential: gatherables + build opportunities -->
       {#if detailsData && !detailsData.structure}
         <div class="tile-potential">

@@ -219,6 +219,11 @@
   let dragVisualY = $state(0);
   let isSnapBack = $state(false);
 
+  // Measured viewport pixel size — used to convert the px drag offset into
+  // tile-fraction units for the fog layer.
+  let mapPxWidth = $state(0);
+  let mapPxHeight = $state(0);
+
   let mapElement = null;
   let resizeObserver = null;
   let introduced = $state(false);
@@ -236,7 +241,32 @@
   
   // Add the missing definition for isMaximumZoom
   const isMaximumZoom = $derived($map.cols === 1 && $map.rows === 1);
-  
+
+  // Smooth-drag buffer geometry. When active, the grid renders cols+2 × rows+2
+  // tiles and is offset by −1 tile so the visible viewport stays centred while
+  // a buffer ring covers the sub-tile translate at every edge.
+  const useBuffer = $derived($map.cols >= 3 && $map.rows >= 3);
+  const renderCols = $derived(useBuffer ? $map.cols + 2 : $map.cols);
+  const renderRows = $derived(useBuffer ? $map.rows + 2 : $map.rows);
+
+  // Grid box: oversized by the buffer ring relative to the visible viewport.
+  const gridSizeStyle = $derived(useBuffer
+    ? `width: calc(100% * ${renderCols} / ${$map.cols}); height: calc(100% * ${renderRows} / ${$map.rows});`
+    : 'width: 100%; height: 100%;');
+
+  // Transform: baseline −1 tile (to re-centre the oversized grid) plus the live
+  // sub-tile drag offset in px. −100% / renderCols of the grid's own width is
+  // exactly one visible tile.
+  const gridTransform = $derived.by(() => {
+    const tx = useBuffer ? `calc(-100% / ${renderCols} + ${dragVisualX}px)` : `${dragVisualX}px`;
+    const ty = useBuffer ? `calc(-100% / ${renderRows} + ${dragVisualY}px)` : `${dragVisualY}px`;
+    return `translate(${tx}, ${ty})`;
+  });
+
+  // Fractional fog offset (in tile units) so the fog reveal tracks the drag.
+  const fogDx = $derived(mapPxWidth ? (dragVisualX * $map.cols) / mapPxWidth : 0);
+  const fogDy = $derived(mapPxHeight ? (dragVisualY * $map.rows) / mapPxHeight : 0);
+
   // Change this to only depend on initial animation completion, not on current movement
   const shouldRenderDetails = $derived(introduced && animationsComplete);
   
@@ -255,12 +285,24 @@
     });
   }
 
+  // Smooth-drag buffer: render one extra ring of tiles around the visible
+  // viewport (sourced from the already-expanded `coordinates` store) so the
+  // sub-tile translate never exposes an uncovered edge. Disabled at extreme
+  // zoom (cols/rows < 3) where the expanded grid may not have a full ring.
+  const BUFFER = 1;
+
   const gridArray = derived(
-    [coordinates, game],
-    ([$coordinates, $game]) => applySpawnOverlay(
-      $coordinates?.filter(cell => cell.isInMainView) || [],
-      $game
-    )
+    [coordinates, game, map],
+    ([$coordinates, $game, $map]) => {
+      const useBuf = $map.cols >= 3 && $map.rows >= 3;
+      const hx = Math.floor($map.cols / 2) + (useBuf ? BUFFER : 0);
+      const hy = Math.floor($map.rows / 2) + (useBuf ? BUFFER : 0);
+      const cells = ($coordinates || []).filter(c =>
+        Math.abs(c.x - $map.target.x) <= hx &&
+        Math.abs(c.y - $map.target.y) <= hy
+      );
+      return applySpawnOverlay(cells, $game);
+    }
   );
   
   $effect(() => {
@@ -288,6 +330,9 @@
   
   function resizeMap(mapElement) {
     if (!mapElement) return;
+
+    mapPxWidth = mapElement.clientWidth;
+    mapPxHeight = mapElement.clientHeight;
 
     map.update(state => {
       const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -1009,25 +1054,27 @@
         return;
       }
       
-      // Calculate click position from grid coordinates
+      // Calculate click position from grid coordinates. The rect reflects the
+      // (possibly oversized + translated) buffered grid via getBoundingClientRect,
+      // so divide by the rendered tile counts and centre on the buffered middle.
       const rect = gridElement.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      
-      const tileWidth = rect.width / $map.cols;
-      const tileHeight = rect.height / $map.rows;
-      
+
+      const tileWidth = rect.width / renderCols;
+      const tileHeight = rect.height / renderRows;
+
       const col = Math.floor(x / tileWidth);
       const row = Math.floor(y / tileHeight);
-      
-      if (col < 0 || col >= $map.cols || row < 0 || row >= $map.rows) {
+
+      if (col < 0 || col >= renderCols || row < 0 || row >= renderRows) {
         console.log('Click ignored: outside grid bounds');
         return;
       }
-      
-      const centerCol = Math.floor($map.cols / 2);
-      const centerRow = Math.floor($map.rows / 2);
-      
+
+      const centerCol = Math.floor(renderCols / 2);
+      const centerRow = Math.floor(renderRows / 2);
+
       tileX = $map.target.x - centerCol + col;
       tileY = $map.target.y - centerRow + row;
     } 
@@ -1866,7 +1913,7 @@
       {/if}
       
       <div class="grid main-grid"
-        style="--cols: {$map.cols}; --rows: {$map.rows}; transform: translate({dragVisualX}px, {dragVisualY}px);"
+        style="--cols: {renderCols}; --rows: {renderRows}; {gridSizeStyle} transform: {gridTransform};"
         role="grid"
         class:animated={!introduced}
         class:max-zoom={isMaximumZoom}
@@ -2093,7 +2140,7 @@
         {/each}
       </div>
 
-      <FogOfWar />
+      <FogOfWar dx={fogDx} dy={fogDy} />
     {/if}
   </div>
 
@@ -2214,8 +2261,8 @@
   .main-grid {
     grid-template-columns: repeat(var(--cols), 1fr);
     grid-template-rows: repeat(var(--rows), 1fr);
-    width: 100%;
-    height: 100%;
+    /* width/height set inline — oversized by the buffer ring when smooth-drag
+       is active, otherwise 100%. */
   }
 
   .main-grid.snap-back {
@@ -2520,6 +2567,13 @@
   .map.moving .tile {
     pointer-events: none;
     cursor: grabbing;
+  }
+
+  /* While dragging/navigating, the centre tile is mid-transit between grid
+     positions — its target box-shadow reads as a flickering frame, so hide it
+     until movement settles. */
+  .map.moving .tile.center {
+    box-shadow: none;
   }
 
   .map-container.modal-open {

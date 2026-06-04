@@ -23,6 +23,8 @@
   import Stamp from '../../ui/Stamp.svelte';
   import Close from '../../icons/Close.svelte';
   import Achievements from '../../features/feedback/Achievements.svelte';
+  import Torch from '../../icons/Torch.svelte';
+  import Structure from '../../icons/Structure.svelte';
 
   const {
     panel = null,                  // active action panel id or null
@@ -193,14 +195,26 @@
       <div class="ds-topbar-left">
         {#if panelTitle}
           <span class="ds-topbar-action">{panelTitle}</span>
+        {:else if panel === 'details' && struct}
+          <!-- Structure identity: icon + name + type chip + status badges -->
+          <span class="ds-struct-icon" aria-hidden="true">
+            {#if struct.type === 'spawn'}
+              <Torch size="1em" extraClass="ds-struct-icon-svg" />
+            {:else}
+              <Structure size="1em" extraClass="ds-struct-icon-svg {struct.type}-icon" />
+            {/if}
+          </span>
+          <span class="ds-topbar-name">{struct.name || _fmt(struct.type)}</span>
+          <span class="ds-topbar-type">{_fmt(struct.type)}</span>
+          {#if struct.owner === pid}<span class="ds-topbar-badge ds-badge-owner">Yours</span>{/if}
+          {#if struct.status === 'building'}<span class="ds-topbar-badge ds-badge-building">Building</span>{/if}
+          {#if struct.battleId}<span class="ds-topbar-badge ds-badge-attack">Under Attack</span>{/if}
         {:else if struct?.name}
           <span class="ds-topbar-name">{struct.name}</span>
         {:else}
           <span class="ds-topbar-name">Tile</span>
         {/if}
-        <!-- Coords/biome are tile context. Hidden for the Achievements panel
-             (no tile relevance), and on desktop for Details (the Details panel
-             itself surfaces them, so the topbar copy is redundant there). -->
+        <!-- Coords/biome: hidden on desktop for Details (now in topbar itself), hidden for Achievements. -->
         {#if tile && panel !== 'achievements'}
           <span class="ds-topbar-coords" class:ds-hide-desktop={panel === 'details'}>{tile.x},{tile.y}</span>
           {#if tile.biome?.name}<span class="ds-topbar-biome" class:ds-hide-desktop={panel === 'details'}>{_fmt(tile.biome.name)}</span>{/if}
@@ -446,10 +460,11 @@
 
   .ds-topbar-left {
     display: flex;
-    align-items: baseline;
-    gap: 0.55em;
+    align-items: center;
+    gap: 0.4em;
     min-width: 0;
     overflow: hidden;
+    flex-wrap: nowrap;
   }
 
   .ds-topbar-action {
@@ -494,6 +509,53 @@
   /* Details panel: drop the redundant topbar coords/biome on desktop only. */
   @media (min-width: 601px) {
     .ds-hide-desktop { display: none; }
+  }
+
+  /* Structure identity row in Details header */
+  .ds-struct-icon {
+    display: flex;
+    align-items: center;
+    color: var(--chrome-gold);
+    flex-shrink: 0;
+  }
+  :global(.ds-struct-icon-svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  .ds-topbar-type {
+    font-family: var(--font-mono);
+    font-size: 0.62em;
+    letter-spacing: 0.08em;
+    color: var(--chrome-text-faint);
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ds-topbar-badge {
+    font-family: var(--font-mono);
+    font-size: 0.58em;
+    letter-spacing: 0.08em;
+    padding: 0.15em 0.5em;
+    border: 1px solid;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ds-badge-owner {
+    color: var(--chrome-gold);
+    border-color: var(--chrome-gold-border);
+    background: var(--chrome-gold-soft);
+  }
+  .ds-badge-building {
+    color: var(--chrome-text-dim);
+    border-color: var(--chrome-field-border);
+    background: var(--chrome-field-bg);
+  }
+  .ds-badge-attack {
+    color: #d44;
+    border-color: rgba(200,60,60,0.4);
+    background: rgba(200,60,60,0.1);
   }
 
   .ds-close {

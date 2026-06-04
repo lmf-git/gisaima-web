@@ -3,6 +3,10 @@
   import { user } from '../../../lib/stores/user';
   import { entities, map, currentPlayerPosition } from '../../../lib/stores/map.js';
 
+  // Fractional sub-tile drag offset (in tile units) so the reveal tracks the
+  // grid's smooth-drag translate instead of jumping a whole tile at a time.
+  const { dx = 0, dy = 0 } = $props();
+
   // Default sight radii — mirror api/lib/visibility.js so the visual reveal
   // matches what the server will actually send entity data for.
   const PLAYER_SIGHT    = 7;
@@ -51,11 +55,11 @@
   // Project a world sight source into viewBox units (1 unit = 1 tile).
   // r is bumped by 0.5 so the visible circle extends to the far edge of the
   // last revealed tile rather than its centre.
-  function project(src, $map) {
+  function project(src, $map, offX = 0, offY = 0) {
     const viewportCenterX = Math.floor($map.cols / 2);
     const viewportCenterY = Math.floor($map.rows / 2);
-    const cx = viewportCenterX + (src.x - $map.target.x) + 0.5;
-    const cy = viewportCenterY + (src.y - $map.target.y) + 0.5;
+    const cx = viewportCenterX + (src.x - $map.target.x) + 0.5 + offX;
+    const cy = viewportCenterY + (src.y - $map.target.y) + 0.5 + offY;
     return { cx, cy, r: src.r + 0.5 };
   }
 </script>
@@ -84,7 +88,7 @@
             x="0" y="0" width={$map.cols} height={$map.rows}>
         <rect x="0" y="0" width={$map.cols} height={$map.rows} fill="white" />
         {#each $sightSources as src}
-          {@const p = project(src, $map)}
+          {@const p = project(src, $map, dx, dy)}
           <circle cx={p.cx} cy={p.cy} r={p.r} fill="url(#fog-reveal)" />
         {/each}
       </mask>
