@@ -1499,7 +1499,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-body);
     overflow: hidden;
   }
@@ -1754,9 +1754,9 @@
   .action-button:has(.compass-icon) {
     background-color: rgba(63, 90, 78, 0.22);
     border-color: rgba(76, 175, 80, 0.3);
-    color: var(--color-parchment-200); 
+    color: var(--chrome-text-dim);
   }
-  
+
   .action-button:has(.compass-icon):hover {
     background-color: rgba(63, 90, 78, 0.35);
   }
@@ -1919,7 +1919,7 @@
   }
 
   .unit-count {
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--chrome-text-dim);
     font-weight: 500;
   }
   
@@ -2059,7 +2059,7 @@
   .side-name {
     font-weight: 600;
     margin-bottom: 0.2em;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--chrome-text);
   }
 
   .side-units {
@@ -2144,9 +2144,9 @@
   .entity-badge.idle {
     background: rgba(128, 128, 128, 0.15);
     border: 1px solid rgba(128, 128, 128, 0.3);
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--chrome-text-dim);
   }
-  
+
   .entity-badge.moving {
     background: rgba(0, 128, 0, 0.15);
     border: 1px solid rgba(0, 128, 0, 0.3);
@@ -2263,7 +2263,7 @@
   }
 
   .structure-name {
-    color: var(--color-parchment-100, #fbf6e7);
+    color: var(--chrome-text);
     font-weight: 500;
     display: flex;
     align-items: center;
@@ -2391,9 +2391,9 @@
     display: flex;
     flex-wrap: wrap;
     font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--chrome-text-dim);
   }
-  
+
   /* Add styling for cancel button */
   .entity-action.cancel-action {
     background-color: rgba(244, 67, 54, 0.1);
@@ -2491,7 +2491,7 @@
   .expanded-section-title {
     margin: 0.8em 0 0.4em 0;
     font-weight: 500;
-    color: rgba(232, 228, 210, 0.78);
+    color: var(--chrome-text-dim);
     padding-bottom: 0.3em;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   }
@@ -2531,7 +2531,7 @@
     align-items: center;
     padding: 0.3em 0.5em;
     border-radius: 0.2em;
-    background-color: rgba(26, 32, 48, 0.6);
+    background-color: var(--chrome-field-bg);
     border: 1px solid rgba(0, 0, 0, 0.05);
     width: 48%;
     min-width: 120px;
@@ -2583,7 +2583,7 @@
     flex-direction: column;
     padding: 0.3em 0.5em;
     border-radius: 0.2em;
-    background-color: rgba(26, 32, 48, 0.6);
+    background-color: var(--chrome-field-bg);
     border: 1px solid rgba(0, 0, 0, 0.05);
     width: 48%;
     min-width: 120px;
@@ -2598,7 +2598,7 @@
   .unit-name {
     font-size: 0.85em;
     font-weight: 500;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     margin-bottom: 0.2em;
     white-space: nowrap;
     overflow: hidden;
@@ -2617,7 +2617,7 @@
     padding: 0.1em 0.35em;
     font-family: var(--font-mono);
     border: 0.075em solid rgba(176, 141, 74, 0.18);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
   .unit-stat-tag.melee { background: rgba(91, 26, 31, 0.12); border-color: rgba(91, 26, 31, 0.28); }
   .unit-stat-tag.ranged { background: rgba(40, 70, 40, 0.14); border-color: rgba(60, 110, 60, 0.28); }
@@ -2655,7 +2655,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-aged-gold, #b08d4a);
+    color: var(--chrome-gold);
     margin-bottom: 0.6em;
   }
 
@@ -2663,7 +2663,7 @@
     width: 1.1em;
     height: 1.1em;
     opacity: 0.85;
-    fill: rgba(212, 177, 112, 0.9);
+    fill: var(--chrome-gold);
   }
 
   .potential-tags {
@@ -2682,7 +2682,7 @@
     border-radius: 0.3em;
     background: rgba(176, 141, 74, 0.1);
     border: 1px solid rgba(176, 141, 74, 0.22);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     line-height: 1.2;
   }
 
@@ -2694,7 +2694,7 @@
   .build-chip.water {
     background: rgba(45, 102, 147, 0.22);
     border-color: rgba(93, 153, 184, 0.4);
-    color: #bfe0f0;
+    color: var(--chrome-text-dim);
   }
 
   /* Resource rarity tinting — reuse the palette used elsewhere in this file */
@@ -2714,8 +2714,8 @@
     margin-top: 0.6em;
     font-size: 0.72em;
     font-style: italic;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-faint);
     font-family: var(--font-editorial, serif);
   }
-  .potential-hint strong { color: rgba(212, 177, 112, 0.85); font-style: normal; }
+  .potential-hint strong { color: var(--chrome-gold); font-style: normal; }
 </style>

@@ -80,8 +80,8 @@
 </script>
 
 <svelte:head>
-  <title>Gisaima - Game Guide</title>
-  <meta name="description" content="Learn how to play Gisaima, a strategic territory control game with procedurally generated worlds, dynamic terrain, and multiplayer interactions." />
+  <title>Gisaima Game Guide — Hardcore MMO Strategy & Mechanics</title>
+  <meta name="description" content="Master Gisaima's hardcore mechanics: permadeath, capture & ransom, tick-based battles, territory sieges, five races, and more in procedurally generated worlds." />
 </svelte:head>
 
 <div class="guide-container">

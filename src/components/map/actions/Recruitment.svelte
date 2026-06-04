@@ -950,7 +950,7 @@
         flex-direction: column;
         flex: 1;
         background: transparent;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         font-family: var(--font-body);
     }
 
@@ -971,7 +971,7 @@
         margin: 0 0 1rem 0;
         font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-aged-gold);
+        color: var(--chrome-gold);
         display: flex;
         align-items: center;
         font-family: var(--font-display);
@@ -987,7 +987,7 @@
         font-weight: 500;
         padding: 0.1em 0.6em;
         margin-left: 0.5rem;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         background: rgba(176, 141, 74, 0.08);
         border: 0.075em solid rgba(176, 141, 74, 0.2);
         font-family: var(--font-mono);
@@ -996,7 +996,7 @@
     .empty-state {
         padding: 2rem 0;
         text-align: center;
-        color: rgba(232, 228, 210, 0.55);
+        color: var(--chrome-text-faint);
         font-style: italic;
     }
 
@@ -1027,14 +1027,14 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     :global(.unit-icon) {
         width: 1.5rem;
         height: 1.5rem;
-        fill: var(--color-gold-pale);
-        color: var(--color-gold-pale);
+        fill: var(--chrome-gold);
+        color: var(--chrome-gold);
     }
 
     .queue-item-info {
@@ -1044,12 +1044,12 @@
     .queue-item-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
     }
 
     .queue-item-time {
         font-size: 0.85rem;
-        color: rgba(232, 228, 210, 0.65);
+        color: var(--chrome-text-faint);
         font-family: var(--font-mono);
     }
 
@@ -1104,7 +1104,7 @@
         transition: background-color 0.2s;
         width: calc(50% - 0.25rem);
         text-align: left;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
     }
 
     .unit-option:hover {
@@ -1125,7 +1125,7 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     .unit-option-info {
@@ -1136,12 +1136,12 @@
     .unit-option-name {
         font-weight: 500;
         margin-bottom: 0.2rem;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
     }
 
     .unit-option-power {
         font-size: 0.75rem;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-family: var(--font-mono);
         display: flex;
         flex-wrap: wrap;
@@ -1168,7 +1168,7 @@
         margin: 0 0 0.5rem 0;
         font-size: 1rem;
         font-weight: 600;
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         font-family: var(--font-display);
         letter-spacing: 0.05em;
     }
@@ -1176,7 +1176,7 @@
     .unit-description {
         margin: 0 0 1rem 0;
         font-size: 0.9rem;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-family: var(--font-editorial);
         font-style: italic;
     }
@@ -1193,14 +1193,14 @@
 
     .stat-label {
         font-weight: 500;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-family: var(--font-display);
         letter-spacing: 0.06em;
         font-size: 0.85em;
     }
 
     .stat-value {
-        color: var(--color-parchment-100);
+        color: var(--chrome-text);
         font-family: var(--font-mono);
     }
 
@@ -1209,7 +1209,7 @@
         margin: 0 0 0.5rem 0;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-aged-gold);
+        color: var(--chrome-gold);
         font-family: var(--font-display);
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -1231,7 +1231,7 @@
         background-color: rgba(176, 141, 74, 0.08);
         border: 0.075em solid rgba(176, 141, 74, 0.15);
         width: calc(50% - 0.25rem);
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
     }
 
     .total-item.sufficient {
@@ -1285,7 +1285,7 @@
         align-items: center;
         font-size: 0.8em;
         margin-left: 0.3rem;
-        color: rgba(232, 228, 210, 0.5);
+        color: var(--chrome-text-faint);
         vertical-align: middle;
     }
 
@@ -1299,7 +1299,7 @@
         padding: 0.5rem;
         background-color: rgba(176, 141, 74, 0.08);
         border: 0.075em solid rgba(176, 141, 74, 0.25);
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
         font-size: 0.85rem;
         display: flex;
         align-items: center;
@@ -1308,7 +1308,7 @@
 
     .unavailable-reason .locked-icon {
         font-size: 1em;
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     .unit-requirements {
@@ -1329,7 +1329,7 @@
         padding: 0.5rem;
         background-color: rgba(176, 141, 74, 0.05);
         border: 0.075em solid rgba(176, 141, 74, 0.15);
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
     }
 
     .requirement-item.met {
@@ -1368,7 +1368,7 @@
         margin: 0.8rem 0 0.5rem 0;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-aged-gold);
+        color: var(--chrome-gold);
         font-family: var(--font-display);
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -1382,7 +1382,7 @@
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-family: var(--font-display);
         font-size: 0.85em;
         letter-spacing: 0.08em;
@@ -1400,7 +1400,7 @@
         height: 2.5rem;
         background-color: rgba(176, 141, 74, 0.08);
         border: 0.075em solid rgba(176, 141, 74, 0.25);
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-size: 1.2rem;
         display: flex;
         align-items: center;
@@ -1426,19 +1426,19 @@
         padding: 0 0.5rem;
         border: 0.075em solid rgba(176, 141, 74, 0.25);
         font-size: 1rem;
-        color: var(--color-parchment-100);
-        background-color: rgba(26, 32, 48, 0.7);
+        color: var(--chrome-text);
+        background: var(--chrome-field-bg);
         font-family: var(--font-mono);
     }
 
     input[type="number"]:focus {
         outline: none;
-        border-color: var(--color-aged-gold);
+        border-color: var(--chrome-gold);
     }
 
     .time-info {
         font-size: 0.85rem;
-        color: var(--color-parchment-200);
+        color: var(--chrome-text-dim);
         font-family: var(--font-mono);
     }
 
@@ -1502,7 +1502,7 @@
     }
 
     .unit-option.selected .unit-option-name {
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     .resource-breakdown {
@@ -1513,11 +1513,11 @@
     }
 
     .personal-amount {
-        color: var(--color-gold-pale);
+        color: var(--chrome-gold);
     }
 
     .shared-amount {
-        color: rgba(232, 228, 210, 0.65);
+        color: var(--chrome-text-faint);
     }
 
     .total-amount {
@@ -1528,7 +1528,7 @@
         margin-top: 0.5rem;
         font-size: 0.8rem;
         font-style: italic;
-        color: rgba(232, 228, 210, 0.65);
+        color: var(--chrome-text-faint);
         display: flex;
         align-items: center;
         gap: 0.3rem;

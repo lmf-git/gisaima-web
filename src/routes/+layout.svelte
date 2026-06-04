@@ -20,7 +20,7 @@
     const WORLD_SCOPED_PREFIXES = [
         '/rankings', '/trade', '/house',
         '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
-        '/wealth', '/deaths', '/scouting', '/chronicle', '/profile',
+        '/wealth', '/deaths', '/scouting', '/chronicle', '/reports', '/profile',
         '/settlement', '/pending', '/characters', '/items', '/friends'
     ];
 
@@ -256,7 +256,7 @@
                         </a>
                         <h2 class="footer-title">isaima Realm</h2>
                     </div>
-                    <p class="footer-tagline">Explore and create worlds together</p>
+                    <p class="footer-tagline">Hardcore territory control. Free forever.</p>
                     <button
                         class="theme-toggle"
                         onclick={toggleTheme}
@@ -1286,6 +1286,7 @@
     .nav {
         display: flex;
         margin-right: auto; /* Changed from 2em to auto to push other elements to the right */
+        margin-left: 3em;
     }
 
     .links {
@@ -1330,7 +1331,7 @@
         align-items: center;
         gap: 0.35em;
         padding: 0.45em 0.85em 0.45em 0.65em;
-        margin-right: 0.6em;
+        margin-right: 1.6em;
         background: var(--color-ink-900);
         color: var(--color-parchment-100);
         border: 0.075em solid var(--color-ink-900);

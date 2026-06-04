@@ -12,6 +12,9 @@
   // Steps: each describes one tutorial beat.
   // `selector` targets a DOM element to spotlight; null = centred card only.
   // `achievement` links to an ACHIEVEMENTS key to show unlock status.
+  // `wheelAction` (the action's aria-label in the wheel) turns the step into an
+  // interactive beat: the player must open the action wheel on their tile and
+  // pick that action. The tutorial waits for the click instead of offering Next.
   const STEPS = [
     {
       id: 'welcome',
@@ -30,36 +33,41 @@
     {
       id: 'mobilise',
       title: 'Mobilise a Group',
-      body: 'Open the centre tile wheel and choose Mobilise to gather units into a travelling group. Groups are how you explore and expand.',
+      body: 'Mobilise gathers units into a travelling group. Groups are how you explore and expand.',
       selector: '.tile.center',
+      wheelAction: 'Mobilise',
       achievement: 'mobilised',
     },
     {
       id: 'movement',
       title: 'Draw a Path',
-      body: 'With a group mobilised, open the wheel and choose Move. Click tiles on the map to draw a movement path, then confirm to send them off.',
+      body: 'With a group mobilised, Move lets you draw a path across the map and send them off.',
       selector: '.tile.center',
+      wheelAction: 'Move',
       achievement: 'first_steps',
     },
     {
       id: 'gather',
       title: 'Gather Resources',
-      body: 'On a tile with your group, open the wheel and choose Gather to collect resources from the surrounding terrain. Resources power everything.',
+      body: 'Gather collects resources from the terrain around your group. Resources power everything.',
       selector: '.tile.center',
+      wheelAction: 'Gather',
       achievement: 'first_gather',
     },
     {
       id: 'recruit',
       title: 'Recruit Units',
-      body: 'At a spawn structure, open the wheel and choose Recruit to add units to your roster. More units means stronger groups.',
+      body: 'At a spawn structure, Recruit adds units to your roster. More units means stronger groups.',
       selector: '.tile.center',
+      wheelAction: 'Recruit',
       achievement: 'first_recruit',
     },
     {
       id: 'craft',
       title: 'Craft Items',
-      body: 'At a workshop or similar structure, open the wheel and choose Craft to create items that boost your characters and units.',
+      body: 'At a workshop, Craft creates items that boost your characters and units.',
       selector: '.tile.center',
+      wheelAction: 'Craft',
       achievement: 'first_craft',
     },
     {
@@ -72,8 +80,9 @@
     {
       id: 'combat',
       title: 'Enter Combat',
-      body: 'Move a group onto a tile occupied by enemies to start a battle, or join an existing fight already in progress.',
+      body: 'Move a group onto a tile occupied by enemies to start a battle. Open the wheel and choose Attack when an enemy shares your tile.',
       selector: '.tile.center',
+      wheelAction: 'Attack',
       achievement: 'first_attack',
     },
     {
@@ -85,6 +94,12 @@
     },
   ];
 
+  // The open action wheel (Peek.svelte) renders as `.peek-container`; each action
+  // sector carries `aria-label="<Label>"`. These let us detect wheel state and
+  // spotlight the exact action a step asks for.
+  const WHEEL_SELECTOR = '.peek-container';
+  const wheelActionSelector = (label) => `${WHEEL_SELECTOR} [aria-label="${label}"]`;
+
   const totalSteps = STEPS.length;
 
   const savedStep = typeof localStorage !== 'undefined'
@@ -94,6 +109,8 @@
   let stepIndex = $state(Math.min(savedStep, totalSteps - 1));
   let spotlightRect = $state(null);
   let isSnapping = $state(false);
+  // True while the action wheel (Peek) is open on screen.
+  let wheelOpen = $state(false);
 
   const step = $derived(STEPS[stepIndex]);
   const playerAchievements = $derived($currentPlayer?.achievements || {});
@@ -102,6 +119,18 @@
   );
   const stepUnlocked = $derived(
     step.achievement ? !!playerAchievements[step.achievement] : false
+  );
+
+  // Interactive steps wait for the player to open the wheel and pick an action
+  // instead of showing a Next button.
+  const isInteractive = $derived(!!step.wheelAction);
+  // The live call-to-action shown beneath the step body for interactive steps.
+  const stepCue = $derived(
+    !isInteractive
+      ? null
+      : wheelOpen
+        ? `Choose ${step.wheelAction} from the wheel.`
+        : 'Tap the highlighted tile to open the action wheel.'
   );
 
   function resolveSelector(selector) {
@@ -114,12 +143,29 @@
     return null;
   }
 
+  // For interactive steps the spotlight target depends on wheel state: the tile
+  // until the wheel opens, then the specific action sector inside it.
+  function currentSelector() {
+    if (isInteractive) {
+      if (wheelOpen) {
+        const actionEl = document.querySelector(wheelActionSelector(step.wheelAction));
+        if (actionEl) return wheelActionSelector(step.wheelAction);
+      }
+      return step.selector;
+    }
+    return step.selector;
+  }
+
   function updateSpotlight() {
-    if (!step.selector) {
+    // Keep the wheel-open flag in sync with the DOM each pass.
+    wheelOpen = !!document.querySelector(WHEEL_SELECTOR);
+
+    const selector = currentSelector();
+    if (!selector) {
       spotlightRect = null;
       return;
     }
-    const el = resolveSelector(step.selector);
+    const el = resolveSelector(selector);
     if (!el) {
       spotlightRect = null;
       return;
@@ -143,6 +189,29 @@
   function next() {
     if (stepIndex < totalSteps - 1) goTo(stepIndex + 1);
     else finish();
+  }
+
+  // Advance after the player engages the action a step asked for. A short delay
+  // lets the wheel close and the action panel open before the card moves on.
+  let advanceTimer = null;
+  function advanceFromAction() {
+    if (advanceTimer) return;
+    advanceTimer = setTimeout(() => {
+      advanceTimer = null;
+      next();
+    }, 450);
+  }
+
+  // Watch every click: if it lands on the action sector the current step wants,
+  // treat the step as satisfied and move forward.
+  function onDocClick(e) {
+    if (!isInteractive) return;
+    const target = e.target instanceof Element
+      ? e.target.closest(`[aria-label="${step.wheelAction}"]`)
+      : null;
+    if (target && target.closest(WHEEL_SELECTOR)) {
+      advanceFromAction();
+    }
   }
 
   function prev() {
@@ -170,12 +239,21 @@
     rafId = requestAnimationFrame(() => { updateSpotlight(); rafId = null; });
   }
 
+  // Poll so wheel open/close and action-sector positions (driven by map
+  // interactions outside this component) keep the spotlight in sync.
+  let pollId = null;
+
   onMount(() => {
     updateSpotlight();
     window.addEventListener('resize', scheduleSpotlight);
+    document.addEventListener('click', onDocClick, true);
+    pollId = setInterval(scheduleSpotlight, 150);
     return () => {
       window.removeEventListener('resize', scheduleSpotlight);
+      document.removeEventListener('click', onDocClick, true);
+      if (pollId) clearInterval(pollId);
       if (rafId) cancelAnimationFrame(rafId);
+      if (advanceTimer) clearTimeout(advanceTimer);
     };
   });
 
@@ -183,6 +261,12 @@
     // Re-spotlight when step changes (after DOM settles).
     void stepIndex;
     scheduleSpotlight();
+  });
+
+  $effect(() => {
+    // For interactive steps, unlocking the linked achievement also completes the
+    // beat — covers actions that finish asynchronously (e.g. movement, combat).
+    if (isInteractive && stepUnlocked) advanceFromAction();
   });
 
   // Card positioning: prefer above the spotlight, fall back to below, or centred.
@@ -263,6 +347,10 @@
       <h2 class="card-title">{step.title}</h2>
       <p class="card-text">{step.body}</p>
 
+      {#if stepCue}
+        <p class="card-cue" class:on-wheel={wheelOpen}>{stepCue}</p>
+      {/if}
+
       {#if stepAchievement}
         <div class="card-achievement" class:unlocked={stepUnlocked}>
           <span class="ach-icon-wrap">
@@ -284,7 +372,10 @@
         <button class="nav-btn" onclick={prev} disabled={stepIndex === 0} aria-label="Previous step">
           ‹ Prev
         </button>
-        {#if stepIndex < totalSteps - 1}
+        {#if isInteractive}
+          <!-- Interactive steps complete by doing, not by pressing Next. -->
+          <span class="nav-waiting" aria-live="polite">Waiting for you…</span>
+        {:else if stepIndex < totalSteps - 1}
           <button class="nav-btn primary" onclick={next} aria-label="Next step">
             Next ›
           </button>
@@ -304,7 +395,9 @@
     position: fixed;
     inset: 0;
     z-index: 8000;
-    pointer-events: all;
+    /* Clicks pass through to the map/wheel; only the card captures input so the
+       player can open the wheel and pick actions while the tutorial guides. */
+    pointer-events: none;
   }
   .tutorial-overlay:focus { outline: none; }
 
@@ -313,7 +406,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    pointer-events: all;
+    pointer-events: none;
   }
 
   .spotlight-border {
@@ -345,6 +438,8 @@
     z-index: 8001;
     max-width: 340px;
     min-width: 260px;
+    /* Re-enable input on the card itself (overlay is click-through). */
+    pointer-events: auto;
   }
 
   /* Progress dots */
@@ -397,6 +492,27 @@
     line-height: 1.5;
     color: var(--chrome-text-dim, #a09070);
     margin: 0;
+  }
+
+  /* Live call-to-action for interactive steps */
+  .card-cue {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.7em;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+    color: var(--chrome-text, #e8e0cc);
+    margin: 0;
+    padding: 0.4em 0.6em;
+    background: var(--chrome-gold-soft, #2a2010);
+    border-left: 2px solid var(--chrome-gold, #b08d4a);
+  }
+  .card-cue.on-wheel {
+    border-left-color: var(--color-gold-pale, #d4b170);
+    animation: cue-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes cue-pulse {
+    0%, 100% { background: var(--chrome-gold-soft, #2a2010); }
+    50%      { background: var(--chrome-gold-border, #5a4520); }
   }
 
   /* Achievement badge */
@@ -486,6 +602,23 @@
     background: var(--color-gold-pale, #d4b170);
     border-color: var(--color-gold-pale, #d4b170);
     color: var(--color-ink-900, #0e1320);
+  }
+
+  .nav-waiting {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.6em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--chrome-gold, #b08d4a);
+    animation: waiting-fade 1.4s ease-in-out infinite;
+  }
+  @keyframes waiting-fade {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 1; }
   }
 
   .skip-btn {

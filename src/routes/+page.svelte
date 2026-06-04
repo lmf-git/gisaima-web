@@ -117,9 +117,10 @@
                 <span class="line-2">Time moves anyway.</span>
             </h1>
             <p class="lede reveal" style="--reveal-delay: {heroBase + 300}ms">
-                A tick-based real-time MMO. Worlds run continuously — every minute is an in-realm hour.
-                Hold ground, raise walls, recruit hosts, settle a coin upon a head. Free forever, MIT-licensed,
-                cosmetics-only — no pay-to-win.
+                A hardcore tick-based MMO where death is permanent and the clock never stops.
+                Worlds run continuously — every minute is an in-realm hour.
+                Hold ground, raise walls, recruit hosts. Capture enemies, demand ransoms, siege fortresses.
+                Free forever, MIT-licensed, cosmetics-only — no pay-to-win.
             </p>
             <div class="cta reveal" style="--reveal-delay: {heroBase + 450}ms">
                 {#if $user && $game?.worldKey && $game?.player?.alive}
@@ -205,6 +206,27 @@
             <div class="eyebrow gold">What comes next</div>
             <h3>Roadmap</h3>
             <p class="roadmap-note">The realm grows by hand. New features land here as they're drawn.</p>
+        </div>
+        <div class="reveal tri-feature">
+            <div class="eyebrow gold">Consequences of war</div>
+            <h3>Capture &amp; Ransom</h3>
+            <p class="roadmap-note">Defeat enemies and take them prisoner. Negotiate ransoms for coin or leave them to rot.
+                Battles loot automatically — carry valuable gear at your peril.
+                Siege fortresses for 15 game days to raze them to ruins.</p>
+            <a class="tri-link" href="/guide#battles">
+                Read the combat guide
+                <Stamp kind="eye" size={12} />
+            </a>
+        </div>
+        <div class="reveal tri-feature">
+            <div class="eyebrow gold">Permanent stakes</div>
+            <h3>Lives &amp; Permadeath</h3>
+            <p class="roadmap-note">Characters die for good. Play one of five races, earn new lives through reproduction,
+                and pass traits to your offspring. Your legacy outlasts your body — but only if you earn it.</p>
+            <a class="tri-link" href="/guide#character-development">
+                Read the character guide
+                <Stamp kind="eye" size={12} />
+            </a>
         </div>
     </section>
 </div>
@@ -437,6 +459,26 @@
         font-size: 0.95rem;
         color: var(--chrome-text-dim);
     }
+    .tri-feature {
+        border-top: 1px solid var(--color-aged-gold);
+        padding-top: 1.2em;
+    }
+    .tri-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        margin-top: 1em;
+        font-family: var(--font-display);
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--chrome-gold);
+        text-decoration: none;
+        border-bottom: 1px solid var(--chrome-gold-border);
+        padding-bottom: 0.15em;
+        transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .tri-link:hover { color: var(--color-gold-pale); border-color: var(--color-gold-pale); }
 
     @media (max-width: 900px) {
         .hero { grid-template-columns: 1fr; padding: 2em 1.5em 4em; gap: 3em; }

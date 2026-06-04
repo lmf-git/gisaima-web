@@ -522,7 +522,7 @@
     font-family: var(--font-display);
     font-size: 0.65em;
     letter-spacing: 0.22em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     margin-bottom: 0.5em;
   }
   .march-row {
@@ -533,7 +533,7 @@
     padding: 0.3em 0;
     font-family: var(--font-mono);
     font-size: 0.85em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
   .march-row.toggle {
     font-family: var(--font-display);
@@ -549,7 +549,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -557,7 +557,7 @@
     padding: 1em;
     overflow-y: auto;
     flex: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .location-info {
@@ -570,7 +570,7 @@
     display: flex;
     align-items: center;
     font-size: 1.1em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .terrain-color {
@@ -587,7 +587,7 @@
     padding: 0.2em 0.5em;
     background: rgba(176, 141, 74, 0.1);
     border: 0.075em solid rgba(176, 141, 74, 0.3);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   .mobilise-content {
@@ -611,7 +611,7 @@
   .group-name-row label {
     font-weight: 500;
     min-width: 6em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .text-input {
@@ -620,14 +620,14 @@
     border: 0.075em solid rgba(176, 141, 74, 0.3);
     font-family: var(--font-body);
     font-size: 0.95em;
-    background-color: rgba(26, 32, 48, 0.7);
+    background: var(--chrome-field-bg);
     transition: border-color 0.2s;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .text-input:focus {
     outline: none;
-    border-color: var(--color-aged-gold);
+    border-color: var(--chrome-gold);
   }
 
 
@@ -671,11 +671,11 @@
     align-items: center;
     justify-content: center;
     margin: 0 0.6em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   :global(.race-icon-small) {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     flex-shrink: 0;
   }
 
@@ -686,7 +686,7 @@
   .unit-name {
     font-weight: 500;
     margin-bottom: 0.2em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .unit-details {
@@ -700,14 +700,14 @@
     padding: 0.1em 0.4em;
     background-color: rgba(176, 141, 74, 0.08);
     border: 0.075em solid rgba(176, 141, 74, 0.18);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .stat-tag {
     padding: 0.1em 0.4em;
     background-color: rgba(176, 141, 74, 0.08);
     border: 0.075em solid rgba(176, 141, 74, 0.18);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-mono);
   }
   .melee-tag { background-color: rgba(91, 26, 31, 0.12); border-color: rgba(91, 26, 31, 0.28); }
@@ -715,7 +715,7 @@
   .magic-tag { background-color: rgba(50, 40, 90, 0.18); border-color: rgba(90, 70, 160, 0.3); }
 
   .group-tag {
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     background-color: rgba(176, 141, 74, 0.08);
   }
 
@@ -724,14 +724,14 @@
     padding: 1em;
     background-color: rgba(176, 141, 74, 0.05);
     border: 0.075em solid rgba(176, 141, 74, 0.18);
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .summary h3 {
     margin: 0 0 0.5em 0;
     font-size: 0.85em;
     font-family: var(--font-display);
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
@@ -755,17 +755,17 @@
     background: rgba(176, 141, 74, 0.1);
     border: 0.075em solid rgba(176, 141, 74, 0.25);
     font-size: 0.85em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   :global(.summary-unit-icon) {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     flex-shrink: 0;
   }
 
   .summary-unit-count {
     font-family: var(--font-mono, monospace);
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
 
   .options {
@@ -787,7 +787,7 @@
     padding: 0.8em;
     background-color: rgba(176, 141, 74, 0.05);
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     line-height: 1.4;
     margin: 0.5em 0;
     border-left: 3px solid rgba(176, 141, 74, 0.4);
@@ -800,7 +800,7 @@
   .next-tick-time {
     font-family: var(--font-mono, monospace);
     font-weight: 500;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   .mobilise-error {
@@ -859,7 +859,7 @@
 
   .cancel-btn {
     background: transparent;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     border: 0.075em solid rgba(176, 141, 74, 0.35);
   }
 
@@ -884,7 +884,7 @@
   .no-units, .no-tile {
     text-align: center;
     padding: 2em 0;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-style: italic;
   }
 
@@ -895,7 +895,7 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
 
   .boat-capacity-section {
@@ -924,7 +924,7 @@
 
   .capacity-text {
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -938,7 +938,7 @@
   .capacity-info {
     margin-top: 0.5em;
     font-size: 0.85em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-faint);
   }
 
   .boat-unit {
@@ -949,14 +949,14 @@
     font-size: 0.75em;
     padding: 0.1em 0.4em;
     background-color: rgba(176, 141, 74, 0.1);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     margin-left: 0.5em;
   }
 
   .transport-note {
     margin-top: 0.5em;
     font-size: 0.85em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-style: italic;
   }
 

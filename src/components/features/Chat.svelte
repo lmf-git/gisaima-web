@@ -4,6 +4,8 @@
   import { chatStore, messages, initializeChat, sendMessage, markAllAsRead, getMessageTime } from '../../lib/stores/chat.js';
   import { game } from '../../lib/stores/game.js';
   import { user } from '../../lib/stores/user.js';
+  import { diplomacy, getMyTribe } from '../../lib/stores/diplomacy.js';
+  import { apiGet } from '../../lib/api.js';
   import Close from '../icons/Close.svelte';
   
   // Props using Svelte 5 runes syntax
@@ -18,8 +20,12 @@
   let chatContainer = $state(null);
   let messagesContainer = $state(null);
 
-  // Filter state: 'all' | 'monsters' | 'players' | 'mine'
+  // Filter state: 'all' | 'monsters' | 'players' | 'house' | 'tribe' | 'mine'
   let activeFilter = $state('all');
+
+  // House roster for this world (members[].uid). Tribes come from the diplomacy
+  // store. Both drive the House/Tribe membership filters below.
+  let houses = $state([]);
 
   // Constants
   const MAX_MESSAGE_LENGTH = 200;
@@ -33,6 +39,21 @@
   // All messages from store
   let displayMessages = $derived($messages || []);
 
+  // The current player's house/tribe co-members, as uid sets. Null when the
+  // player belongs to none — the matching filter is then hidden entirely.
+  const houseMemberUids = $derived.by(() => {
+    const uid = currentUid;
+    if (!uid) return null;
+    const mine = houses.find(h => (h.members || []).some(m => m.uid === uid));
+    return mine ? new Set((mine.members || []).map(m => m.uid)) : null;
+  });
+  const tribeMemberUids = $derived.by(() => {
+    const uid = currentUid;
+    if (!uid) return null;
+    const mine = getMyTribe($diplomacy.tribes, uid);
+    return mine ? new Set((mine.members || []).map(m => m.uid)) : null;
+  });
+
   // Filtered messages based on activeFilter
   const filteredMessages = $derived((() => {
     const msgs = displayMessages;
@@ -43,6 +64,10 @@
       m.category !== 'monster' &&
       (m.category === 'player' || m.type === 'system' || m.type === 'user')
     );
+    if (activeFilter === 'house') return houseMemberUids
+      ? msgs.filter(m => m.userId && houseMemberUids.has(m.userId)) : msgs;
+    if (activeFilter === 'tribe') return tribeMemberUids
+      ? msgs.filter(m => m.userId && tribeMemberUids.has(m.userId)) : msgs;
     if (activeFilter === 'mine') return msgs.filter(m => uid && m.userId === uid);
     return msgs;
   })());
@@ -65,12 +90,20 @@
   let shouldScrollToBottom = $state(true);
   let lastProcessedCount = $state(0);
 
-  const filters = [
+  // House/Tribe buttons appear only when the player is a member of one.
+  const filters = $derived([
     { id: 'all',      label: 'All' },
     { id: 'monsters', label: 'Monsters' },
     { id: 'players',  label: 'Players' },
+    ...(houseMemberUids ? [{ id: 'house', label: 'House' }] : []),
+    ...(tribeMemberUids ? [{ id: 'tribe', label: 'Tribe' }] : []),
     { id: 'mine',     label: 'Mine' },
-  ];
+  ]);
+
+  // If the active filter disappears (e.g. left the house), fall back to All.
+  $effect(() => {
+    if (!filters.some(f => f.id === activeFilter)) activeFilter = 'all';
+  });
 
   // Effect to setup chat when world changes
   $effect(() => {
@@ -78,6 +111,15 @@
       cleanup = initializeChat(worldKey);
     }
     return () => cleanup();
+  });
+
+  // Load house roster + tribes so the membership filters have data.
+  $effect(() => {
+    if (!worldKey) return;
+    diplomacy.fetchTribes(worldKey);
+    apiGet(`/worlds/${encodeURIComponent(worldKey)}/houses`)
+      .then(r => { houses = Array.isArray(r) ? r : []; })
+      .catch(() => { houses = []; });
   });
 
   // Scroll to bottom when filter changes

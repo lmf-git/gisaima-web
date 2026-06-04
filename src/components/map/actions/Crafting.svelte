@@ -431,7 +431,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -447,7 +447,7 @@
     font-family: var(--font-display);
     font-size: 0.78em;
     letter-spacing: 0.1em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   .back-btn {
@@ -459,7 +459,7 @@
     justify-content: center;
     padding: 0.3em;
     transition: background 0.2s;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .back-btn:hover {
@@ -470,7 +470,7 @@
     padding: 1em;
     overflow-y: auto;
     flex: 1;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .categories-grid {
@@ -491,7 +491,7 @@
     cursor: pointer;
     transition: background-color 0.2s;
     text-align: center;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .category-card:hover {
@@ -503,7 +503,7 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 0.5em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   :global(.category-svg-icon) {
@@ -515,7 +515,7 @@
     font-weight: 500;
     font-size: 0.8em;
     letter-spacing: 0.08em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .recipe-list {
@@ -530,7 +530,7 @@
     margin-bottom: 0.75rem;
     cursor: pointer;
     transition: background-color 0.2s;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .recipe-item:hover {
@@ -552,7 +552,7 @@
   .recipe-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .recipe-rarity {
@@ -565,7 +565,7 @@
 
   .recipe-rarity.common {
     background: rgba(176, 141, 74, 0.08);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     border: 0.075em solid rgba(176, 141, 74, 0.2);
   }
 
@@ -577,7 +577,7 @@
 
   .recipe-rarity.rare {
     background: rgba(176, 141, 74, 0.12);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     border: 0.075em solid rgba(176, 141, 74, 0.3);
   }
 
@@ -589,13 +589,13 @@
 
   .recipe-rarity.legendary {
     background: rgba(176, 141, 74, 0.18);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     border: 0.075em solid rgba(212, 177, 112, 0.4);
   }
 
   .recipe-description {
     font-size: 0.85rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     margin-bottom: 0.5rem;
     line-height: 1.3;
     font-family: var(--font-editorial);
@@ -611,21 +611,21 @@
 
   .recipe-requires {
     font-size: 0.8rem;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     margin-top: 0.25rem;
     font-style: italic;
   }
 
   .recipe-craft-level {
     font-size: 0.8rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     margin-top: 0.25rem;
     font-style: italic;
   }
 
   .recipe-time {
     font-size: 0.8rem;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
@@ -645,7 +645,7 @@
     margin-bottom: 0.5rem;
     font-size: 1.1rem;
     font-family: var(--font-display);
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
     letter-spacing: 0.06em;
   }
 
@@ -655,7 +655,7 @@
     font-family: var(--font-display);
     text-transform: uppercase;
     letter-spacing: 0.1rem;
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
 
   .recipe-rarity-badge {
@@ -668,7 +668,7 @@
     letter-spacing: 0.06em;
     border: 0.075em solid rgba(176, 141, 74, 0.3);
     background: rgba(176, 141, 74, 0.08);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   .materials-list {
@@ -684,7 +684,7 @@
     align-items: center;
     padding: 0.3rem 0.5rem;
     font-size: 0.9rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     border-bottom: 0.075em solid rgba(176, 141, 74, 0.1);
   }
 
@@ -714,16 +714,16 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .building-name {
     font-weight: 500;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .level-info {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-weight: 500;
     font-family: var(--font-mono);
   }
@@ -753,7 +753,7 @@
     align-items: center;
     justify-content: center;
     margin: 0.5rem 0;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   :global(.building-svg-icon) {
@@ -762,7 +762,7 @@
 
   .building-description {
     font-size: 0.85rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-style: italic;
     font-family: var(--font-editorial);
   }
@@ -784,7 +784,7 @@
   .tick-count {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-family: var(--font-mono);
   }
 
@@ -801,7 +801,7 @@
   .empty-message {
     padding: 2rem 1rem;
     text-align: center;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-style: italic;
   }
 
@@ -812,7 +812,7 @@
     justify-content: center;
     height: 12rem;
     gap: 1rem;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
   }
 
   .loading-spinner {
@@ -844,7 +844,7 @@
     padding: 0.5rem 1rem;
     background: transparent;
     border: 0.075em solid rgba(176, 141, 74, 0.35);
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-family: var(--font-display);
     cursor: pointer;
     font-size: 0.85rem;

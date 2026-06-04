@@ -16,8 +16,8 @@
         if (!worldId) { loading = false; return; }
         try {
             loading = true;
-            const r = await apiGet(`/worlds/${encodeURIComponent(worldId)}/reports`);
-            entries = Array.isArray(r) ? r : (r?.reports || r?.items || []);
+            const r = await apiGet(`/worlds/${encodeURIComponent(worldId)}/chronicle`);
+            entries = Array.isArray(r) ? r : (r?.entries || r?.items || []);
             error = null;
         } catch (e) {
             error = e.message;
@@ -40,7 +40,7 @@
         if (!k) return 'scroll';
         const s = k.toLowerCase();
         if (s.includes('battle') || s.includes('attack')) return 'crossed-swords';
-        if (s.includes('build')) return 'hammer';
+        if (s.includes('capture') || s.includes('structure')) return 'hammer';
         if (s.includes('gather') || s.includes('craft')) return 'wheat';
         if (s.includes('move') || s.includes('travel')) return 'compass';
         if (s.includes('death') || s.includes('kill')) return 'skull';

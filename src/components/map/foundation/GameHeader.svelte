@@ -18,11 +18,14 @@
   <a class="header-link" class:active={$page.url?.pathname === '/rankings'} href="/rankings">
     Rankings
   </a>
-  <a class="header-link" class:active={$page.url?.pathname === '/chronicle'} href="/chronicle">
+  <a class="header-link" class:active={$page.url?.pathname === '/reports'} href="/reports">
     Reports
     {#if $unreadReports > 0}
       <span class="header-badge">{$unreadReports}</span>
     {/if}
+  </a>
+  <a class="header-link" class:active={$page.url?.pathname === '/chronicle'} href="/chronicle">
+    Chronicle
   </a>
 </nav>
 

@@ -8,7 +8,13 @@
     import WaxSeal from '../ui/WaxSeal.svelte';
     import Stamp from '../ui/Stamp.svelte';
     import Logo from '../Logo.svelte';
+    import HoldingsModal from './HoldingsModal.svelte';
     import { isFood } from 'gisaima-shared/definitions/ITEMS.js';
+
+    // Tapping the resource strip opens a full holdings breakdown. Works on every
+    // viewport, but it's the primary way to read resource labels on mobile where
+    // the strip collapses to icons + counts.
+    let showHoldings = $state(false);
 
     // HudA top bar — house crest, resources at current location, search,
     // next tick, player avatar. Mirrors reference/jsx/map-hud.jsx HudA.
@@ -222,44 +228,50 @@
             <span class="rule"></span>
         {/if}
 
-        <!-- Current-location resource strip -->
-        <ul class="res">
-            <li>
+        <!-- Current-location resource strip — tap to open full holdings -->
+        <button
+            type="button"
+            class="res"
+            aria-haspopup="dialog"
+            title="View all resources & holdings"
+            onclick={() => (showHoldings = true)}
+        >
+            <span class="res-cell">
                 <span class="res-icon coin"><Stamp kind="coin" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.GOLD)}</span>
                     <span class="r">Gold</span>
                 </span>
-            </li>
-            <li>
+            </span>
+            <span class="res-cell">
                 <span class="res-icon sage"><Stamp kind="wheat" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.FOOD)}</span>
                     <span class="r">Food</span>
                 </span>
-            </li>
-            <li>
+            </span>
+            <span class="res-cell">
                 <span class="res-icon gold"><Stamp kind="wood" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.WOOD)}</span>
                     <span class="r">Wood</span>
                 </span>
-            </li>
-            <li>
+            </span>
+            <span class="res-cell">
                 <span class="res-icon hill"><Stamp kind="stone" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.STONE)}</span>
                     <span class="r">Stone</span>
                 </span>
-            </li>
-            <li>
+            </span>
+            <span class="res-cell">
                 <span class="res-icon iron"><Stamp kind="hammer" size={16} /></span>
                 <span class="res-val">
                     <span class="n">{fmt(resources.METAL)}</span>
                     <span class="r">Metal</span>
                 </span>
-            </li>
-        </ul>
+            </span>
+        </button>
 
         <div class="spacer"></div>
 
@@ -318,6 +330,14 @@
             <WaxSeal label={initial} color="#5b1a1f" size={28} />
         </a>
     </header>
+
+    {#if showHoldings}
+        <HoldingsModal
+            {resources}
+            onClose={() => (showHoldings = false)}
+            onJump={jumpTo}
+        />
+    {/if}
 {/if}
 
 <style>
@@ -437,17 +457,29 @@
         padding: 0;
         margin: 0;
         display: inline-flex;
+        align-items: center;
         font-family: var(--font-mono);
+        color: inherit;
         flex-shrink: 0;
+        cursor: pointer;
+        background: none;
+        border: 0.075em solid transparent;
+        transition: background 0.12s, border-color 0.12s;
     }
-    .res li {
+    .res:hover,
+    .res:focus-visible {
+        background: var(--chrome-gold-soft);
+        border-color: var(--chrome-gold-border);
+        outline: none;
+    }
+    .res-cell {
         display: inline-flex;
         align-items: center;
         gap: 0.45em;
         padding: 0 0.85em;
         border-left: 0.075em solid var(--chrome-hairline);
     }
-    .res li:first-child { border-left: none; }
+    .res-cell:first-child { border-left: none; }
     .res-icon.coin  { color: var(--chrome-gold); }
     .res-icon.sage  { color: var(--color-sage-pale, #b8c9b3); }
     .res-icon.gold  { color: var(--color-aged-gold); }
@@ -546,7 +578,7 @@
     }
 
     @media (max-width: 1200px) {
-        .res li:nth-child(n+3) { display: none; }   /* keep first 2 cells */
+        .res-cell:nth-child(n+3) { display: none; }   /* keep first 2 cells */
         .search { width: 16em; }
     }
     @media (max-width: 900px) {
@@ -567,8 +599,8 @@
         .house { display: none; }
 
         .res { display: inline-flex; }
-        .res li { padding: 0 0.45em; gap: 0.3em; border-left: none; }
-        .res li:nth-child(n+3) { display: inline-flex; }  /* show all five again */
+        .res-cell { padding: 0 0.45em; gap: 0.3em; border-left: none; }
+        .res-cell:nth-child(n+3) { display: inline-flex; }  /* show all five again */
         .res-val .r { display: none; }   /* drop the word, keep icon + count */
         .res-icon :global(svg) { width: 0.9em; height: 0.9em; }
 

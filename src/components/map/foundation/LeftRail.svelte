@@ -13,6 +13,7 @@
         { href: '/friends',   glyph: 'plus',    label: 'Friends' },
         { href: '/rankings',  glyph: 'crown',   label: 'Roll' },
         { href: '/trade',     glyph: 'coin',    label: 'Trade' },
+        { href: '/reports',   glyph: 'scroll',  label: 'Reports' },
         { href: '/chronicle', glyph: 'raven',   label: 'Chronicle' }
     ];
 </script>
