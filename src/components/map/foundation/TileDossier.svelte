@@ -19,6 +19,7 @@
   import StructureOverview from '../actions/StructureOverview.svelte';
   import Details         from '../actions/Details.svelte';
   import UnitDetails     from '../actions/UnitDetails.svelte';
+  import Tutorial        from '../actions/Tutorial.svelte';
 
   import Stamp from '../../ui/Stamp.svelte';
   import Close from '../../icons/Close.svelte';
@@ -181,8 +182,7 @@
   function handleBuild(buildData) { onClose(); onBuildRequest(buildData); }
   function handleMove(groupData)  { onClose(); onStartPathDrawing(groupData); }
 
-  // 'help' is rendered as a full-screen overlay directly in the page, not in the dossier
-  const visible = $derived(panel !== null && panel !== 'help');
+  const visible = $derived(panel !== null);
 </script>
 
 <aside
@@ -258,6 +258,9 @@
 
       {:else if panel === 'achievements'}
         <div class="ds-panel"><Achievements onClose={onClose} /></div>
+
+      {:else if panel === 'help'}
+        <div class="ds-panel"><Tutorial onClose={onClose} onOpenAchievements={() => onSwitchPanel('achievements')} /></div>
 
       {:else if panel === 'inspect' && tile}
         <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} onPlaceBuilding={onPlaceBuilding} /></div>

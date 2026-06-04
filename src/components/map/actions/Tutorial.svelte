@@ -645,12 +645,4 @@
     transition: color 0.12s;
   }
   .skip-btn:hover { color: var(--chrome-text-dim, #a09070); }
-
-  @media (max-width: 480px) {
-    .tutorial-card {
-      min-width: 0;
-      width: calc(100vw - 32px) !important;
-      left: 16px !important;
-    }
-  }
 </style>

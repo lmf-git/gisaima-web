@@ -53,7 +53,6 @@
     
     import Overview from '../../components/map/actions/Overview.svelte';
     import SpawnMenu from '../../components/map/actions/SpawnMenu.svelte';
-    import Tutorial from '../../components/map/actions/Tutorial.svelte';
     import Map from '../../components/icons/Map.svelte';
     import Close from '../../components/icons/Close.svelte';
     import Spyglass from '../../components/icons/Spyglass.svelte';
@@ -865,12 +864,6 @@
       dossierPanel = dossierPanel === 'help' ? null : 'help';
     }
 
-    function openAchievementsFromTutorial() {
-        if (!$game?.player?.alive) return;
-        dossierPanel = 'achievements';
-        localStorage.removeItem('achievements_closed');
-    }
-
     // Updated to handle Peek actions
     function handleGridClick(coords) {
         if (!$game?.player?.alive) return;
@@ -1383,12 +1376,7 @@
 
         <AchievementUnlocked />
 
-        {#if isTutorialVisible}
-            <Tutorial
-                onClose={() => { dossierPanel = null; }}
-                onOpenAchievements={openAchievementsFromTutorial}
-            />
-        {/if}
+        <!-- The tutorial is now docked inside the TileDossier (panel === 'help'). -->
 
         <!-- Modals -->
 
