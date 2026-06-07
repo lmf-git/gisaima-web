@@ -551,16 +551,19 @@
     // Check if structure has all the required resources
     const structureItems = convertItemsToDisplayFormat(tileData?.structure?.items || []);
     
-    // Check if all requirements are met
+    // Check if all requirements are met (requirements are keyed by item code)
     for (const req of resources) {
-      const availableItem = structureItems.find(item => item.name === req.name);
+      const code = reqCode(req);
+      const availableItem = structureItems.find(
+        item => (item.code || item.id || '').toString().toUpperCase() === code
+      );
       const availableQuantity = availableItem ? availableItem.quantity : 0;
-      
+
       if (availableQuantity < req.quantity) {
         return false;
       }
     }
-    
+
     return true;
   }
   
@@ -675,25 +678,24 @@
     // Check shared storage (only using shared for new buildings)
     const sharedItems = convertItemsToDisplayFormat(tileData?.structure?.items || []);
     
-    // Track available resources
+    // Track available resources by item code
     const availableResources = {};
-    
+
     // Count shared resources - sharedItems is now guaranteed to be an array
     sharedItems.forEach(item => {
-      if (!availableResources[item.name]) {
-        availableResources[item.name] = 0;
-      }
-      availableResources[item.name] += item.quantity || 0;
+      const code = (item.code || item.id || '').toString().toUpperCase();
+      if (!code) return;
+      availableResources[code] = (availableResources[code] || 0) + (item.quantity || 0);
     });
-    
+
     // Check if all requirements are met
     for (const req of requirements) {
-      const available = availableResources[req.name] || 0;
+      const available = availableResources[reqCode(req)] || 0;
       if (available < req.quantity) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -701,6 +703,16 @@
   function getBuildingRequirements(buildingType) {
     const buildingDef = BUILDINGS.types[buildingType];
     return buildingDef ? buildingDef.baseRequirements : [];
+  }
+
+  // Building requirements are shaped { code: 'WOOD', quantity: 12 } (older data
+  // may use id/name). Resolve a requirement's item code and its display name.
+  function reqCode(req) {
+    return (req?.code || req?.id || req?.name || '').toString().toUpperCase();
+  }
+  function reqName(req) {
+    const code = reqCode(req);
+    return ITEMS[code]?.name || formatText(code);
   }
 
   // Get building icon based on type
@@ -1032,10 +1044,10 @@
                         <div class="requirements-list">
                           {#each getBuildingRequirements(building.type) as req}
                             {@const structureItems = convertItemsToDisplayFormat(tileData?.structure?.items || [])}
-                            {@const available = structureItems.reduce((total, item) => 
-                              item && item.name === req.name ? total + (item.quantity || 0) : total, 0) || 0}
+                            {@const available = structureItems.reduce((total, item) =>
+                              item && (item.code || item.id || '').toString().toUpperCase() === reqCode(req) ? total + (item.quantity || 0) : total, 0) || 0}
                             <div class="requirement-item {available >= req.quantity ? 'sufficient' : 'insufficient'}">
-                              {req.name}: {req.quantity} 
+                              {reqName(req)}: {req.quantity}
                               <span class="available-count">
                                 (Have: {available})
                               </span>

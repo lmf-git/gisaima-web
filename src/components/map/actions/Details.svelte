@@ -1290,13 +1290,11 @@
                     <ItemIcon code={itemCode} extraClass="tile-item-icon" />
                   </div>
                   <div class="entity-info">
-                    <div class="entity-name">
-                      {item.name || _fmt(item.type) || "Unknown Item"}
+                    <div class="entity-name item-name-row">
+                      <span class="entity-name-text">{item.name || _fmt(item.type) || "Unknown Item"}</span>
                       {#if item.quantity > 1}
                         <span class="item-quantity">×{item.quantity}</span>
                       {/if}
-                    </div>
-                    <div class="entity-details">
                       {#if item.rarity && item.rarity !== 'common'}
                         <span class="item-rarity {item.rarity}">{_fmt(item.rarity)}</span>
                       {/if}
@@ -2415,6 +2413,34 @@
   .entity-name, .entity-details {
     width: 100%;
   }
+
+  /* Tile item rows: name, quantity and rarity badge share one line. */
+  .item-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4em;
+  }
+  .item-name-row .entity-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .item-name-row .item-quantity { flex-shrink: 0; }
+  .item-name-row .item-rarity { margin-left: auto; flex-shrink: 0; }
+
+  .item-rarity {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.78em;
+    letter-spacing: 0.04em;
+    padding: 0.05em 0.4em;
+    border-radius: 0.2em;
+  }
+  .item-rarity.uncommon  { color: #6ecf72; background: rgba(76, 175, 80, 0.12); }
+  .item-rarity.rare      { color: #64b5f6; background: rgba(33, 150, 243, 0.12); }
+  .item-rarity.epic      { color: #ba68c8; background: rgba(156, 39, 176, 0.12); }
+  .item-rarity.legendary { color: #ffb74d; background: rgba(255, 152, 0, 0.12); }
+  .item-rarity.mythic    { color: #f06292; background: rgba(233, 30, 99, 0.12); }
 
   
   .entity-details {
