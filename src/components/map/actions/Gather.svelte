@@ -19,7 +19,21 @@
   let statusMessage = $state('');
   let processing = $state(false);
   let gatherUntilFull = $state(false);
-  
+
+  // Items already lying on the tile that the player can scoop up before biome
+  // gathering begins. Selected items are picked up first (up to carry capacity).
+  let tileItems = $derived(
+    Array.isArray(tileData?.items)
+      ? tileData.items.filter(i => i?.code && (i.quantity ?? 0) > 0)
+      : []
+  );
+  // code -> false when explicitly deselected; absent/true means "collect it".
+  let deselectedItems = $state({});
+  const isItemSelected = (code) => deselectedItems[code] !== true;
+  function toggleItem(code, checked) {
+    deselectedItems = { ...deselectedItems, [code]: !checked };
+  }
+
   // Add a flag to prevent re-filtering groups once an operation has started
   let operationInProgress = $state(false);
   
@@ -83,7 +97,8 @@
         locationX: tileData.x,
         locationY: tileData.y,
         worldId: $game.worldKey,
-        gatherUntilFull
+        gatherUntilFull,
+        collectItems: tileItems.filter(i => isItemSelected(i.code)).map(i => i.code)
       });
 
       if (result?.success) {
@@ -175,6 +190,26 @@
           </div>
         </div>
         
+        {#if tileItems.length > 0}
+          <div class="tile-items">
+            <h3>Items On This Tile</h3>
+            <p class="hint">Selected items are picked up first, then biome resources fill any remaining carrying capacity.</p>
+            <div class="items-list">
+              {#each tileItems as item (item.code)}
+                <div class="item-row">
+                  <Checkbox
+                    checked={isItemSelected(item.code)}
+                    disabled={processing}
+                    onchange={(v) => toggleItem(item.code, v)}
+                  />
+                  <span class="item-name {item.rarity || 'common'}">{item.name || _fmt(item.code)}</span>
+                  <span class="item-qty">×{item.quantity}</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
         <div class="toggle-row">
           <Checkbox bind:checked={gatherUntilFull} disabled={processing} label="Gather until full capacity" />
         </div>
@@ -337,6 +372,54 @@
   .group-units {
     font-size: 0.8em;
     color: var(--chrome-text-faint);
+  }
+
+  .tile-items {
+    margin-bottom: 1.5em;
+  }
+
+  .hint {
+    font-size: 0.8em;
+    color: var(--chrome-text-faint);
+    margin: 0 0 0.6em 0;
+  }
+
+  .items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    max-height: 12em;
+    overflow-y: auto;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.35em 0.5em;
+    border: 0.075em solid var(--chrome-border);
+    background: var(--chrome-field-bg);
+  }
+
+  .item-row .item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--chrome-text);
+  }
+  .item-row .item-name.uncommon  { color: #6ecf72; }
+  .item-row .item-name.rare      { color: #64b5f6; }
+  .item-row .item-name.epic      { color: #ba68c8; }
+  .item-row .item-name.legendary { color: #ffb74d; }
+  .item-row .item-name.mythic    { color: #f06292; }
+
+  .item-row .item-qty {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.85em;
+    color: var(--chrome-text-dim);
+    flex-shrink: 0;
   }
 
   .toggle-row {

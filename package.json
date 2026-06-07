@@ -19,7 +19,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
-		"gisaima-shared": "lmf-git/gisaima-v3-shared#34e20c5d7282d3c9545c34034b55d223806e32b0"
+		"gisaima-shared": "https://github.com/lmf-git/gisaima-v3-shared.git#67b5fae7027b33337a771b7df3b73446c31ef946"
 	},
 	"packageManager": "yarn@4.13.0"
 }
