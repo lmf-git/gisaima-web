@@ -19,7 +19,6 @@
   import StructureOverview from '../actions/StructureOverview.svelte';
   import Details         from '../actions/Details.svelte';
   import UnitDetails     from '../actions/UnitDetails.svelte';
-  import Tutorial        from '../actions/Tutorial.svelte';
 
   import Stamp from '../../ui/Stamp.svelte';
   import Close from '../../icons/Close.svelte';
@@ -150,7 +149,6 @@
     recruitment: 'Recruit',
     craft:       'Crafting',
     achievements:'Achievements',
-    help:        'Guide',
     inspect:     'Inspect',
   };
 
@@ -258,9 +256,6 @@
 
       {:else if panel === 'achievements'}
         <div class="ds-panel"><Achievements onClose={onClose} /></div>
-
-      {:else if panel === 'help'}
-        <div class="ds-panel"><Tutorial onClose={onClose} onOpenAchievements={() => onSwitchPanel('achievements')} /></div>
 
       {:else if panel === 'inspect' && tile}
         <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} onPlaceBuilding={onPlaceBuilding} /></div>

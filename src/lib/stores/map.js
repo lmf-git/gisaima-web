@@ -807,14 +807,38 @@ export const coordinates = derived(
 );
 
 // Target store depends on coordinates
+// Spawn structures live in world data (world.spawns), not in chunks, and the
+// Grid renders their icon regardless of fog of war. Mirror that here so the
+// dossier/Details surface a spawn on the target tile even when its chunk hasn't
+// delivered structure data (e.g. the tile is outside current sight).
+function spawnStructureAt($game, x, y) {
+  const spawns = $game?.worlds?.[$game.worldKey]?.spawns;
+  if (!spawns) return null;
+  for (const s of Object.values(spawns)) {
+    if ((s.x ?? s.position?.x) === x && (s.y ?? s.position?.y) === y) {
+      return { type: 'spawn', name: s.name, race: s.race };
+    }
+  }
+  return null;
+}
+
 export const targetStore = derived(
-  [map, coordinates],
-  ([$map, $coordinates]) => {
+  [map, coordinates, game],
+  ([$map, $coordinates, $game]) => {
+    const tx = $map.target.x, ty = $map.target.y;
     // Find the center tile in coordinates
-    const targetTile = $coordinates.find(c => c.x === $map.target.x && c.y === $map.target.y);
+    const targetTile = $coordinates.find(c => c.x === tx && c.y === ty);
 
     // If found, return complete data; if not, return minimal location data
-    return targetTile || { x: $map.target.x, y: $map.target.y };
+    const tile = targetTile || { x: tx, y: ty };
+
+    // Overlay a spawn structure from world data when the tile has none cached
+    // (keeps real, fully-detailed structures from sight when they exist).
+    if (!tile.structure) {
+      const spawn = spawnStructureAt($game, tx, ty);
+      if (spawn) return { ...tile, structure: spawn };
+    }
+    return tile;
   }
 );
 

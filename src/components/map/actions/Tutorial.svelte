@@ -1,7 +1,8 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
   import { currentPlayer } from '../../../lib/stores/game.js';
+  import { targetStore } from '../../../lib/stores/map.js';
   import Trophy from '../../icons/Trophy.svelte';
 
   const {
@@ -11,10 +12,12 @@
 
   // Steps: each describes one tutorial beat.
   // `selector` targets a DOM element to spotlight; null = centred card only.
-  // `achievement` links to an ACHIEVEMENTS key to show unlock status.
+  // `achievement` links to an ACHIEVEMENTS key to show unlock status and is the
+  // primary signal that an interactive step is complete.
   // `wheelAction` (the action's aria-label in the wheel) turns the step into an
   // interactive beat: the player must open the action wheel on their tile and
-  // pick that action. The tutorial waits for the click instead of offering Next.
+  // pick that action. The tutorial waits for the action to take effect instead
+  // of offering Next.
   const STEPS = [
     {
       id: 'welcome',
@@ -74,7 +77,7 @@
       id: 'chat',
       title: 'Talk to Others',
       body: 'Use the chat button in the top right to send messages to other players in this world. Alliances are often forged in conversation.',
-      selector: '[aria-label="Open chat"], .chat-button, [aria-label="Chat"]',
+      selector: '[aria-label="Open chat"], .chat-button, [aria-label="Show chat"]',
       achievement: 'first_message',
     },
     {
@@ -98,7 +101,22 @@
   // sector carries `aria-label="<Label>"`. These let us detect wheel state and
   // spotlight the exact action a step asks for.
   const WHEEL_SELECTOR = '.peek-container';
+  // Path-drawing mode toggles `.map.path-drawing` on the map root.
+  const PATH_DRAWING_SELECTOR = '.map.path-drawing';
   const wheelActionSelector = (label) => `${WHEEL_SELECTOR} [aria-label="${label}"]`;
+
+  // Dossier action panel currently open, read from its topbar title. Lets a step
+  // say "configuring…" while the action's panel is up and the wheel has closed.
+  const DOSSIER_TITLE_SELECTOR = '.ds-topbar-action';
+  // wheelAction → dossier panel title (see PANEL_TITLES in TileDossier.svelte).
+  const DOSSIER_TITLE_FOR = {
+    Mobilise: 'Mobilise',
+    Move: 'Move Group',
+    Gather: 'Gather',
+    Recruit: 'Recruit',
+    Craft: 'Crafting',
+    Attack: 'Attack',
+  };
 
   const totalSteps = STEPS.length;
 
@@ -108,9 +126,10 @@
 
   let stepIndex = $state(Math.min(savedStep, totalSteps - 1));
   let spotlightRect = $state(null);
-  let isSnapping = $state(false);
-  // True while the action wheel (Peek) is open on screen.
+  // Live DOM-derived state, refreshed by the poll below.
   let wheelOpen = $state(false);
+  let pathDrawing = $state(false);
+  let dossierTitle = $state('');
 
   const step = $derived(STEPS[stepIndex]);
   const playerAchievements = $derived($currentPlayer?.achievements || {});
@@ -121,17 +140,67 @@
     step.achievement ? !!playerAchievements[step.achievement] : false
   );
 
-  // Interactive steps wait for the player to open the wheel and pick an action
-  // instead of showing a Next button.
+  // ─── Live group state at the player's tile ───
+  // Drives the "wait for your group…" cues and the progress-based advancement so
+  // the tutorial reflects what is actually happening on the map.
+  const myGroups = $derived.by(() => {
+    const t = $targetStore;
+    const pid = $currentPlayer?.id;
+    if (!t?.groups || !pid) return [];
+    return t.groups.filter(g => g.owner === pid);
+  });
+  const hasIdleGroup = $derived(myGroups.some(g => g.status === 'idle'));
+  const hasMobilising = $derived(myGroups.some(g => g.status === 'mobilizing'));
+  const hasGathering = $derived(myGroups.some(g => g.status === 'gathering'));
+
+  // Interactive steps wait for the player to perform the action rather than
+  // showing a Next button.
   const isInteractive = $derived(!!step.wheelAction);
-  // The live call-to-action shown beneath the step body for interactive steps.
-  const stepCue = $derived(
-    !isInteractive
-      ? null
-      : wheelOpen
-        ? `Choose ${step.wheelAction} from the wheel.`
-        : 'Tap the highlighted tile to open the action wheel.'
+  // Whether the dossier panel for this step's action is currently open.
+  const panelOpenForStep = $derived(
+    isInteractive &&
+    !!DOSSIER_TITLE_FOR[step.wheelAction] &&
+    dossierTitle === DOSSIER_TITLE_FOR[step.wheelAction]
   );
+
+  // The live call-to-action shown beneath the step body for interactive steps.
+  // It reads real game state so the player is never told to do something the
+  // game won't yet allow (e.g. Move before a group has finished mobilising).
+  const stepCue = $derived.by(() => {
+    if (!isInteractive) return null;
+    const action = step.wheelAction;
+
+    if (step.id === 'mobilise') {
+      if (hasMobilising) return 'Mobilising your group… hold on.';
+    }
+
+    if (step.id === 'movement') {
+      if (pathDrawing) return 'Draw a path across the map, then confirm to send your group.';
+      if (hasMobilising && !hasIdleGroup) return 'Your group is still mobilising — wait until it is ready.';
+      if (!hasIdleGroup) return 'Wait for your group to be ready to move.';
+    }
+
+    if (step.id === 'gather') {
+      if (hasGathering) return 'Gathering resources… hold on.';
+      if (!hasIdleGroup) return 'Wait for your group to finish moving, then act on its tile.';
+    }
+
+    if (panelOpenForStep) return `Confirm in the ${action} panel to continue.`;
+    if (wheelOpen) return `Choose ${action} from the wheel.`;
+    return `Tap the highlighted tile to open the action wheel, then choose ${action}.`;
+  });
+
+  // True when the cue is telling the player to wait for the game rather than act
+  // (so it can be styled as a calm hold instead of an action prompt).
+  const cueWaiting = $derived.by(() => {
+    if (!isInteractive) return false;
+    if (hasMobilising || hasGathering) return true;
+    // Move/Gather both need an idle group on the tile; while there isn't one the
+    // cue is a "wait for your group" message (path-drawing excepted — that's an
+    // active prompt).
+    if ((step.id === 'movement' && !pathDrawing) || step.id === 'gather') return !hasIdleGroup;
+    return false;
+  });
 
   function resolveSelector(selector) {
     if (!selector) return null;
@@ -146,26 +215,21 @@
   // For interactive steps the spotlight target depends on wheel state: the tile
   // until the wheel opens, then the specific action sector inside it.
   function currentSelector() {
-    if (isInteractive) {
-      if (wheelOpen) {
-        const actionEl = document.querySelector(wheelActionSelector(step.wheelAction));
-        if (actionEl) return wheelActionSelector(step.wheelAction);
-      }
-      return step.selector;
+    if (isInteractive && wheelOpen) {
+      const sel = wheelActionSelector(step.wheelAction);
+      if (document.querySelector(sel)) return sel;
     }
     return step.selector;
   }
 
   function updateSpotlight() {
-    // Keep the wheel-open flag in sync with the DOM each pass.
+    // Keep DOM-derived flags in sync each pass.
     wheelOpen = !!document.querySelector(WHEEL_SELECTOR);
+    pathDrawing = !!document.querySelector(PATH_DRAWING_SELECTOR);
+    dossierTitle = document.querySelector(DOSSIER_TITLE_SELECTOR)?.textContent?.trim() || '';
 
     const selector = currentSelector();
-    if (!selector) {
-      spotlightRect = null;
-      return;
-    }
-    const el = resolveSelector(selector);
+    const el = selector ? resolveSelector(selector) : null;
     if (!el) {
       spotlightRect = null;
       return;
@@ -181,8 +245,7 @@
   }
 
   // A step is "already done" when its linked achievement is unlocked — the
-  // player has performed that action before (e.g. they've mobilised, so they
-  // carry the 'mobilised'/leader achievement). Such steps are skipped.
+  // player has performed that action before. Such steps are skipped.
   function isStepDone(i) {
     const a = STEPS[i]?.achievement;
     return !!(a && playerAchievements[a]);
@@ -198,6 +261,8 @@
   function goTo(index) {
     stepIndex = Math.max(0, Math.min(index, totalSteps - 1));
     localStorage.setItem('tutorial-step', String(stepIndex));
+    // Reset per-step progress tracking.
+    sawPathDrawing = false;
     updateSpotlight();
   }
 
@@ -206,31 +271,15 @@
     else finish();
   }
 
-  // Advance after the player engages the action a step asked for. A short delay
-  // lets the wheel close and the action panel open before the card moves on.
+  // Advance after the player completes the action a step asked for. A short delay
+  // lets the wheel close and any action panel settle before the card moves on.
   let advanceTimer = null;
   function advanceFromAction() {
     if (advanceTimer) return;
     advanceTimer = setTimeout(() => {
       advanceTimer = null;
       next();
-    }, 450);
-  }
-
-  // Watch every click: if it lands on the action sector the current step wants,
-  // treat the step as satisfied and move forward.
-  function onDocClick(e) {
-    if (!isInteractive) return;
-    const target = e.target instanceof Element
-      ? e.target.closest(`[aria-label="${step.wheelAction}"]`)
-      : null;
-    if (target && target.closest(WHEEL_SELECTOR)) {
-      advanceFromAction();
-    }
-  }
-
-  function prev() {
-    if (stepIndex > 0) goTo(stepIndex - 1);
+    }, 600);
   }
 
   function finish() {
@@ -247,25 +296,24 @@
     onOpenAchievements();
   }
 
-  // Recompute spotlight when step changes and on resize.
+  // ─── Spotlight refresh + state polling ───
   let rafId = null;
   function scheduleSpotlight() {
     if (rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(() => { updateSpotlight(); rafId = null; });
   }
 
-  // Poll so wheel open/close and action-sector positions (driven by map
-  // interactions outside this component) keep the spotlight in sync.
   let pollId = null;
 
   onMount(() => {
     updateSpotlight();
     window.addEventListener('resize', scheduleSpotlight);
-    document.addEventListener('click', onDocClick, true);
+    // Poll so wheel open/close, path-drawing and action-sector positions (driven
+    // by map interactions outside this component) keep the card and spotlight in
+    // sync.
     pollId = setInterval(scheduleSpotlight, 150);
     return () => {
       window.removeEventListener('resize', scheduleSpotlight);
-      document.removeEventListener('click', onDocClick, true);
       if (pollId) clearInterval(pollId);
       if (rafId) cancelAnimationFrame(rafId);
       if (advanceTimer) clearTimeout(advanceTimer);
@@ -278,10 +326,29 @@
     scheduleSpotlight();
   });
 
+  // ─── Advancement ───
+  // Primary signal: the linked achievement unlocking (covers async completions
+  // such as a move resolving on a server tick).
   $effect(() => {
-    // For interactive steps, unlocking the linked achievement also completes the
-    // beat — covers actions that finish asynchronously (e.g. movement, combat).
     if (isInteractive && stepUnlocked) advanceFromAction();
+  });
+
+  // Fallback progress signals read from live game state, so steps still advance
+  // promptly even before the matching achievement is granted.
+  let sawPathDrawing = false;
+  $effect(() => {
+    if (!isInteractive) return;
+    if (step.id === 'mobilise' && hasMobilising) {
+      // A group is forming — the player has mobilised.
+      advanceFromAction();
+    } else if (step.id === 'movement') {
+      // Remember that path drawing started; once it ends and the group has left
+      // the tile (no longer idle here), the move was committed.
+      if (pathDrawing) sawPathDrawing = true;
+      else if (sawPathDrawing && !hasIdleGroup) advanceFromAction();
+    } else if (step.id === 'gather' && hasGathering) {
+      advanceFromAction();
+    }
   });
 
   // On first load (once achievements are known), jump past any opening steps the
@@ -296,17 +363,16 @@
     if (target !== stepIndex) goTo(target);
   });
 
-  // The card is docked in the TileDossier panel, but the spotlight overlay must
-  // cover the whole viewport. The dossier has `transform`/`overflow:hidden`,
-  // which would clip a fixed child, so portal the overlay out to <body>. Scoped
-  // styles still apply because the element keeps its Svelte class.
+  // The spotlight overlay and the floating card both portal to <body> so no
+  // ancestor's transform/overflow can clip them. Scoped styles still apply
+  // because the elements keep their Svelte classes.
   function portal(node) {
     document.body.appendChild(node);
     return { destroy() { node.remove(); } };
   }
 </script>
 
-<!-- Spotlight overlay — portaled to <body> so the dossier can't clip it -->
+<!-- Spotlight overlay — portaled to <body> so nothing can clip it -->
 <div class="tutorial-overlay" use:portal aria-hidden="true">
   <!-- Dark backdrop with spotlight hole via SVG mask -->
   <svg class="backdrop">
@@ -338,23 +404,23 @@
   {/if}
 </div>
 
-<!-- Instruction card — docked in the TileDossier panel -->
+<!-- Instruction card — floats above the map, persists across action panels -->
 <div
   class="tutorial-card"
+  use:portal
   role="dialog"
   aria-label="Interactive tutorial"
-  onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); }}
+  onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight' && !isInteractive) next(); }}
   tabindex="-1"
 >
     <div class="card-progress">
       {#each STEPS as _, i}
-        <button
+        <span
           class="progress-dot"
           class:active={i === stepIndex}
           class:done={i < stepIndex}
-          onclick={() => goTo(i)}
-          aria-label="Go to step {i + 1}"
-        ></button>
+          aria-hidden="true"
+        ></span>
       {/each}
     </div>
 
@@ -363,7 +429,7 @@
       <p class="card-text">{step.body}</p>
 
       {#if stepCue}
-        <p class="card-cue" class:on-wheel={wheelOpen}>{stepCue}</p>
+        <p class="card-cue" class:waiting={cueWaiting} class:on-wheel={wheelOpen}>{stepCue}</p>
       {/if}
 
       {#if stepAchievement}
@@ -384,9 +450,6 @@
 
     <div class="card-actions">
       <div class="card-nav">
-        <button class="nav-btn" onclick={prev} disabled={stepIndex === 0} aria-label="Previous step">
-          ‹ Prev
-        </button>
         {#if isInteractive}
           <!-- Interactive steps complete by doing, not by pressing Next. -->
           <span class="nav-waiting" aria-live="polite">Waiting for you…</span>
@@ -409,7 +472,7 @@
     position: fixed;
     inset: 0;
     /* Above the map and action wheel (z-index 800) so they dim, but below the
-       TileDossier (z-index 1100) so the docked card stays bright. */
+       TileDossier (z-index 1100) so docked action panels stay bright. */
     z-index: 1050;
     /* Click-through: the player can still open the wheel and pick actions. */
     pointer-events: none;
@@ -431,6 +494,7 @@
     pointer-events: none;
     transition: top 0.18s ease, left 0.18s ease, width 0.18s ease, height 0.18s ease;
     animation: pulse-border 2s ease-in-out infinite;
+    z-index: 1051;
   }
 
   @keyframes pulse-border {
@@ -438,12 +502,19 @@
     50%       { box-shadow: 0 0 0 1px rgba(176,141,74,0.5), 0 0 18px 4px rgba(176,141,74,0.4); }
   }
 
-  /* ── Card ── (docked inside the TileDossier panel) */
+  /* ── Card ── (floats over the map, bottom-left on desktop) */
   .tutorial-card {
-    position: relative;
-    width: 100%;
+    position: fixed;
+    left: 1em;
+    bottom: 1em;
+    width: min(22em, calc(100vw - 2em));
+    /* Above the dossier (1100) so the guide is always visible while action
+       panels open and close beside it. */
+    z-index: 1200;
     background: var(--chrome-bg, #141820);
     border: 1px solid var(--chrome-gold-border, #5a4520);
+    border-radius: 6px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     color: var(--chrome-text, #e8e0cc);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
     display: flex;
@@ -452,6 +523,18 @@
     pointer-events: auto;
   }
   .tutorial-card:focus { outline: none; }
+
+  /* On narrow screens dock the card to the top so the bottom stays free for the
+     dossier / on-screen controls. */
+  @media (max-width: 768px) {
+    .tutorial-card {
+      left: 0.5em;
+      right: 0.5em;
+      bottom: auto;
+      top: 4.5em;
+      width: auto;
+    }
+  }
 
   /* Progress dots */
   .card-progress {
@@ -466,18 +549,14 @@
     height: 0.55em;
     border-radius: 50%;
     background: var(--chrome-text-faint, #4a4030);
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.15s;
     flex-shrink: 0;
+    transition: background 0.15s, transform 0.15s;
   }
   .progress-dot.done { background: var(--chrome-gold-border, #5a4520); }
   .progress-dot.active {
     background: var(--chrome-gold, #b08d4a);
     transform: scale(1.3);
   }
-  .progress-dot:hover { background: var(--chrome-gold-soft, #2a2010); }
 
   /* Card body */
   .card-body {
@@ -520,6 +599,14 @@
   .card-cue.on-wheel {
     border-left-color: var(--color-gold-pale, #d4b170);
     animation: cue-pulse 1.4s ease-in-out infinite;
+  }
+  /* When waiting on the game (mobilising / moving / gathering) the cue reads as
+     a calm hold rather than an action prompt. */
+  .card-cue.waiting {
+    border-left-color: var(--chrome-text-faint, #4a4030);
+    color: var(--chrome-text-dim, #a09070);
+    animation: none;
+    background: var(--chrome-card, #1a1e28);
   }
   @keyframes cue-pulse {
     0%, 100% { background: var(--chrome-gold-soft, #2a2010); }
@@ -594,15 +681,6 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: background 0.12s, border-color 0.12s, color 0.12s;
-  }
-  .nav-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
-  }
-  .nav-btn:not(:disabled):hover {
-    background: var(--chrome-gold-soft, #2a2010);
-    border-color: var(--chrome-gold-border, #5a4520);
-    color: var(--chrome-text, #e8e0cc);
   }
   .nav-btn.primary {
     background: var(--color-aged-gold, #b08d4a);

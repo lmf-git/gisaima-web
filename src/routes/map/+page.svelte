@@ -52,6 +52,7 @@
     
     import Overview from '../../components/map/actions/Overview.svelte';
     import SpawnMenu from '../../components/map/actions/SpawnMenu.svelte';
+    import Tutorial from '../../components/map/actions/Tutorial.svelte';
     import Map from '../../components/icons/Map.svelte';
     import Close from '../../components/icons/Close.svelte';
     import Spyglass from '../../components/icons/Spyglass.svelte';
@@ -74,7 +75,12 @@
     const debugLog = (...args) => DEBUG_MODE && console.log(...args);
 
     let dossierPanel = $state(null); // active action panel in TileDossier, null = closed
-    const isTutorialVisible = $derived(dossierPanel === 'help');
+    // The interactive tutorial now floats over the whole map (page-level), so it
+    // persists across action panels instead of living inside the dossier. It is
+    // click-through and must NOT block the controls it walks the player through
+    // (chat, achievements, the action wheel), so it deliberately doesn't gate
+    // those the way a takeover modal would.
+    let tutorialActive = $state(false);
     let detailed = $state(false);   // kept for legacy follow-player check
     let selectedUnit = $state(null);
     let loading = $state(true);
@@ -131,8 +137,7 @@
     const isAnyModalOpen = $derived(
         buildingPlacementMode ||
         !$game?.player?.alive ||
-        dossierPanel !== null ||
-        isTutorialVisible
+        dossierPanel !== null
     );
 
     // What blocks the action wheel (Peek). The tutorial is deliberately excluded:
@@ -141,7 +146,7 @@
     const peekBlocked = $derived(
         buildingPlacementMode ||
         !$game?.player?.alive ||
-        (dossierPanel !== null && dossierPanel !== 'help')
+        dossierPanel !== null
     );
 
     let showMinimap = $state(false); // Changed from true to false - default closed
@@ -428,13 +433,12 @@
     });
 
     $effect(() => {
-        // Auto-show help panel once per session on first visit (tutorial not yet dismissed).
-        // Using a flag avoids re-subscribing to dossierPanel, which would cause the panel
-        // to reopen immediately when the close button sets dossierPanel = null.
+        // Auto-show the floating tutorial once per session on first visit (not yet
+        // dismissed). Using a flag avoids re-triggering after the player closes it.
         if ($ready && $game?.player?.alive && browser && !tutorialAutoShown) {
             if (localStorage.getItem('tutorial-state') !== 'closed') {
                 tutorialAutoShown = true;
-                dossierPanel = 'help';
+                tutorialActive = true;
             }
         }
     });
@@ -503,21 +507,6 @@
         // If achievements isn't open, then handle chat - Default to false unless explicitly true
         showChat = savedChatState === 'true';
       }
-    });
-
-    $effect(() => {
-        if ($game?.player?.alive && isTutorialVisible) {
-            // Close achievements and details when tutorial becomes visible
-            showAchievements = false;
-            detailed = false;
-        }
-    });
-
-    $effect(() => {
-        // Close chat if tutorial becomes visible
-        if (isTutorialVisible && showChat) {
-            showChat = false;
-        }
     });
 
     $effect(() => {
@@ -798,7 +787,7 @@
     function toggleRankings()   { showRankings   = false; }
 
     function toggleMinimap() {
-      if (!$game?.player?.alive || isTutorialVisible) {
+      if (!$game?.player?.alive) {
         return;
       }
       
@@ -809,7 +798,7 @@
     }
 
     function toggleEntities() {
-      if (!$game?.player?.alive || isTutorialVisible) {
+      if (!$game?.player?.alive) {
         return;
       }
       
@@ -823,7 +812,7 @@
     }
 
     function toggleChat() {
-      if (!$game?.player?.alive || isTutorialVisible) {
+      if (!$game?.player?.alive) {
         return;
       }
       
@@ -848,7 +837,7 @@
     }
 
     function toggleAchievements() {
-      if (!$game?.player?.alive || isTutorialVisible || spawnMenuVisible) {
+      if (!$game?.player?.alive || spawnMenuVisible) {
         return;
       }
       if (dossierPanel === 'achievements') {
@@ -860,7 +849,11 @@
     }
 
     function toggleTutorial() {
-      dossierPanel = dossierPanel === 'help' ? null : 'help';
+      if (!$game?.player?.alive) return;
+      tutorialActive = !tutorialActive;
+      // Re-opening a dismissed tutorial should clear the "closed" flag so it can
+      // guide again and restart from where the player left off.
+      if (tutorialActive && browser) localStorage.removeItem('tutorial-state');
     }
 
     // Updated to handle Peek actions
@@ -912,10 +905,10 @@
             }
 
             // If a dossier panel is open, any tile click should close it and open
-            // the wheel for the clicked tile. The tutorial ('help') is exempt — it
-            // coexists with the wheel, so leave it up and just open the wheel.
+            // the wheel for the clicked tile. (The floating tutorial is page-level
+            // now, so it coexists with the wheel regardless.)
             if (dossierPanel !== null) {
-                if (dossierPanel !== 'help') dossierPanel = null;
+                dossierPanel = null;
                 moveTarget(coords.x, coords.y, true);
                 // Defer so the dossier-close flows through modalOpen before Grid opens Peek.
                 setTimeout(() => {
@@ -1255,16 +1248,16 @@
                 class:active={showEntities}
                 onclick={toggleEntities}
                 aria-label={showEntities ? "Hide entities" : "Show entities"}
-                disabled={!$game?.player?.alive || isTutorialVisible}>
+                disabled={!$game?.player?.alive}>
                 <Spyglass extraClass="button-icon" />
             </button>
 
             <FollowPlayer
-                disabled={!$game?.player?.alive || isTutorialVisible}
+                disabled={!$game?.player?.alive}
                 onFollowToggle={handleFollowToggle}
             />
 
-            {#if !showChat && $game?.player?.alive && !isTutorialVisible}
+            {#if !showChat && $game?.player?.alive}
                 <button
                     class="control-button chat-button"
                     onclick={toggleChat}
@@ -1278,7 +1271,7 @@
                 </button>
             {/if}
 
-            {#if $game?.player?.alive && !isTutorialVisible && !spawnMenuVisible}
+            {#if $game?.player?.alive && !spawnMenuVisible}
                 <button
                     class="control-button achievements-button"
                     class:active={dossierPanel === 'achievements'}
@@ -1292,7 +1285,7 @@
                 class="control-button minimap-button"
                 onclick={toggleMinimap}
                 aria-label={showMinimap ? "Hide minimap" : "Show minimap"}
-                disabled={!$game?.player?.alive || isTutorialVisible}>
+                disabled={!$game?.player?.alive}>
                 {#if showMinimap}
                     <Close size="1.2em" extraClass="close-icon-dark" />
                 {:else}
@@ -1300,30 +1293,28 @@
                 {/if}
             </button>
 
-            {#if !isTutorialVisible}
-                <button
-                    class="control-button help-button"
-                    class:active={isTutorialVisible}
-                    onclick={toggleTutorial}
-                    aria-label={isTutorialVisible ? 'Close help' : 'Show help'}
-                    disabled={!$game?.player?.alive}>
-                    <Info extraClass="button-icon" />
-                </button>
-            {/if}
+            <button
+                class="control-button help-button"
+                class:active={tutorialActive}
+                onclick={toggleTutorial}
+                aria-label={tutorialActive ? 'Close help' : 'Show help'}
+                disabled={!$game?.player?.alive}>
+                <Info extraClass="button-icon" />
+            </button>
         </div>
 
-        {#if showChat && $game?.player?.alive && !isTutorialVisible}
+        {#if showChat && $game?.player?.alive}
             <div class="controls-middle-right">
                 <button
                     class="control-button entity-button"
                     class:active={showEntities}
                     onclick={toggleEntities}
                     aria-label={showEntities ? "Hide entities" : "Show entities"}
-                    disabled={!$game?.player?.alive || isTutorialVisible}>
+                    disabled={!$game?.player?.alive}>
                     <Spyglass extraClass="button-icon" />
                 </button>
                 <FollowPlayer
-                    disabled={!$game?.player?.alive || isTutorialVisible}
+                    disabled={!$game?.player?.alive}
                     onFollowToggle={handleFollowToggle}
                 />
                 <button
@@ -1337,7 +1328,7 @@
                     class="control-button minimap-button"
                     onclick={toggleMinimap}
                     aria-label={showMinimap ? "Hide minimap" : "Show minimap"}
-                    disabled={!$game?.player?.alive || isTutorialVisible}>
+                    disabled={!$game?.player?.alive}>
                     {#if showMinimap}
                         <Close size="1.2em" extraClass="close-icon-dark" />
                     {:else}
@@ -1346,9 +1337,9 @@
                 </button>
                 <button
                     class="control-button help-button"
-                    class:active={isTutorialVisible}
+                    class:active={tutorialActive}
                     onclick={toggleTutorial}
-                    aria-label={isTutorialVisible ? 'Close help' : 'Show help'}
+                    aria-label={tutorialActive ? 'Close help' : 'Show help'}
                     disabled={!$game?.player?.alive}>
                     <Info extraClass="button-icon" />
                 </button>
@@ -1366,19 +1357,27 @@
 
         <AchievementUnlocked />
 
-        <!-- The tutorial is now docked inside the TileDossier (panel === 'help'). -->
+        <!-- Interactive tutorial — floats over the whole map and persists across
+             action panels so it can guide the player through mobilise → move →
+             gather. Click-through overlay; the card portals to <body>. -->
+        {#if $ready && $game?.player?.alive && tutorialActive}
+            <Tutorial
+                onClose={() => { tutorialActive = false; }}
+                onOpenAchievements={() => { dossierPanel = 'achievements'; }}
+            />
+        {/if}
 
         <!-- Modals -->
 
         {#if $ready && $game?.player?.alive}
-            <div class="chat-wrapper" 
-                class:visible={showChat && !isTutorialVisible} 
+            <div class="chat-wrapper"
+                class:visible={showChat}
                 class:active={lastActivePanel === 'chat'}
                 onmouseenter={() => handlePanelHover('chat')}
                 role="region"
                 aria-label="Chat panel container"
             >
-                {#if showChat && !isTutorialVisible}
+                {#if showChat}
                     <Chat 
                         isActive={lastActivePanel === 'chat'} 
                         closing={!showChat}
@@ -1392,7 +1391,7 @@
                  (/chronicle, /diplomacy, /rankings) — see GameHeader. The
                  old in-map popups have been removed. -->
 
-            {#if showNotices && !isTutorialVisible}
+            {#if showNotices && !tutorialActive}
                 <Notices maxNotices={3} />
             {/if}
         {/if}
@@ -1411,7 +1410,7 @@
             /></div>
         {/if}
 
-        {#if $ready && !isPathDrawingMode && !isTutorialVisible && dossierPanel === null}
+        {#if $ready && !isPathDrawingMode && !tutorialActive && dossierPanel === null}
             <Legend
                 x={$targetStore.x}
                 y={$targetStore.y}
