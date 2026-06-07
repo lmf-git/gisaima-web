@@ -74,10 +74,12 @@
     animation: fadeInButton 0.7s ease-out 0.5s forwards;
   }
 
+  /* Match the hover treatment of the other map control buttons (see the
+     .control-button:hover rule in map/+page.svelte). */
   .control-button:hover:not(:disabled) {
-    background-color: var(--chrome-gold-soft);
+    background-color: var(--chrome-card);
     border-color: var(--chrome-gold);
-    color: var(--chrome-text);
+    color: var(--chrome-gold);
   }
 
   .control-button:disabled {

@@ -1802,7 +1802,18 @@
     aria-label={isPathDrawingMode 
       ? "Click on tiles to create a movement path" 
       : "Interactive coordinate map. Use WASD or arrow keys to navigate."}
-  >    
+  >
+    <!-- Day/night ambient tint. Sits above the terrain + structures but BELOW the
+         path layer, peek menu and other grid-area UI (those have higher z-index),
+         so the world darkens toward midnight without dimming the interface. The
+         veil rides the fixed viewport, not the panning grid, so it never slides. -->
+    <div
+      class="daynight-tint"
+      class:night={$dayNight.isNight}
+      style="opacity: {(1 - $dayNight.daylight) * 0.62};"
+      aria-hidden="true"
+    ></div>
+
     {#if $ready}
       <!-- Only render paths when animations are complete AND not moving.
            Paths are positioned over the non-translated viewport, so they read
@@ -2699,6 +2710,29 @@
     0% { box-shadow: 0 0 0 0 rgba(255, 128, 255, 0.8); }
     70% { box-shadow: 0 0 0 0.4em rgba(255, 128, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(255, 128, 255, 0); }
+  }
+
+  /* Day/night veil. Opacity is set inline from the daylight factor; the colour
+     cools toward a deep indigo at night. mix-blend-mode keeps terrain readable
+     rather than flatly greying it. z-index sits above the tiles (max z-index 20
+     for the player tile) but below the path layer (500) and peek menu, so the
+     interface stays at full brightness. */
+  .daynight-tint {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: radial-gradient(120% 120% at 50% 30%,
+        rgba(20, 28, 66, 0.55) 0%,
+        rgba(8, 12, 34, 0.9) 100%);
+    mix-blend-mode: multiply;
+    transition: opacity 4s linear;
+    will-change: opacity;
+  }
+  .daynight-tint.night {
+    background: radial-gradient(120% 120% at 50% 24%,
+        rgba(14, 20, 52, 0.7) 0%,
+        rgba(4, 7, 24, 0.96) 100%);
   }
 
   .path-layer {

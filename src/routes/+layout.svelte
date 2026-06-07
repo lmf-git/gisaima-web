@@ -9,7 +9,7 @@
     import XIcon from '../components/icons/XIcon.svelte';
     import DiscordIcon from '../components/icons/DiscordIcon.svelte';
     import GitHubIcon from '../components/icons/GitHubIcon.svelte'; 
-    import { isAuthReady, game } from '../lib/stores/game.js';
+    import { isAuthReady, game, dayNight } from '../lib/stores/game.js';
     import HamburgerIcon from '../components/icons/HamburgerIcon.svelte';
     import { theme, toggleTheme } from '$lib/stores/theme.js';
     import Stamp from '../components/ui/Stamp.svelte';
@@ -46,7 +46,21 @@
     // The dossier (WorldContextBar) is the unified top chrome across the
     // whole world-bound surface: every world-scoped route AND the map.
     const showDossier = $derived(isMapPage || isWorldScopedPage);
-    
+
+    // While inside the world (the map), let the in-game sky drive the layout's
+    // light/dark theme: night flips it dark, day flips it light. We set the
+    // attribute directly instead of going through the theme store so the player's
+    // manual preference (persisted in localStorage) is untouched and is restored
+    // the moment they leave the map.
+    $effect(() => {
+        if (!browser) return;
+        if (isMapPage) {
+            document.documentElement.dataset.theme = $dayNight.isNight ? 'dark' : 'light';
+        } else {
+            document.documentElement.dataset.theme = $theme;
+        }
+    });
+
     function toggleMobileMenu() {
         if (mobileMenuOpen) {
             // Start close animation

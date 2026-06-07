@@ -16,7 +16,8 @@
   import Fairy from '../../icons/Fairy.svelte';
   import Hammer from '../../icons/Hammer.svelte';
   import BuildingIcon from '../../icons/BuildingIcon.svelte';
-  
+  import Select from '../../ui/Select.svelte';
+
 
   // Props - using correct Svelte 5 runes syntax
   const {
@@ -581,25 +582,30 @@
   }
 
   // Function to check if a new building can be added
+  // The structure's footprint subgrid (mirrors getSubgridSize in Grid.svelte):
+  // it grows with level. The structure IS the whole tile; every subgrid cell is a
+  // building plot (the centre just shows the structure icon when no building sits
+  // on it).
+  function getSubgridSize(level) {
+    if (level >= 5) return 5;
+    if (level >= 3) return 4;
+    return 3;
+  }
+
+  // How many buildings a structure can hold = every subgrid plot. A level-1
+  // structure therefore has 3×3 = 9 plots.
+  function getMaxBuildings(structure) {
+    const n = getSubgridSize(structure?.level || 1);
+    return n * n;
+  }
+
   function canAddNewBuilding() {
     if (!tileData?.structure) return false;
-    
-    // Special handling for spawn structures - allow more buildings
-    if (tileData.structure.type === 'spawn') {
-      const buildingsCount = tileData?.structure?.buildings ? 
-        Object.keys(tileData.structure.buildings).length : 0;
-      
-      // Spawn points can have up to 5 buildings regardless of level
-      return buildingsCount < 5;
-    }
-    
-    // For other structures, use the regular logic
-    const structureLevel = tileData?.structure?.level || 1;
-    const buildingsCount = tileData?.structure?.buildings ? 
+
+    const buildingsCount = tileData?.structure?.buildings ?
       Object.keys(tileData.structure.buildings).length : 0;
-    
-    // Simple rule: can have (structureLevel) buildings
-    return structureLevel > buildingsCount;
+
+    return buildingsCount < getMaxBuildings(tileData.structure);
   }
 
   // Check if a tile qualifies as water
@@ -629,11 +635,10 @@
     return false;
   }
 
-  // Get available building types based on structure level and existing buildings
+  // Get available building types based on free subgrid plots and existing buildings
   function getAvailableBuildingTypes() {
     if (!tileData?.structure) return [];
 
-    const structureLevel = tileData.structure.level || 1;
     const existingBuildings = tileData.structure.buildings || {};
     const existingTypes = Object.values(existingBuildings).map(b => b.type);
 
@@ -654,19 +659,9 @@
       filteredByType = filteredByType.filter(b => b.type !== 'harbour');
     }
 
-    // Special handling for spawn structures - allow more buildings
-    if (tileData.structure.type === 'spawn') {
-      // Spawn points can have up to 5 buildings regardless of level
-      const buildingsCount = Object.keys(existingBuildings).length;
-      const availableSlots = Math.max(0, 5 - buildingsCount);
-
-      if (availableSlots <= 0) return [];
-      return filteredByType;
-    }
-
-    // Regular handling for other structures
+    // Capacity is the number of free subgrid plots (see getMaxBuildings).
     const buildingsCount = Object.keys(existingBuildings).length;
-    const availableSlots = Math.max(0, structureLevel - buildingsCount);
+    const availableSlots = Math.max(0, getMaxBuildings(tileData.structure) - buildingsCount);
 
     if (availableSlots <= 0) return [];
     return filteredByType;
@@ -1118,14 +1113,17 @@
             <div class="section-content" transition:slide|local={{duration: 300}}>
               <div class="access-grid">
                 {#each ACCESS_ROWS as row}
-                  <label class="access-row">
+                  <div class="access-row">
                     <span class="access-label">{row.label}</span>
-                    <select class="access-select" bind:value={accessDraft[row.key]} disabled={accessSaving}>
-                      {#each ACCESS_TIERS as tier}
-                        <option value={tier.value}>{tier.label}</option>
-                      {/each}
-                    </select>
-                  </label>
+                    <div class="access-select">
+                      <Select
+                        options={ACCESS_TIERS}
+                        bind:value={accessDraft[row.key]}
+                        disabled={accessSaving}
+                        ariaLabel={row.label}
+                      />
+                    </div>
+                  </div>
                 {/each}
               </div>
               <button class="save-access-button" onclick={saveAccess} disabled={accessSaving}>
@@ -1215,13 +1213,14 @@
                     <div class="entity item common">
                       <div class="item-info">
                         <div class="item-name">
-                          {ITEMS[itemCode]?.name || formatText(itemCode)} <span class="item-quantity">×{quantity}</span>
-                        </div>
-                        <div class="item-details">
-                          <span class="item-type">{ITEMS[itemCode]?.type ? formatText(ITEMS[itemCode].type) : 'Resource'}</span>
+                          <span class="item-name-text">{ITEMS[itemCode]?.name || formatText(itemCode)}</span>
+                          <span class="item-quantity">×{quantity}</span>
                           {#if ITEMS[itemCode]?.rarity && ITEMS[itemCode].rarity !== 'common'}
                             <span class="item-rarity {ITEMS[itemCode].rarity}">{formatText(ITEMS[itemCode].rarity)}</span>
                           {/if}
+                        </div>
+                        <div class="item-details">
+                          <span class="item-type">{ITEMS[itemCode]?.type ? formatText(ITEMS[itemCode].type) : 'Resource'}</span>
                         </div>
                         {#if ITEMS[itemCode]?.description}
                           <div class="item-description">{ITEMS[itemCode].description}</div>
@@ -1241,16 +1240,17 @@
                   <div class="entity item {item?.rarity || 'common'}">
                     <div class="item-info">
                       <div class="item-name">
-                        {item.name || formatText(item.code) || "Unknown Item"} <span class="item-quantity">×{item.quantity}</span>
-                      </div>
-                      <div class="item-details">
-                        {#if item.type}
-                          <span class="item-type">{formatText(item.type)}</span>
-                        {/if}
+                        <span class="item-name-text">{item.name || formatText(item.code) || "Unknown Item"}</span>
+                        <span class="item-quantity">×{item.quantity}</span>
                         {#if item.rarity && item.rarity !== 'common'}
                           <span class="item-rarity {item.rarity}">{formatText(item.rarity)}</span>
                         {/if}
                       </div>
+                      {#if item.type}
+                        <div class="item-details">
+                          <span class="item-type">{formatText(item.type)}</span>
+                        </div>
+                      {/if}
                       {#if item.description}
                         <div class="item-description">{item.description}</div>
                       {/if}
@@ -1619,19 +1619,34 @@
   .item-info { flex: 1; }
 
   .item-name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4em;
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.8em;
     letter-spacing: 0.05em;
     color: var(--chrome-text);
     margin-bottom: 0.15em;
   }
+  .item-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
 
   .item-quantity {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.88em;
     color: var(--chrome-text-dim);
-    margin-left: 0.4em;
     font-weight: normal;
+    flex-shrink: 0;
+  }
+
+  /* Rarity badge sits at the end of the name line. */
+  .item-name .item-rarity {
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   .item-details {
@@ -1881,17 +1896,12 @@
     font-size: 0.8em;
     color: var(--chrome-text);
   }
+  /* Sizing wrapper around the custom <Select>; the dropdown supplies its own
+     field chrome. */
   .access-select {
     flex: 0 0 auto;
-    min-width: 7.5em;
-    padding: 0.3em 0.5em;
-    font-size: 0.8em;
-    color: var(--chrome-text);
-    background: var(--chrome-field-bg);
-    border: 0.075em solid var(--chrome-field-border);
-    border-radius: 0.2em;
+    width: 8.5em;
   }
-  .access-select:disabled { opacity: 0.5; cursor: not-allowed; }
   .save-access-button {
     width: 100%;
     margin-top: 0.7em;

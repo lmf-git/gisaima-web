@@ -15,8 +15,7 @@
       getWorldInfo,
       setCurrentWorld,
       clearCurrentWorld,
-      subscribeToWorldInfo,
-      dayNight
+      subscribeToWorldInfo
     } from "../../lib/stores/game.js";
     
     import {
@@ -1238,15 +1237,6 @@
             }}
         />
 
-        <!-- Day/night ambient tint. Darkens and cools the map toward midnight;
-             clears at noon. Non-interactive, sits above terrain but below HUD. -->
-        <div
-            class="daynight-tint"
-            class:night={$dayNight.isNight}
-            style="opacity: {(1 - $dayNight.daylight) * 0.62};"
-            aria-hidden="true"
-        ></div>
-
         {#if $ready}
             <Axes />
         {/if}
@@ -1451,27 +1441,6 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-    }
-
-    /* Day/night veil. Opacity is set inline from the daylight factor; the colour
-       cools toward a deep indigo at night. mix-blend-mode keeps terrain readable
-       rather than flatly greying it. */
-    .daynight-tint {
-        position: absolute;
-        inset: 0;
-        z-index: 3;
-        pointer-events: none;
-        background: radial-gradient(120% 120% at 50% 30%,
-            rgba(20, 28, 66, 0.55) 0%,
-            rgba(8, 12, 34, 0.9) 100%);
-        mix-blend-mode: multiply;
-        transition: opacity 4s linear;
-        will-change: opacity;
-    }
-    .daynight-tint.night {
-        background: radial-gradient(120% 120% at 50% 24%,
-            rgba(14, 20, 52, 0.7) 0%,
-            rgba(4, 7, 24, 0.96) 100%);
     }
 
     .map.dragging {

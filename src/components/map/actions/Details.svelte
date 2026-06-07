@@ -1466,16 +1466,6 @@
                     </div>
                   </div>
                   
-                  <!-- Battle progress bar -->
-                  <div class="battle-progress">
-                    <div class="progress-bar">
-                      <div class="progress-fill side1" 
-                        style="width: {battle.side1?.power && (battle.side1.power + battle.side2?.power) > 0 ? 
-                          (battle.side1.power / (battle.side1.power + battle.side2?.power) * 100) : 50}%">
-                      </div>
-                    </div>
-                  </div>
-                  
                   {#if canJoinBattle(detailsData)}
                     <button class="join-battle-btn" onclick={() => executeAction('joinBattle')}>
                       Join Battle
@@ -1969,10 +1959,54 @@
   }
 
   
+  /* Battles hold stacked sections (header, the two sides, a join button), so they
+     override the base .entity flex-row — otherwise the sections are squeezed side
+     by side into an unreadable cram. */
   .entity.battle {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+    cursor: default;
     background-color: rgba(139, 0, 0, 0.05);
     border: 1px solid rgba(139, 0, 0, 0.2);
   }
+
+  .battle-status-tag {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.7em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15em 0.5em;
+    color: var(--chrome-text-dim);
+    background: var(--chrome-field-bg);
+    border: 1px solid var(--chrome-hairline);
+    border-radius: 0.25em;
+  }
+  .battle-status-tag.new { color: #ffcf8a; border-color: rgba(255, 207, 138, 0.4); }
+
+  .casualties-tag {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.72em;
+    font-weight: 700;
+    color: #ef7878;
+  }
+
+  .join-battle-btn {
+    width: 100%;
+    margin-top: 0.1em;
+    padding: 0.5em 0.8em;
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.7em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #ef7878;
+    background: rgba(198, 40, 40, 0.12);
+    border: 0.075em solid rgba(198, 40, 40, 0.4);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .join-battle-btn:hover { background: rgba(198, 40, 40, 0.22); }
 
   .battle-header {
     display: flex;
@@ -2040,12 +2074,6 @@
     color: var(--chrome-text-faint);
   }
 
-  /* Improve progress bar positioning for horizontal layout */
-  .battle-progress {
-    margin-top: 0.8em;
-    width: 100%;
-  }
-  
   /* Battle group / unit breakdown — these were unstyled in the dossier, which
      made the battle content read as a cramped wall of text. */
   .battle-groups-details {
