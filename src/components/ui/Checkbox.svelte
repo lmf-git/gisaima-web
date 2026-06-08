@@ -87,7 +87,10 @@
     }
 
     .checkbox-text {
-        color: var(--color-parchment-100, #fbf6e7);
+        /* Inherit the surrounding context's colour so the label follows the
+           light/dark theme (the chrome-themed dossier sets a theme-aware colour)
+           instead of being pinned to a fixed near-white that loses contrast. */
+        color: inherit;
         font-weight: 500;
     }
 </style>

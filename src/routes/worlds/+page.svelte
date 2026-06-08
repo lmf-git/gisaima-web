@@ -82,7 +82,7 @@
     showConfirmation = true;
   }
   
-  async function handleJoinWorld(world, race, name, house = null) {
+  async function handleJoinWorld(world, race, name, house = null, sex = 'f') {
     if (!$user || !selectedWorld) {
       return;
     }
@@ -101,6 +101,7 @@
       const result = await apiPost('/actions/joinWorld', {
         worldId: selectedWorld.id,
         race,
+        sex,
         displayName: name,
         houseId:   house?.mode === 'join'  ? house.houseId   : undefined,
         houseName: house?.mode === 'found' ? house.houseName : undefined,

@@ -16,6 +16,7 @@
   import Build           from '../actions/Build.svelte';
   import Recruitment     from '../actions/Recruitment.svelte';
   import Crafting        from '../actions/Crafting.svelte';
+  import Research        from '../actions/Research.svelte';
   import StructureOverview from '../actions/StructureOverview.svelte';
   import Details         from '../actions/Details.svelte';
   import UnitDetails     from '../actions/UnitDetails.svelte';
@@ -148,6 +149,7 @@
     build:       'Build',
     recruitment: 'Recruit',
     craft:       'Crafting',
+    research:    'Research',
     achievements:'Achievements',
     inspect:     'Inspect',
   };
@@ -253,6 +255,9 @@
 
       {:else if panel === 'craft'}
         <div class="ds-panel"><Crafting structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} /></div>
+
+      {:else if panel === 'research'}
+        <div class="ds-panel"><Research structure={struct} x={tile?.x} y={tile?.y} onClose={onClose} /></div>
 
       {:else if panel === 'achievements'}
         <div class="ds-panel"><Achievements onClose={onClose} /></div>

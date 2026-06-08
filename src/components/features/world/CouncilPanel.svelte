@@ -9,8 +9,20 @@
 
     let votes = $state([]);
     let coffers = $state(null);
+    let effects = $state(null);
     let loading = $state(true);
     let error = $state(null);
+
+    // Propose-a-motion form. Each kind spends from the coffers when it passes.
+    const PROPOSAL_KINDS = [
+        { id: 'festival',     label: 'Festival',     hint: 'Boosts production realm-wide for a time.' },
+        { id: 'public_works', label: 'Public Works', hint: 'Funds a temporary defensive bonus.' },
+        { id: 'bounty',       label: 'Bounty Pool',  hint: 'Seeds bounties on villains and monsters.' },
+    ];
+    let proposeKind = $state('festival');
+    let proposeGold = $state(100);
+    let proposeTitle = $state('');
+    let proposing = $state(false);
 
     const worldId = $derived($game.worldKey);
 
@@ -21,11 +33,30 @@
             const r = await apiGet(`/worlds/${encodeURIComponent(worldId)}/politics`);
             votes = r?.votes || [];
             coffers = r?.coffers || null;
+            effects = r?.effects || null;
             error = null;
         } catch (e) {
             error = e.message;
         } finally {
             loading = false;
+        }
+    }
+
+    async function proposeMotion() {
+        const gold = Math.max(1, Math.floor(Number(proposeGold) || 0));
+        const kind = PROPOSAL_KINDS.find(k => k.id === proposeKind);
+        const title = proposeTitle.trim() || `${kind?.label || 'Motion'} (${gold} gold)`;
+        try {
+            proposing = true;
+            await apiPost(`/worlds/${encodeURIComponent(worldId)}/politics`, {
+                title, kind: proposeKind, cost: { gold },
+            });
+            proposeTitle = '';
+            await load();
+        } catch (e) {
+            alert(`Proposal failed: ${e.message}`);
+        } finally {
+            proposing = false;
         }
     }
 
@@ -55,6 +86,41 @@
     {:else if error}
         <p class="empty err">{error}</p>
     {:else}
+        {#if effects && (effects.festival || effects.publicWorks || effects.bountyPool)}
+            <section class="block">
+                <div class="eyebrow">In Effect</div>
+                <ul class="effects">
+                    {#if effects.festival}<li>🎉 Festival — production heightened across the realm.</li>{/if}
+                    {#if effects.publicWorks}<li>🛡️ Public Works — defences reinforced.</li>{/if}
+                    {#if effects.bountyPool}<li>⚖️ Bounty pool: <strong>{effects.bountyPool.toLocaleString()}</strong> gold for hunting villains.</li>{/if}
+                </ul>
+            </section>
+        {/if}
+
+        <section class="block">
+            <div class="eyebrow">Propose a Motion</div>
+            <div class="propose">
+                <div class="propose-kinds">
+                    {#each PROPOSAL_KINDS as k}
+                        <button
+                            class="kind"
+                            class:selected={proposeKind === k.id}
+                            onclick={() => (proposeKind = k.id)}
+                            title={k.hint}
+                        >{k.label}</button>
+                    {/each}
+                </div>
+                <p class="propose-hint">{PROPOSAL_KINDS.find(k => k.id === proposeKind)?.hint}</p>
+                <div class="propose-row">
+                    <input class="propose-title" type="text" placeholder="Motion title (optional)" bind:value={proposeTitle} maxlength="120" />
+                    <label class="propose-gold">Gold <input type="number" min="1" bind:value={proposeGold} /></label>
+                    <Button variant="primary" onclick={proposeMotion} disabled={proposing}>
+                        {proposing ? 'Proposing…' : 'Propose'}
+                    </Button>
+                </div>
+            </div>
+        </section>
+
         <section class="block">
             <div class="eyebrow">Open Votes</div>
             {#if votes.length === 0}
@@ -163,6 +229,18 @@
     .o-name { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); font-size: 0.85rem; }
     .o-term { font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-ink-500); }
     .rule-deco { border: none; margin: 2em 0; }
+    .effects { list-style: none; padding: 0; margin: 0.6em 0 0; display: grid; gap: 0.4em; }
+    .effects li { font-family: var(--font-editorial); color: var(--color-ink-700); }
+    .propose { margin-top: 0.8em; }
+    .propose-kinds { display: flex; gap: 0.5em; flex-wrap: wrap; }
+    .kind { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.04em; padding: 0.45em 0.9em; background: var(--color-parchment-200); border: 1px solid rgba(26,32,48,.2); cursor: pointer; }
+    .kind:hover { background: var(--color-parchment-300); }
+    .kind.selected { background: var(--color-wax-red); color: var(--color-parchment-100); border-color: var(--color-wax-red); }
+    .propose-hint { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0.5em 0; font-size: 0.85rem; }
+    .propose-row { display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap; }
+    .propose-title { flex: 1 1 12em; padding: 0.5em 0.7em; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); font-family: var(--font-body); }
+    .propose-gold { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--color-ink-500); display: flex; align-items: center; gap: 0.4em; }
+    .propose-gold input { width: 6em; padding: 0.5em 0.6em; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); font-family: var(--font-mono); }
     @media (max-width: 700px) {
         .block.split { grid-template-columns: 1fr; }
         .coffers { grid-template-columns: 1fr; }

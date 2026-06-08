@@ -6,6 +6,14 @@
   import Dwarf from '../../icons/Dwarf.svelte';
   import Goblin from '../../icons/Goblin.svelte';
   import Fairy from '../../icons/Fairy.svelte';
+  import Male from '../../icons/Male.svelte';
+  import Female from '../../icons/Female.svelte';
+
+  // Character sex, chosen alongside the name. SVG icon components (not emoji).
+  const sexes = [
+    { id: 'f', label: 'Female', icon: Female },
+    { id: 'm', label: 'Male',   icon: Male },
+  ];
 
   // Props for the component
   const { 
@@ -52,6 +60,7 @@
 
   // Component state
   let selectedRace = $state(null);
+  let selectedSex = $state('f');
   // Mobile shows one race at a time in a chevron carousel; the visible race is
   // the selected one. Keep an index so prev/next can cycle through.
   let currentRaceIndex = $state(0);
@@ -177,7 +186,7 @@
     submitting = true;
     try {
       // Include spawn information if available
-      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseSelection);
+      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseSelection, selectedSex);
 
     } catch (error) {
       console.error('Error joining world:', error);
@@ -335,6 +344,25 @@
         {#if displayNameError && displayNameTouched}
           <div class="input-error">{displayNameError}</div>
         {/if}
+
+        <span class="field-label">Sex</span>
+        <div class="sex-toggle" role="radiogroup" aria-label="Character sex">
+          {#each sexes as sex (sex.id)}
+            <button
+              type="button"
+              class="sex-option"
+              class:selected={selectedSex === sex.id}
+              role="radio"
+              aria-checked={selectedSex === sex.id}
+              aria-label={sex.label}
+              onclick={() => (selectedSex = sex.id)}
+              disabled={submitting}
+            >
+              <sex.icon size="1.4em" extraClass="sex-icon" />
+              <span>{sex.label}</span>
+            </button>
+          {/each}
+        </div>
 
         <label class="field-label" for="house-picker">House</label>
         <div id="house-picker">
@@ -722,6 +750,37 @@
     color: var(--color-ink-700);
   }
   .field-label:first-child { margin-top: 0; }
+
+  .sex-toggle {
+    display: flex;
+    gap: 0.6em;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .sex-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    padding: 0.6em 0.4em;
+    background: var(--color-parchment-50, #f7f1e1);
+    border: 1px solid var(--color-ink-300, #cdbfa3);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 0.8em;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-700);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .sex-option:hover:not(:disabled) { border-color: var(--color-aged-gold, #b08d4a); }
+  .sex-option.selected {
+    border-color: var(--color-aged-gold, #b08d4a);
+    background: var(--color-aged-gold, #b08d4a);
+    color: var(--color-ink-900, #0e1320);
+  }
+  .sex-option :global(.sex-icon) { flex-shrink: 0; }
 
   .name-input-container input {
     width: 100%;

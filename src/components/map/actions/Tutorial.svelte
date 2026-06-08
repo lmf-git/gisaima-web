@@ -60,7 +60,7 @@
     {
       id: 'recruit',
       title: 'Recruit Units',
-      body: 'At a spawn structure, Recruit adds units to your roster. More units means stronger groups.',
+      body: 'Recruiting happens at a spawn structure — move your group back onto your spawn first, then Recruit adds units to your roster. More units means stronger groups.',
       selector: '.tile.center',
       wheelAction: 'Recruit',
       achievement: 'first_recruit',
@@ -152,6 +152,11 @@
   const hasIdleGroup = $derived(myGroups.some(g => g.status === 'idle'));
   const hasMobilising = $derived(myGroups.some(g => g.status === 'mobilizing'));
   const hasGathering = $derived(myGroups.some(g => g.status === 'gathering'));
+  // Structure on the current tile — Recruit and Craft can only be done while
+  // standing on one, so the cue must send the player back to it.
+  const tileStructure = $derived($targetStore?.structure ?? null);
+  const onSpawn = $derived(tileStructure?.type === 'spawn');
+  const onStructure = $derived(!!tileStructure);
 
   // Interactive steps wait for the player to perform the action rather than
   // showing a Next button.
@@ -183,6 +188,15 @@
     if (step.id === 'gather') {
       if (hasGathering) return 'Gathering resources… hold on.';
       if (!hasIdleGroup) return 'Wait for your group to finish moving, then act on its tile.';
+    }
+
+    // Recruit and Craft only work on a structure tile. After moving off to
+    // gather you'll have left the spawn, so steer the player back first.
+    if (step.id === 'recruit' && !onSpawn) {
+      return 'Move your group back onto your spawn structure, then open the wheel to Recruit.';
+    }
+    if (step.id === 'craft' && !onStructure) {
+      return 'Stand on a structure (a spawn or workshop), then open the wheel to Craft.';
     }
 
     if (panelOpenForStep) return `Confirm in the ${action} panel to continue.`;

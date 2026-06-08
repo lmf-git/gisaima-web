@@ -16,6 +16,24 @@
     const worldId = $derived($game.worldKey);
     const initial = $derived(($user?.displayName || $user?.email || 'G').slice(0, 1).toUpperCase());
 
+    // Character skill levels, read the same way the crafting UI does
+    // (`player.skills.<skill>.level`, defaulting to 1). Crafting is always shown
+    // since the game treats an absent crafting skill as level 1; any other skills
+    // the character has earned are surfaced alongside it.
+    const SKILL_LABELS = {
+        crafting: 'Crafting', gathering: 'Gathering', combat: 'Combat',
+        building: 'Building', smithing: 'Smithing', alchemy: 'Alchemy',
+    };
+    const skillLevels = $derived.by(() => {
+        const s = player?.skills || {};
+        const keys = new Set(['crafting', ...Object.keys(s)]);
+        return [...keys].map(k => ({
+            key: k,
+            label: SKILL_LABELS[k] || (k.charAt(0).toUpperCase() + k.slice(1)),
+            level: s[k]?.level || 1,
+        }));
+    });
+
     // House membership is optional. From here a player can found a house, request
     // to join one (pending the founder's approval), or leave to have no house.
     let showHouseModal = $state(false);
@@ -134,6 +152,18 @@
                     <div class="value">{$user.isAnonymous ? 'GUEST' : 'SWORN'}</div>
                     <div class="label">Oath</div>
                 </div>
+            </div>
+        </section>
+
+        <section class="block">
+            <div class="eyebrow">Skills</div>
+            <div class="stat-grid">
+                {#each skillLevels as skill (skill.key)}
+                    <div class="stat">
+                        <div class="value">Lvl {skill.level}</div>
+                        <div class="label">{skill.label}</div>
+                    </div>
+                {/each}
             </div>
         </section>
 

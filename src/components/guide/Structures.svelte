@@ -122,7 +122,7 @@
     <li><strong>Barracks:</strong> Improve military unit training and recruitment</li>
     <li><strong>Smithy:</strong> Enable metal crafting and equipment production</li>
     <li><strong>Workshop:</strong> Support general crafting activities</li>
-    <li><strong>Harbor:</strong> Provide naval construction and trade capabilities</li>
+    <li><strong>Harbour:</strong> Provide naval construction and trade capabilities</li>
     <li><strong>Stables:</strong> Support mounted units and animal husbandry</li>
   </ul>
 

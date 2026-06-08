@@ -27,6 +27,7 @@
   import Eye from '../../icons/Eye.svelte';
   import Crop from '../../icons/Crop.svelte';
   import Rally from '../../icons/Rally.svelte';
+  import Rings from '../../icons/Rings.svelte';
   import Sword from '../../icons/Sword.svelte';
   import Hammer from '../../icons/Hammer.svelte';
   import Unit from '../../icons/Unit.svelte';
@@ -171,6 +172,29 @@
   // entity updates are reflected immediately without the async $effect delay.
   const sortedGroups  = $derived(sortEntities(detailsData?.groups  || [], 'groups'));
   const sortedPlayers = $derived(sortEntities(detailsData?.players || [], 'players'));
+
+  // Marriage: wed the controlled character to another character standing on the
+  // same tile (in a group together or demobilised at a structure). The server
+  // enforces co-location, single-marriage, and ownership — here we just offer it
+  // for any character that isn't the one you're currently controlling.
+  let marryBusy = $state(false);
+  function canWed(player) {
+    return !!player?.id && !!$currentPlayer?.lifeId && String(player.id) !== String($currentPlayer.lifeId);
+  }
+  async function marryTo(otherLifeId) {
+    if (marryBusy || !$currentPlayer?.lifeId) return;
+    marryBusy = true;
+    try {
+      await apiPost(`/worlds/${encodeURIComponent($game.worldKey)}/lives/marry`, {
+        lifeIdA: $currentPlayer.lifeId,
+        lifeIdB: otherLifeId,
+      });
+    } catch (e) {
+      alert(`Marriage failed: ${e.message}`);
+    } finally {
+      marryBusy = false;
+    }
+  }
   const sortedItems   = $derived(sortEntities(detailsData?.items   || [], 'items'));
   const sortedBattles = $derived(sortEntities(detailsData?.battles || [], 'battles'));
 
@@ -1221,6 +1245,14 @@
                   </div>
 
                   <!-- Mobilise sits at entity level so it right-aligns correctly -->
+                  {#if canWed(player)}
+                    <div class="entity-actions">
+                      <button class="entity-action" onclick={() => marryTo(player.id)} disabled={marryBusy} title="Wed your character to this one (must be on the same tile)">
+                        <Rings extraClass="action-icon-small" />
+                        Wed
+                      </button>
+                    </div>
+                  {/if}
                   {#if canMobilizePlayer(player)}
                     <div class="entity-actions">
                       <button class="entity-action" onclick={() => executeAction('mobilise')}>

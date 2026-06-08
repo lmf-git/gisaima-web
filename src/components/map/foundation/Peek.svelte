@@ -138,6 +138,19 @@
     return (hasStructure && playerOnTile) || playerInIdleGroup;
   }
 
+  // Research is available at a structure that hosts an Academy building, when the
+  // player is present (on the tile or in an idle group there).
+  function canResearch() {
+    if (!currentTileData?.structure || !$currentPlayer) return false;
+    const hasAcademy = Object.values(currentTileData.structure.buildings || {})
+      .some(b => b?.type === 'academy');
+    if (!hasAcademy) return false;
+    const playerOnTile = currentTileData.players?.some(p => p.uid === $currentPlayer.id);
+    const playerInIdleGroup = currentTileData.groups?.some(g =>
+      g.owner === $currentPlayer.id && g.status === 'idle');
+    return playerOnTile || playerInIdleGroup;
+  }
+
   // Add function to check if recruitment is possible
   function canRecruit() {
     if (!currentTileData || !$currentPlayer || !currentTileData.structure) return false;
@@ -162,6 +175,7 @@
     { id: 'inspect', label: 'Inspect', icon: Eye, condition: () => currentTileData?.structure },
     { id: 'build', label: 'Build', icon: Hammer, condition: canBuild },
     { id: 'craft', label: 'Craft', icon: Hammer, condition: canCraft },
+    { id: 'research', label: 'Research', icon: Info, condition: canResearch },
     { id: 'move', label: 'Move', icon: Compass, condition: canMove },
     { id: 'mobilise', label: 'Mobilise', icon: Rally, condition: canMobilize },
     { id: 'gather', label: 'Gather', icon: Crop, condition: canGather },
