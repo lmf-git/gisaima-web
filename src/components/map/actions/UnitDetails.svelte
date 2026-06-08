@@ -350,7 +350,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -370,7 +370,7 @@
     gap: 0.3em;
     background: transparent;
     border: 0.075em solid rgba(176, 141, 74, 0.3);
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-family: var(--font-display);
     font-size: 0.65em;
     letter-spacing: 0.12em;
@@ -382,7 +382,7 @@
   }
   .unit-back-btn:hover {
     background: rgba(176, 141, 74, 0.12);
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .unit-header-info {
@@ -410,7 +410,7 @@
   .unit-header-name {
     font-weight: 600;
     font-size: 1em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     display: flex;
     align-items: center;
     gap: 0.4em;
@@ -433,8 +433,8 @@
     letter-spacing: 0.05em;
   }
   .you-badge   { background: rgba(63, 90, 78, 0.2); color: #6fcf79; border: 0.075em solid rgba(76, 175, 80, 0.3); }
-  .race-badge  { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.25); }
-  .type-badge  { background: rgba(176, 141, 74, 0.06); color: rgba(232, 228, 210, 0.65); border: 0.075em solid rgba(176, 141, 74, 0.15); }
+  .race-badge  { background: rgba(176, 141, 74, 0.1); color: var(--chrome-gold); border: 0.075em solid rgba(176, 141, 74, 0.25); }
+  .type-badge  { background: rgba(176, 141, 74, 0.06); color: var(--chrome-text-dim); border: 0.075em solid rgba(176, 141, 74, 0.15); }
   .lv-badge    { background: rgba(91, 26, 31, 0.12); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
 
   .stats-section {
@@ -471,7 +471,7 @@
     font-size: 0.62em;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(232, 228, 210, 0.5);
+    color: var(--chrome-text-faint);
     font-weight: 600;
     white-space: nowrap;
     font-family: var(--font-display);
@@ -480,13 +480,13 @@
   .stat-value {
     font-size: 0.95em;
     font-weight: 700;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     font-family: var(--font-mono);
   }
 
   .atk-val { color: #c97d85; }
-  .def-val { color: var(--color-gold-pale); }
-  .carry-val { color: rgba(232, 228, 210, 0.65); }
+  .def-val { color: var(--chrome-gold); }
+  .carry-val { color: var(--chrome-text-dim); }
 
   .stat-bonus {
     font-size: 0.65em;
@@ -545,7 +545,7 @@
     font-family: inherit;
     text-align: center;
     gap: 0.25em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .equip-slot:hover {
@@ -565,12 +565,12 @@
   .slot-empty-icon {
     font-size: 1.4em;
     opacity: 0.3;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
   }
 
   .slot-label {
     font-size: 0.65em;
-    color: rgba(232, 228, 210, 0.4);
+    color: var(--chrome-text-faint);
     font-weight: 500;
     font-family: var(--font-display);
     letter-spacing: 0.05em;
@@ -578,12 +578,12 @@
 
   .slot-item-icon {
     font-size: 1.3em;
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
   }
 
   .slot-item-name {
     font-size: 0.62em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text);
     font-weight: 600;
     line-height: 1.2;
     text-align: center;
@@ -620,7 +620,7 @@
     display: flex;
     transition: background-color 0.2s;
     flex-shrink: 0;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-size: 0.9em;
   }
   .picker-close-btn:hover { background: rgba(176, 141, 74, 0.12); }
@@ -642,7 +642,7 @@
     padding: 0.5em 0.9em;
     font-weight: 600;
     font-size: 0.9em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
     background: rgba(176, 141, 74, 0.06);
     font-family: var(--font-display);
@@ -661,7 +661,7 @@
     padding: 0.35em 0.5em;
     font-size: 0.78em;
     font-weight: 500;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-dim);
     cursor: pointer;
     font-family: var(--font-display);
     letter-spacing: 0.08em;
@@ -669,9 +669,9 @@
     transition: color 0.15s;
     border-bottom: 2px solid transparent;
   }
-  .src-tab:hover, .stor-tab:hover { color: var(--color-parchment-200); }
+  .src-tab:hover, .stor-tab:hover { color: var(--chrome-text); }
   .src-tab.active, .stor-tab.active {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     border-bottom-color: var(--color-aged-gold);
   }
 
@@ -687,7 +687,7 @@
   .picker-empty {
     padding: 1.5em;
     text-align: center;
-    color: rgba(232, 228, 210, 0.45);
+    color: var(--chrome-text-faint);
     font-size: 0.85em;
     font-style: italic;
   }
@@ -703,7 +703,7 @@
     font-family: inherit;
     text-align: left;
     transition: background-color 0.15s;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
   .picker-item:hover:not(:disabled) {
     background: rgba(176, 141, 74, 0.1);
@@ -714,7 +714,7 @@
   .pi-name {
     font-weight: 600;
     font-size: 0.9em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .pi-meta {
@@ -732,12 +732,12 @@
     font-family: var(--font-mono);
   }
   .pi-stat.atk { background: rgba(91, 26, 31, 0.15); color: #c97d85; border: 0.075em solid rgba(91, 26, 31, 0.25); }
-  .pi-stat.def { background: rgba(176, 141, 74, 0.1); color: var(--color-gold-pale); border: 0.075em solid rgba(176, 141, 74, 0.2); }
+  .pi-stat.def { background: rgba(176, 141, 74, 0.1); color: var(--chrome-gold); border: 0.075em solid rgba(176, 141, 74, 0.2); }
   .pi-stat.spd { background: rgba(63, 90, 78, 0.12); color: #6fcf79; border: 0.075em solid rgba(76, 175, 80, 0.2); }
 
   .pi-qty {
     font-size: 0.72em;
-    color: rgba(232, 228, 210, 0.45);
+    color: var(--chrome-text-faint);
     margin-left: auto;
     font-weight: 500;
     font-family: var(--font-mono);

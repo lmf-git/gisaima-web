@@ -2070,9 +2070,19 @@
                 <div class="highlight-indicator"></div>
               {/if}
 
-              <!-- Add structure name display (center/target tile only) -->
+              <!-- Add structure name display (center/target tile only). The type
+                   icon rides inline with the name here, so the redundant centre
+                   subtile icon is suppressed below for the named centre tile. -->
               {#if cell.structure && cell.structure.name && cell.isCenter}
+                {@const NameIcon = STRUCTURE_ICONS[cell.structure.type] ?? Structure}
                 <div class="structure-name-label">
+                  <span class="structure-name-icon">
+                    {#if cell.structure.type === 'spawn'}
+                      <Torch size="1em" extraClass="spawn-icon" />
+                    {:else}
+                      <NameIcon size="1em" night={$dayNight.isNight} extraClass="structure-icon {cell.structure.type}-icon" />
+                    {/if}
+                  </span>
                   { cell.structure.name.length > 20 ? cell.structure.name.substring(0, 20) + '...' : cell.structure.name }
                 </div>
               {/if}
@@ -2095,7 +2105,7 @@
                 </div>
               {/if}
 
-              {#if cell.structure && (!cell.structure.buildings || Object.keys(cell.structure.buildings).length === 0)}
+              {#if cell.structure && (!cell.structure.buildings || Object.keys(cell.structure.buildings).length === 0) && !(cell.isCenter && cell.structure.name)}
                 <div class="structure-icon-container">
                   {#if cell.structure.type === 'spawn'}
                     <Torch size="70%" extraClass="spawn-icon" />
@@ -3125,6 +3135,19 @@
     overflow: visible;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 0.4em rgba(0, 0, 0, 0.8); /* Fix missing space between 0.4em and rgba */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+
+  /* Type icon shown inline with the structure name (replaces the centre-tile
+     icon for named structures). */
+  .structure-name-icon {
+    display: inline-flex;
+    align-items: center;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
   }
 
   /* Special handling for structure name label at maximum zoom */

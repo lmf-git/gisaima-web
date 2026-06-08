@@ -4,8 +4,9 @@
   import { get } from "svelte/store";
   import { slide } from "svelte/transition";
   
-  import { calculateGroupPower } from 'gisaima-shared/war/battles.js';
+  import { calculateGroupPower, calculateGroupCombatStats } from 'gisaima-shared/war/battles.js';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
+  import { groupCarryCapacity } from 'gisaima-shared/economy/items.js';
   import { ITEMS, getGatherableItems } from 'gisaima-shared/definitions/ITEMS.js';
   import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
 
@@ -527,10 +528,30 @@
     return Object.values(group.items).reduce((s, i) => s + (typeof i === 'number' ? i : (i.quantity || 1)), 0);
   }
 
+  // Mirror the shared groupCarryCapacity (incl. genetic carry bonus) so the
+  // displayed "x/y" matches the server's gather-until-full stop exactly.
   function getGroupCarryCapacity(group) {
-    if (!group.units) return 0;
-    const units = Array.isArray(group.units) ? group.units : Object.values(group.units);
-    return units.reduce((sum, u) => sum + (UNITS[u.type]?.carryCapacity || 0), 0);
+    return groupCarryCapacity(group);
+  }
+
+  // Typed combat breakdown for the battle view — melee/ranged/magic attack &
+  // defence, the stats that actually drive the battle, rather than a single
+  // opaque "power" number.
+  function combatStats(group) {
+    const s = calculateGroupCombatStats(group);
+    const r = (n) => Math.round(n || 0);
+    return {
+      atk: [
+        { key: 'melee',  label: 'Melee',  value: r(s.meleeAtk) },
+        { key: 'ranged', label: 'Ranged', value: r(s.rangedAtk) },
+        { key: 'magic',  label: 'Magic',  value: r(s.magicAtk) },
+      ],
+      def: [
+        { key: 'melee',  label: 'Melee',  value: r(s.meleeDef) },
+        { key: 'ranged', label: 'Ranged', value: r(s.rangedDef) },
+        { key: 'magic',  label: 'Magic',  value: r(s.magicDef) },
+      ],
+    };
   }
 
   // Function to count units in a group
@@ -1419,11 +1440,14 @@
                                 {#if typeof calculateGroupPower === 'function'}
                                   {@const groupPower = calculateGroupPower(group)}
                                   {@const itemPower = calculateItemPower(group)}
-                                  <span class="group-power-info">
-                                    Power: {groupPower}
-                                    {#if itemPower > 0}
-                                      <span class="item-power-bonus">+{itemPower}</span>
-                                    {/if}
+                                  {@const cs = combatStats(group)}
+                                  <span class="group-combat-stats">
+                                    {#each cs.atk as a}
+                                      <span class="cs-stat cs-{a.key}" title="{a.label} attack">{a.label.slice(0, 3)} {a.value}</span>
+                                    {/each}
+                                  </span>
+                                  <span class="group-power-info" title="Total combat power">
+                                    Power: {groupPower}{#if itemPower > 0}<span class="item-power-bonus">+{itemPower}</span>{/if}
                                   </span>
                                 {/if}
                               </div>
@@ -1466,11 +1490,14 @@
                                 {#if typeof calculateGroupPower === 'function'}
                                   {@const groupPower = calculateGroupPower(group)}
                                   {@const itemPower = calculateItemPower(group)}
-                                  <span class="group-power-info">
-                                    Power: {groupPower}
-                                    {#if itemPower > 0}
-                                      <span class="item-power-bonus">+{itemPower}</span>
-                                    {/if}
+                                  {@const cs = combatStats(group)}
+                                  <span class="group-combat-stats">
+                                    {#each cs.atk as a}
+                                      <span class="cs-stat cs-{a.key}" title="{a.label} attack">{a.label.slice(0, 3)} {a.value}</span>
+                                    {/each}
+                                  </span>
+                                  <span class="group-power-info" title="Total combat power">
+                                    Power: {groupPower}{#if itemPower > 0}<span class="item-power-bonus">+{itemPower}</span>{/if}
                                   </span>
                                 {/if}
                               </div>
@@ -2140,11 +2167,30 @@
     gap: 0.3em 0.55em;
   }
 
-  .group-power-info {
+  .group-combat-stats {
     margin-left: auto;
+    display: inline-flex;
+    gap: 0.4em;
+    white-space: nowrap;
+  }
+  .cs-stat {
+    font-size: 0.78em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding: 0 0.3em;
+    border-radius: 0.25em;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .cs-stat.cs-melee  { color: #ff9d7a; }  /* warm — physical */
+  .cs-stat.cs-ranged { color: #9fe0a8; }  /* green — precision */
+  .cs-stat.cs-magic  { color: #b9a0ff; }  /* violet — arcane */
+
+  .group-power-info {
+    margin-left: 0.5em;
     font-weight: 600;
     color: #ffcf8a;
-    font-size: 0.85em;
+    font-size: 0.8em;
+    opacity: 0.85;
     white-space: nowrap;
   }
 
