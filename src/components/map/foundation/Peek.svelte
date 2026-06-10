@@ -24,11 +24,14 @@
     onClose = (() => {}),
     onAction = (() => {}),
     onShowDetails = (() => {}),
-    isOpen = false
+    isOpen = false,
+    tileData = null
   } = $props();
-  
-  // Access current tile data for action display
-  const currentTileData = $derived($targetStore);
+
+  // Prefer the tile the wheel was opened on (Grid passes the rendered centre
+  // tile, spawn overlay included) so action conditions match what the player
+  // sees; fall back to the map target store.
+  const currentTileData = $derived(tileData ?? $targetStore);
 
   // Check functions for action availability - similar to Details.svelte
   function canMobilize() {

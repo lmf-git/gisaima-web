@@ -1181,6 +1181,8 @@
     }
 </script>
 
+<svelte:head><title>Map — Gisaima</title></svelte:head>
+
 <svelte:window on:keydown={handleKeyDown} />
 
 <div class="map" class:dragging={isDragging} class:path-drawing={isPathDrawingMode} class:spawn-menu-open={!$game?.player?.alive} class:dossier-open={dossierPanel !== null}>
