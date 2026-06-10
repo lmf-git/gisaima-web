@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from 'svelte';
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
   import { ITEMS } from 'gisaima-shared/definitions/ITEMS.js';
+  import { STRUCTURES } from 'gisaima-shared/definitions/STRUCTURES.js';
+  import { ETHNICITY_MODS, TRAIT_MODS, geneticMod } from 'gisaima-shared/lives/genetics.js';
   import {
     calculateGroupPower,
     calculateGroupCombatStats,
@@ -15,19 +17,95 @@
   import Unit from './icons/Unit.svelte';
 
   // Battle configuration
+  const EMPTY_STATS = { meleeAtk: 0, rangedAtk: 0, magicAtk: 0, meleeDef: 0, rangedDef: 0, magicDef: 0 };
+
   let side1 = {
     name: 'Attackers',
     groups: {},
     casualties: 0,
-    power: 0
+    power: 0,
+    morality: 'neutral',
+    stats: { ...EMPTY_STATS }
   };
 
   let side2 = {
     name: 'Defenders',
     groups: {},
     casualties: 0,
-    power: 0
+    power: 0,
+    morality: 'neutral',
+    stats: { ...EMPTY_STATS }
   };
+
+  // ── Combat modifiers mirroring battleTick ──
+  // Saints fight inspired, villains reviled (values mirror api/db/morality.js
+  // SAINT_COMBAT_BONUS / VILLAIN_COMBAT_PENALTY).
+  const MORALITY_FACTORS = { saint: 1.05, neutral: 1, villain: 0.95 };
+  const MORALITY_OPTIONS = [
+    { id: 'neutral', label: 'Neutral' },
+    { id: 'saint', label: 'Saint (+5% power)' },
+    { id: 'villain', label: 'Villain (−5% power)' },
+  ];
+
+  // Combat edge from the genetics of a group's player units — same formula as
+  // battleTick's geneticCombatFactor: each atk/def point adds 5% group power.
+  function geneticCombatFactor(group) {
+    const units = group?.units ? Object.values(group.units) : [];
+    let bonus = 0;
+    for (const u of units) {
+      if (u?.type === 'player') bonus += geneticMod(u, 'atk') + geneticMod(u, 'def');
+    }
+    return 1 + 0.05 * bonus;
+  }
+
+  // Full per-group power as battleTick computes it in PHASE 1. "Power" is the
+  // group's total attack (melee + ranged + magic + item power); defence acts
+  // separately, reducing incoming attrition via the defense multiplier.
+  function modifiedGroupPower(group, morality) {
+    return calculateGroupPower(group)
+      * geneticCombatFactor(group)
+      * (MORALITY_FACTORS[morality] || 1);
+  }
+
+  // Typed attack/defence totals for a whole side, with the genetic and morale
+  // modifiers folded into the attack numbers (they scale power in battleTick).
+  function sideAttackDefence(side) {
+    const totals = { meleeAtk: 0, rangedAtk: 0, magicAtk: 0, meleeDef: 0, rangedDef: 0, magicDef: 0 };
+    const moraleFactor = MORALITY_FACTORS[side.morality] || 1;
+    for (const group of Object.values(side.groups)) {
+      const gs = calculateGroupCombatStats(group);
+      const factor = geneticCombatFactor(group) * moraleFactor;
+      totals.meleeAtk  += (gs.meleeAtk  || 0) * factor;
+      totals.rangedAtk += (gs.rangedAtk || 0) * factor;
+      totals.magicAtk  += (gs.magicAtk  || 0) * factor;
+      totals.meleeDef  += gs.meleeDef  || 0;
+      totals.rangedDef += gs.rangedDef || 0;
+      totals.magicDef  += gs.magicDef  || 0;
+    }
+    return totals;
+  }
+
+  // Defended structure (side 2 only). battleTick adds the structure's full
+  // durability to defender power each round, and the defenders only count as
+  // defeated once the structure's health falls to 15% of its durability.
+  let defenderStructureType = '';
+  let structureState = null; // { type, name, maxDurability, health } during a sim
+  const availableStructures = Object.entries(STRUCTURES)
+    .filter(([id, s]) => (s.durability || 0) > 0 && !id.startsWith('monster_'))
+    .map(([id, s]) => ({ id, name: s.name || id, durability: s.durability }))
+    .sort((a, b) => a.durability - b.durability);
+
+  const ethnicityOptions = Object.keys(ETHNICITY_MODS);
+  const traitOptions = Object.keys(TRAIT_MODS);
+  // Combat-relevant genetic summary for a unit, e.g. "+1 atk, +1 def".
+  function geneticSummary(unit) {
+    const parts = [];
+    const atk = geneticMod(unit, 'atk');
+    const def = geneticMod(unit, 'def');
+    if (atk) parts.push(`+${atk} atk`);
+    if (def) parts.push(`+${def} def`);
+    return parts.join(', ');
+  }
 
   // Create a simple Group class for the UI
   class Group {
@@ -40,7 +118,7 @@
       this.power = 0;
     }
 
-    addUnit(type, level = 1, isPlayer = false) {
+    addUnit(type, level = 1, isPlayer = false, ethnicity = '', trait = '') {
       const unitId = `unit_${Object.keys(this.units).length + 1}`;
       const unitType = type || 'human_warrior';
       let unitData = {
@@ -52,6 +130,8 @@
       if (isPlayer) {
         unitData.type = 'player';
         unitData.displayName = `Player ${Object.keys(this.units).length + 1}`;
+        if (ethnicity) unitData.ethnicity = ethnicity;
+        if (trait) unitData.trait = trait;
       }
 
       this.units[unitId] = unitData;
@@ -100,6 +180,8 @@
   let selectedItemId = '';
   let itemQuantity = 1;
   let unitLevel = 1;
+  let unitEthnicity = '';
+  let unitTrait = '';
   let battleLog = [];
 
   onMount(() => {
@@ -169,7 +251,7 @@
     if (!group) return;
 
     const isPlayerUnit = selectedUnitType === 'player';
-    group.addUnit(selectedUnitType, unitLevel, isPlayerUnit);
+    group.addUnit(selectedUnitType, unitLevel, isPlayerUnit, unitEthnicity, unitTrait);
 
     calculateSidePowers();
     unitLevel = 1;
@@ -196,17 +278,35 @@
   function calculateSidePowers() {
     side1.power = 0;
     Object.values(side1.groups).forEach(group => {
-      side1.power += group.calculatePower();
+      group.calculatePower();
+      side1.power += modifiedGroupPower(group, side1.morality);
     });
+    side1.stats = sideAttackDefence(side1);
 
     side2.power = 0;
     Object.values(side2.groups).forEach(group => {
-      side2.power += group.calculatePower();
+      group.calculatePower();
+      side2.power += modifiedGroupPower(group, side2.morality);
     });
+    side2.stats = sideAttackDefence(side2);
 
     // Trigger Svelte reactivity after mutating nested state
     side1 = side1;
     side2 = side2;
+  }
+
+  // Typed attack/defence chips for a single group (genetics folded into attack).
+  function groupAttackDefence(group, morality) {
+    const gs = calculateGroupCombatStats(group);
+    const factor = geneticCombatFactor(group) * (MORALITY_FACTORS[morality] || 1);
+    return {
+      meleeAtk: (gs.meleeAtk || 0) * factor,
+      rangedAtk: (gs.rangedAtk || 0) * factor,
+      magicAtk: (gs.magicAtk || 0) * factor,
+      meleeDef: gs.meleeDef || 0,
+      rangedDef: gs.rangedDef || 0,
+      magicDef: gs.magicDef || 0,
+    };
   }
 
   function getUnitName(unitType) {
@@ -229,7 +329,7 @@
   function cloneSide(side) {
     // Plain deep clone; Group instances become plain objects, which the
     // shared battle functions accept ({ units, items } shape).
-    return JSON.parse(JSON.stringify({ name: side.name, groups: side.groups }));
+    return JSON.parse(JSON.stringify({ name: side.name, groups: side.groups, morality: side.morality || 'neutral' }));
   }
 
   function countUnits(side) {
@@ -293,15 +393,20 @@
     let side2Power = 0;
 
     for (const gid in side1State.groups) {
-      const power = calculateGroupPower(side1State.groups[gid]);
+      const power = modifiedGroupPower(side1State.groups[gid], side1State.morality);
       groupPowers[gid] = power;
       side1Power += power;
     }
     for (const gid in side2State.groups) {
-      const power = calculateGroupPower(side2State.groups[gid]);
+      const power = modifiedGroupPower(side2State.groups[gid], side2State.morality);
       groupPowers[gid] = power;
       side2Power += power;
     }
+
+    // A defended structure adds its full durability to the defenders' power
+    // every round (battleTick parity), for as long as it stands.
+    const structurePower = structureState ? structureState.maxDurability : 0;
+    if (structurePower > 0) side2Power += structurePower;
 
     // Small random factor to avoid exact ties / eventual stalemates (battleTick parity)
     const randomFactor = 0.05;
@@ -380,15 +485,48 @@
     const r2 = applyCasualties(side2State, side2Power, side2Attrition, s2.name);
 
     const newSide1Power = r1.newPower;
-    const newSide2Power = r2.newPower;
+    let newSide2Power = r2.newPower;
+    if (structurePower > 0) newSide2Power += structurePower;
     const cas1Total = priorCas1 + r1.casualties;
     const cas2Total = priorCas2 + r2.casualties;
 
     logBattle(`End of round ${tickCount} — ${s1.name}: ${newSide1Power.toFixed(1)} power, ${s2.name}: ${newSide2Power.toFixed(1)} power`);
 
+    // --------- PHASE 3B: SIEGE DAMAGE ---------
+    // Once the defending groups are gone, the attackers turn on the walls.
+    // Damage uses battleTick's formula (10% of durability scaled by attacker
+    // power, log-scaled and capped for overwhelming forces); battleTick applies
+    // it at battle resolution, here it runs per round so each step is visible.
+    const side1Alive = Object.keys(side1State.groups).length > 0;
+    const side2GroupsGone = Object.keys(side2State.groups).length === 0;
+    if (structureState && side1Alive && side2GroupsGone && tickCount > 1) {
+      const dur = structureState.maxDurability;
+      const baseDamage = Math.round(dur * 0.10);
+      const powerRatio = newSide1Power / dur;
+      let powerFactor = powerRatio <= 1 ? Math.max(0.5, powerRatio) : 1 + Math.log10(powerRatio);
+      powerFactor = Math.min(5, powerFactor);
+      let maxDamagePercentage = 0.25;
+      if (powerRatio > 3) maxDamagePercentage = Math.min(0.75, 0.25 + (powerRatio - 3) * 0.05);
+      const damage = Math.min(Math.round(baseDamage * powerFactor), Math.round(dur * maxDamagePercentage));
+      structureState.health = Math.max(0, structureState.health - damage);
+      structureState = structureState;
+      logBattle(`${structureState.name} takes ${damage} damage (${structureState.health}/${dur} health remains)`, 'important');
+    }
+
     // --------- PHASE 4: DETERMINE WINNER (battleTick parity) ---------
     const side1Defeated = Object.keys(side1State.groups).length === 0;
-    const side2Defeated = Object.keys(side2State.groups).length === 0;
+    // With a structure on the field, the defenders only fall once its health
+    // drops to the critical threshold (15% of durability) — battleTick parity.
+    let side2Defeated;
+    if (structureState) {
+      const critical = Math.floor(structureState.maxDurability * 0.15);
+      side2Defeated = structureState.health <= critical;
+      if (side2Defeated) {
+        logBattle(`${structureState.name} is breached — it falls to be captured or razed!`, 'important');
+      }
+    } else {
+      side2Defeated = Object.keys(side2State.groups).length === 0;
+    }
 
     let winner; // undefined => battle continues
     if (side1Defeated && side2Defeated) {
@@ -454,6 +592,19 @@
     totalCriticalHits = { side1: [], side2: [] };
 
     working = { side1: cloneSide(side1), side2: cloneSide(side2) };
+
+    if (defenderStructureType && STRUCTURES[defenderStructureType]) {
+      const def = STRUCTURES[defenderStructureType];
+      structureState = {
+        type: defenderStructureType,
+        name: def.name || defenderStructureType,
+        maxDurability: def.durability || 100,
+        health: def.durability || 100,
+      };
+      logBattle(`${side2.name} defend ${structureState.name} (durability ${structureState.maxDurability})`, 'important');
+    } else {
+      structureState = null;
+    }
 
     simulationResults = {
       winner: null,
@@ -583,6 +734,7 @@
     currentTick = 0;
     currentStepState = null;
     working = null;
+    structureState = null;
     totalCasualties = { side1: 0, side2: 0 };
     totalCriticalHits = { side1: [], side2: [] };
     stopAutoStep();
@@ -617,14 +769,54 @@
       {#each [['side1', side1], ['side2', side2]] as [sideId, side]}
         <div class="side-config">
           <h3>{sideId === 'side1' ? 'Side 1' : 'Side 2'}: {side.name}</h3>
-          <div class="side-power">Power: {side.power.toFixed(1)}</div>
+          <div class="side-stats">
+            <div class="stat-line">
+              <span class="stat-label">Attack</span>
+              <span class="unit-stat-chip melee">Melee {side.stats.meleeAtk.toFixed(1)}</span>
+              <span class="unit-stat-chip ranged">Ranged {side.stats.rangedAtk.toFixed(1)}</span>
+              <span class="unit-stat-chip magic">Magic {side.stats.magicAtk.toFixed(1)}</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">Defence</span>
+              <span class="unit-stat-chip melee">Melee {side.stats.meleeDef.toFixed(1)}</span>
+              <span class="unit-stat-chip ranged">Ranged {side.stats.rangedDef.toFixed(1)}</span>
+              <span class="unit-stat-chip magic">Magic {side.stats.magicDef.toFixed(1)}</span>
+            </div>
+          </div>
+
+          <div class="side-options">
+            <label class="side-option">
+              Owner morality:
+              <select bind:value={side.morality} on:change={calculateSidePowers}>
+                {#each MORALITY_OPTIONS as opt}
+                  <option value={opt.id}>{opt.label}</option>
+                {/each}
+              </select>
+            </label>
+
+            {#if sideId === 'side2'}
+              <label class="side-option">
+                Defending a structure:
+                <select bind:value={defenderStructureType}>
+                  <option value="">None (open field)</option>
+                  {#each availableStructures as s}
+                    <option value={s.id}>{s.name} (durability {s.durability})</option>
+                  {/each}
+                </select>
+              </label>
+            {/if}
+          </div>
 
           <div class="groups-container">
             {#each Object.entries(side.groups) as [groupId, group]}
+              {@const ad = groupAttackDefence(group, side.morality)}
               <div class="group-card" class:selected={selectedGroupId === groupId && selectedSide === sideId}>
                 <div class="group-header">
                   <h4>{group.name}</h4>
-                  <div class="group-power">Power: {group.power.toFixed(1)}</div>
+                  <div class="group-power" title="Melee / Ranged / Magic">
+                    Atk {ad.meleeAtk.toFixed(1)}/{ad.rangedAtk.toFixed(1)}/{ad.magicAtk.toFixed(1)}
+                    · Def {ad.meleeDef.toFixed(1)}/{ad.rangedDef.toFixed(1)}/{ad.magicDef.toFixed(1)}
+                  </div>
                   <button class="select-btn" on:click={() => { selectedSide = sideId; selectedGroupId = groupId; }}>
                     Select
                   </button>
@@ -646,11 +838,20 @@
                           {unit.displayName || getUnitName(unit.type)}
                           {unit.level > 1 ? ` (Lvl ${unit.level})` : ''}
                         </span>
+                        {#if unit.type === 'player' && (unit.ethnicity || unit.trait)}
+                          <span class="unit-genetics" title={geneticSummary(unit) || 'No combat bonus'}>
+                            {[unit.ethnicity, unit.trait].filter(Boolean).join(' · ')}
+                            {#if geneticSummary(unit)}({geneticSummary(unit)}){/if}
+                          </span>
+                        {/if}
                         {#if uDef}
-                          <span class="unit-stats-row">
+                          <span class="unit-stats-row" title="Attack — melee / ranged / magic">
                             {#if (uDef.meleeAttack||0) > 0}<span class="unit-stat-chip melee">M·{uDef.meleeAttack.toFixed(1)}</span>{/if}
                             {#if (uDef.rangedAttack||0) > 0}<span class="unit-stat-chip ranged">R·{uDef.rangedAttack.toFixed(1)}</span>{/if}
                             {#if (uDef.magicAttack||0) > 0}<span class="unit-stat-chip magic">Mg·{uDef.magicAttack.toFixed(1)}</span>{/if}
+                          </span>
+                          <span class="unit-stats-row" title="Defence — melee / ranged / magic">
+                            <span class="unit-stat-chip def">D {(uDef.meleeDefense ?? 1).toFixed(1)}/{(uDef.rangedDefense ?? 1).toFixed(1)}/{(uDef.magicDefense ?? 1).toFixed(1)}</span>
                           </span>
                         {/if}
                       </div>
@@ -708,6 +909,33 @@
                 <input type="number" bind:value={unitLevel} min="1" max="10" />
               </label>
             </div>
+
+            {#if selectedUnitType === 'player'}
+              <div class="input-group">
+                <label>
+                  Ethnicity:
+                  <select bind:value={unitEthnicity}>
+                    <option value="">None</option>
+                    {#each ethnicityOptions as e}
+                      <option value={e}>{e}{ETHNICITY_MODS[e].atk ? ' (+atk)' : ''}{ETHNICITY_MODS[e].def ? ' (+def)' : ''}</option>
+                    {/each}
+                  </select>
+                </label>
+              </div>
+
+              <div class="input-group">
+                <label>
+                  Trait:
+                  <select bind:value={unitTrait}>
+                    <option value="">None</option>
+                    {#each traitOptions as t}
+                      <option value={t}>{t}{TRAIT_MODS[t].atk ? ' (+atk)' : ''}{TRAIT_MODS[t].def ? ' (+def)' : ''}</option>
+                    {/each}
+                  </select>
+                </label>
+              </div>
+              <p class="editor-hint">Each attack or defence point from ethnicity and trait adds 5% to the group's power — the same bonus the live battle tick applies.</p>
+            {/if}
 
             <button class="add-btn" on:click={addUnitToGroup}>
               Add Unit
@@ -770,10 +998,24 @@
       {getStepStatusText(currentStepState)}
     </div>
 
+    {#if structureState}
+      {@const critical = Math.floor(structureState.maxDurability * 0.15)}
+      <div class="structure-status" class:critical={structureState.health <= critical}>
+        <div class="structure-label">
+          {structureState.name} — {structureState.health}/{structureState.maxDurability} health
+          {#if structureState.health <= critical}(breached!){/if}
+        </div>
+        <div class="structure-bar">
+          <div class="structure-bar-fill" style="width: {(structureState.health / structureState.maxDurability * 100)}%"></div>
+          <div class="structure-bar-critical" style="left: {(critical / structureState.maxDurability * 100)}%"></div>
+        </div>
+      </div>
+    {/if}
+
     <div class="casualties-summary">
       <div class="side-result">
         <h4>{side1.name}</h4>
-        <div>Power: {currentStepState?.powers.side1Final.toFixed(1)}
+        <div>Attack power: {currentStepState?.powers.side1Final.toFixed(1)}
           <span class="power-change {currentStepState?.powers.side1Final >= currentStepState?.powers.side1Initial ? 'power-increase' : 'power-decrease'}">
             ({(currentStepState?.powers.side1Final - currentStepState?.powers.side1Initial).toFixed(1)})
           </span>
@@ -787,7 +1029,7 @@
 
       <div class="side-result">
         <h4>{side2.name}</h4>
-        <div>Power: {currentStepState?.powers.side2Final.toFixed(1)}
+        <div>Attack power: {currentStepState?.powers.side2Final.toFixed(1)}
           <span class="power-change {currentStepState?.powers.side2Final >= currentStepState?.powers.side2Initial ? 'power-increase' : 'power-decrease'}">
             ({(currentStepState?.powers.side2Final - currentStepState?.powers.side2Initial).toFixed(1)})
           </span>
@@ -852,8 +1094,8 @@
       <div class="casualties-summary">
         <div class="side-result">
           <h4>{side1.name}</h4>
-          <div>Initial Power: {simulationResults.side1.initialPower.toFixed(1)}</div>
-          <div>Final Power: {simulationResults.side1.finalPower.toFixed(1)}</div>
+          <div>Initial Attack Power: {simulationResults.side1.initialPower.toFixed(1)}</div>
+          <div>Final Attack Power: {simulationResults.side1.finalPower.toFixed(1)}</div>
           <div>Casualties: {simulationResults.side1.casualties}</div>
           {#if simulationResults.criticalHits.side1.length > 0}
             <div class="critical-hits">Critical Hits: {simulationResults.criticalHits.side1.length}</div>
@@ -862,8 +1104,8 @@
 
         <div class="side-result">
           <h4>{side2.name}</h4>
-          <div>Initial Power: {simulationResults.side2.initialPower.toFixed(1)}</div>
-          <div>Final Power: {simulationResults.side2.finalPower.toFixed(1)}</div>
+          <div>Initial Attack Power: {simulationResults.side2.initialPower.toFixed(1)}</div>
+          <div>Final Attack Power: {simulationResults.side2.finalPower.toFixed(1)}</div>
           <div>Casualties: {simulationResults.side2.casualties}</div>
           {#if simulationResults.criticalHits.side2.length > 0}
             <div class="critical-hits">Critical Hits: {simulationResults.criticalHits.side2.length}</div>
@@ -900,18 +1142,21 @@
         running the same per-round phases as the live <code>battleTick</code>:
       </p>
       <ol>
-        <li><strong>Group Power</strong>: Each group's power is summed from its units' typed attacks and item power</li>
+        <li><strong>Attack & Defence</strong>: Every unit carries typed melee/ranged/magic attack and defence. A side's attack total (plus item power) is its battle power; its defence reduces the damage that gets through</li>
         <li><strong>Power Ratios</strong>: The relative strength of each side affects casualty rates</li>
+        <li><strong>Genetics & Morale</strong>: Player characters' ethnicity and trait add +5% group power per attack/defence point, and a saintly or villainous reputation shifts a side's power by ±5%</li>
         <li><strong>PvP Detection</strong>: If player units are present on both sides, critical hit mechanics apply</li>
-        <li><strong>Typed Defense</strong>: Each side's melee/ranged/magic defense reduces incoming attrition by matchup</li>
-        <li><strong>Attrition</strong>: Each side takes casualties based on power ratio and the defense multiplier</li>
+        <li><strong>Typed Defence</strong>: Each side's melee/ranged/magic defence reduces incoming attrition by matchup</li>
+        <li><strong>Attrition</strong>: Each side takes casualties based on power ratio and the defence multiplier</li>
         <li><strong>Casualty Selection</strong>: Units are removed by type, with player and critical-hit protection</li>
+        <li><strong>Structures</strong>: A defended structure adds its durability to the defenders' power each round and must be battered below 15% health before the defence breaks — at which point it is captured or razed</li>
       </ol>
       <p><strong>Key factors affecting battle outcomes:</strong></p>
       <ul>
-        <li>Total power of each side and the melee/ranged/magic matchup between them</li>
-        <li>Presence of player units (which get special protection)</li>
+        <li>The melee/ranged/magic attack and defence matchup between the two sides</li>
+        <li>Presence of player units (which get special protection) and their genetics</li>
         <li>Critical hits in PvP battles, including multi-player combo criticals</li>
+        <li>A defended structure's durability, which shields defenders until breached</li>
         <li>Battle duration (longer battles increase critical hit chances and force resolution)</li>
       </ul>
     </div>
@@ -979,10 +1224,106 @@
     margin-bottom: 0.5em;
   }
 
-  .side-power {
+  .side-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    margin-bottom: 0.8em;
+  }
+
+  .stat-line {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    flex-wrap: wrap;
+  }
+
+  .stat-label {
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 0.85em;
+    min-width: 4.2em;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .side-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
     margin-bottom: 1em;
+  }
+
+  .side-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 0.9em;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .side-option select {
+    flex: 1;
+    padding: 0.3em;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0.3em;
+  }
+
+  .unit-genetics {
+    font-size: 0.75em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.3em;
+    background: rgba(121, 85, 72, 0.1);
+    border: 1px solid rgba(121, 85, 72, 0.3);
+    color: rgba(93, 64, 55, 0.9);
+  }
+
+  .editor-hint {
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.55);
+    margin: 0.3em 0 0.8em;
+    line-height: 1.4;
+  }
+
+  .structure-status {
+    margin: 1em 0;
+    padding: 0.8em;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.4em;
+  }
+
+  .structure-status.critical {
+    border-color: rgba(244, 67, 54, 0.5);
+    background: rgba(244, 67, 54, 0.06);
+  }
+
+  .structure-label {
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-bottom: 0.5em;
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  .structure-bar {
+    position: relative;
+    width: 100%;
+    height: 0.7em;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 1em;
+    overflow: hidden;
+  }
+
+  .structure-bar-fill {
+    height: 100%;
+    background: rgba(121, 85, 72, 0.8);
+    transition: width 0.3s ease;
+  }
+
+  .structure-bar-critical {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(244, 67, 54, 0.8);
   }
 
   .groups-container {
@@ -1113,6 +1454,7 @@
   .unit-stat-chip.melee { background: rgba(180, 30, 30, 0.1); border-color: rgba(180, 30, 30, 0.3); color: #a02020; }
   .unit-stat-chip.ranged { background: rgba(30, 100, 30, 0.1); border-color: rgba(30, 100, 30, 0.3); color: #1a6020; }
   .unit-stat-chip.magic { background: rgba(80, 30, 140, 0.1); border-color: rgba(80, 30, 140, 0.3); color: #5020a0; }
+  .unit-stat-chip.def { background: rgba(40, 70, 130, 0.1); border-color: rgba(40, 70, 130, 0.3); color: #2a4a8a; }
 
   .item-name.uncommon {
     background: rgba(76, 175, 80, 0.1);

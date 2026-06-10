@@ -15,24 +15,23 @@
     When encountering enemy unit groups, you have several combat options:
   </p>
   <ul>
-    <li>Direct attacks against enemy unit groups</li>
-    <li>Joining ongoing battles to support allies</li>
-    <li>Setting retreat conditions based on percentage of losses</li>
-    <li>Fleeing from battles after the next tick is processed</li>
+    <li>Direct attacks against enemy unit groups sharing your tile</li>
+    <li>Joining ongoing battles on either side to support allies — or opportunists</li>
+    <li>Fleeing from battles, resolved when the next tick is processed</li>
   </ul>
   <p>
-    Combat factors include unit sizes, types, and environmental conditions. Smaller groups may
-    flee from larger forces, while sufficiently large groups may be forced into battle.
+    Combat strength comes from each side's typed attack and defence — melee, ranged, and magic —
+    so the matchup between unit types matters as much as raw numbers. Player characters' genetics
+    and a side's moral standing also tip the scales.
   </p>
 
   <h3>Attacking Structures</h3>
   <ul>
-    <li>Destroy enemy structures through direct attacks</li>
-    <li>Capture structures after defeating defenders</li>
-    <li>Siege structures to weaken them over time</li>
-    <li>Structures under siege for 15 game days may be destroyed</li>
-    <li>Continuous trebuchet attacks for 3 days can turn structures to ruins</li>
-    <li>Structure durability decreases as they take damage in combat</li>
+    <li>A defended structure adds its durability to the defenders' power every round</li>
+    <li>The defence holds until the structure's health is battered below 15% of its durability</li>
+    <li>Once breached, a player-owned structure is captured — ownership transfers to the victor and it survives at low health</li>
+    <li>With no one left to claim it, a breached structure is destroyed instead</li>
+    <li>Larger attacking forces deal more damage per round, with diminishing returns</li>
   </ul>
 
   <h3>Battle Outcomes</h3>
@@ -40,13 +39,12 @@
     <li><strong>Automatic Looting:</strong> All items carried by defeated groups are automatically collected</li>
     <li><strong>Loot Distribution:</strong> If multiple groups are on the winning side, items are randomly distributed among them</li>
     <li><strong>Loot Notification:</strong> Groups receive messages indicating how many items they looted from battle</li>
-    <li><strong>Scavenging:</strong> Beyond automatic looting, additional equipment may be salvageable from the battlefield</li>
-    <li><strong>Capture:</strong> Take defeated enemies prisoner</li>
-    <li><strong>Ransom:</strong> Negotiate the release of captives for payment</li>
+    <li><strong>Ransom:</strong> Negotiate a captive's release for gold — offers can be proposed, countered, accepted, or rejected. A captive who cannot pay defaults, and their character's life ends</li>
+    <li><strong>Bounties:</strong> Killing a player settles any bounties placed on their head</li>
   </ul>
   <p>
-    A player's morality affects these options - low morality players may have their units turned against them,
-    while good morality players' units must be captured or ransomed.
+    Morality matters in battle: saints fight inspired (+5% power) while villains fight reviled (−5%),
+    and a reputation for evil draws bounty hunters and spawn guards.
   </p>
 
   <div class="tip-box">

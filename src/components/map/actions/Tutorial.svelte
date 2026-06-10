@@ -34,6 +34,13 @@
       achievement: null,
     },
     {
+      id: 'map-controls',
+      title: 'Map Controls',
+      body: 'These buttons control your view of the world: toggle nearby entities, follow your character, open chat, review achievements, show the minimap, and reopen this guide any time with the help button.',
+      selector: '.controls-right',
+      achievement: null,
+    },
+    {
       id: 'mobilise',
       title: 'Mobilise a Group',
       body: 'Mobilise gathers units into a travelling group. Groups are how you explore and expand.',
@@ -56,6 +63,14 @@
       selector: '.tile.center',
       wheelAction: 'Gather',
       achievement: 'first_gather',
+    },
+    {
+      id: 'build',
+      title: 'Build a Structure',
+      body: 'With resources gathered, Build raises a structure of your own — a foothold for storage, recruitment, and crafting. Building consumes resources and takes time to complete.',
+      selector: '.tile.center',
+      wheelAction: 'Build',
+      achievement: null,
     },
     {
       id: 'recruit',
@@ -113,6 +128,7 @@
     Mobilise: 'Mobilise',
     Move: 'Move Group',
     Gather: 'Gather',
+    Build: 'Build',
     Recruit: 'Recruit',
     Craft: 'Crafting',
     Attack: 'Attack',
@@ -157,6 +173,8 @@
   const tileStructure = $derived($targetStore?.structure ?? null);
   const onSpawn = $derived(tileStructure?.type === 'spawn');
   const onStructure = $derived(!!tileStructure);
+  // A structure under construction on this tile — the Build step's completion signal.
+  const hasBuildingSite = $derived(tileStructure?.status === 'building');
 
   // Interactive steps wait for the player to perform the action rather than
   // showing a Next button.
@@ -190,6 +208,12 @@
       if (!hasIdleGroup) return 'Wait for your group to finish moving, then act on its tile.';
     }
 
+    if (step.id === 'build') {
+      if (hasBuildingSite) return 'Construction under way… your structure will rise shortly.';
+      if (onStructure) return 'This tile already has a structure — move your group to an empty tile, then choose Build.';
+      if (!hasIdleGroup) return 'Wait for your group to be ready, then act on its tile.';
+    }
+
     // Recruit and Craft only work on a structure tile. After moving off to
     // gather you'll have left the spawn, so steer the player back first.
     if (step.id === 'recruit' && !onSpawn) {
@@ -209,10 +233,11 @@
   const cueWaiting = $derived.by(() => {
     if (!isInteractive) return false;
     if (hasMobilising || hasGathering) return true;
-    // Move/Gather both need an idle group on the tile; while there isn't one the
-    // cue is a "wait for your group" message (path-drawing excepted — that's an
-    // active prompt).
-    if ((step.id === 'movement' && !pathDrawing) || step.id === 'gather') return !hasIdleGroup;
+    if (step.id === 'build' && hasBuildingSite) return true;
+    // Move/Gather/Build all need an idle group on the tile; while there isn't
+    // one the cue is a "wait for your group" message (path-drawing excepted —
+    // that's an active prompt).
+    if ((step.id === 'movement' && !pathDrawing) || step.id === 'gather' || step.id === 'build') return !hasIdleGroup;
     return false;
   });
 
@@ -362,6 +387,9 @@
       else if (sawPathDrawing && !hasIdleGroup) advanceFromAction();
     } else if (step.id === 'gather' && hasGathering) {
       advanceFromAction();
+    } else if (step.id === 'build' && hasBuildingSite) {
+      // A structure is going up on this tile — the player has built.
+      advanceFromAction();
     }
   });
 
@@ -465,8 +493,13 @@
     <div class="card-actions">
       <div class="card-nav">
         {#if isInteractive}
-          <!-- Interactive steps complete by doing, not by pressing Next. -->
+          <!-- Interactive steps complete by doing, not by pressing Next — but a
+               step can be impossible right now (no enemies to Attack, no
+               resources to Build), so each can be skipped individually. -->
           <span class="nav-waiting" aria-live="polite">Waiting for you…</span>
+          <button class="nav-btn skip-step" onclick={next} aria-label="Skip this step">
+            Skip step ›
+          </button>
         {:else if stepIndex < totalSteps - 1}
           <button class="nav-btn primary" onclick={next} aria-label="Next step">
             Next ›
@@ -705,6 +738,12 @@
     background: var(--color-gold-pale, #d4b170);
     border-color: var(--color-gold-pale, #d4b170);
     color: var(--color-ink-900, #0e1320);
+  }
+
+  .nav-btn.skip-step {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0.4em 0.8em;
   }
 
   .nav-waiting {
