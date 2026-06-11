@@ -1,7 +1,14 @@
 <script>
+    import { onMount } from 'svelte';
     import { page } from '$app/stores';
     import Logo from '../../Logo.svelte';
     import Stamp from '../../ui/Stamp.svelte';
+    import { game } from '../../../lib/stores/game.js';
+    import { reports, unreadReports } from '../../../lib/stores/reports.js';
+
+    // The rail is global chrome, so fetch reports here too — that keeps the
+    // unread badge accurate even before the player opens the map this session.
+    onMount(() => { if ($game?.worldKey) reports.fetch($game.worldKey); });
 
     // Diplomacy, Council and Bounty now live inside the House hall (/house);
     // Deeds folds into the Realm profile. That keeps this rail (and the mobile
@@ -29,7 +36,14 @@
             title={l.label}
             class:active={$page.url.pathname === l.href}
         >
-            <Stamp kind={l.glyph} size={22} />
+            <span class="rail-glyph">
+                <Stamp kind={l.glyph} size={22} />
+                {#if l.href === '/reports' && $unreadReports > 0}
+                    <span class="rail-badge" aria-label="{$unreadReports} unread reports">
+                        {$unreadReports > 99 ? '99+' : $unreadReports}
+                    </span>
+                {/if}
+            </span>
             <span>{l.label.toUpperCase()}</span>
         </a>
     {/each}
@@ -88,6 +102,32 @@
         position: relative;
     }
     a span { opacity: 0.85; }
+
+    /* Glyph wrapper anchors the unread badge to the icon's top-right corner. */
+    .rail-glyph {
+        position: relative;
+        display: inline-flex;
+        opacity: 1;
+    }
+    .rail-badge {
+        position: absolute;
+        top: -0.4em;
+        right: -0.55em;
+        min-width: 1.4em;
+        padding: 0.05em 0.35em;
+        border-radius: 1em;
+        background: var(--color-wax-red);
+        color: var(--color-parchment-100);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1.4;
+        letter-spacing: 0;
+        text-align: center;
+        opacity: 1;
+        box-shadow: 0 0 0 0.12em var(--chrome-panel-a);
+        pointer-events: none;
+    }
     a:hover {
         color: var(--chrome-gold);
         background: var(--chrome-gold-soft);

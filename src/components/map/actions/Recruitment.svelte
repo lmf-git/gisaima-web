@@ -825,16 +825,18 @@
                         {#if selectedUnit.available}
                             <!-- Quantity selection -->
                             <div class="form-group quantity-group">
-                                <label>Quantity</label>
-                                <div class="quantity-control">
+                                <span class="form-label" id="recruit-quantity-label">Quantity</span>
+                                <div class="quantity-control" role="group" aria-labelledby="recruit-quantity-label">
                                     <button
                                         class="quantity-button"
+                                        aria-label="Decrease quantity"
                                         onclick={() => (quantity = Math.max(1, quantity - 1))}
                                         disabled={isLoading || quantity <= 1}
                                     >−</button>
-                                    <span class="quantity-display">{quantity}</span>
+                                    <span class="quantity-display" aria-live="polite">{quantity}</span>
                                     <button
                                         class="quantity-button"
+                                        aria-label="Increase quantity"
                                         onclick={() => (quantity = Math.min(100, quantity + 1))}
                                         disabled={isLoading || quantity >= 100}
                                     >+</button>
@@ -1367,7 +1369,7 @@
         margin-bottom: 1rem;
     }
 
-    label {
+    .form-label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;

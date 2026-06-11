@@ -7,7 +7,6 @@
   import Logo from '../../Logo.svelte';
 
   import Close from '../../icons/Close.svelte';
-  import Eye from '../../icons/Eye.svelte';
   import Rally from '../../icons/Rally.svelte';
   import Compass from '../../icons/Compass.svelte';
   import Sword from '../../icons/Sword.svelte';
@@ -174,8 +173,7 @@
 
   // Define all possible actions
   const allActions = [
-    { id: 'details', label: 'Details', icon: Info, condition: () => true }, // Always show details
-    { id: 'inspect', label: 'Inspect', icon: Eye, condition: () => currentTileData?.structure },
+    { id: 'details', label: 'Details', icon: Info, condition: () => true }, // Always show details (incl. structure overview)
     { id: 'build', label: 'Build', icon: Hammer, condition: canBuild },
     { id: 'craft', label: 'Craft', icon: Hammer, condition: canCraft },
     { id: 'research', label: 'Research', icon: Info, condition: canResearch },
@@ -239,16 +237,6 @@
     // Special handling for details action
     if (actionId === 'details') {
       handleShowDetails(event);
-      return;
-    }
-    
-    // Special handling for inspect action to include tile data
-    if (actionId === 'inspect' && currentTileData) {
-      onAction(actionId, {
-        x: currentTileData.x,
-        y: currentTileData.y,
-        tile: currentTileData
-      });
       return;
     }
     

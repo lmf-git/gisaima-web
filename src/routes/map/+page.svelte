@@ -541,7 +541,7 @@
 
         if (options.type === 'add-building') return;
 
-        // Don't close details panel for inspect, recruitment, or craft modals
+        // Don't close details panel for recruitment or craft modals
         // since these are considered "detail" type views
         if (['mobilise', 'move', 'gather', 'demobilise', 'joinBattle', 'attack', 'build'].includes(options.type)) {
             if (detailed) {
@@ -1404,7 +1404,7 @@
               onShowStructure={({ x, y }) => {
                 setHighlighted(x, y);
                 moveTarget(x, y, false);
-                dossierPanel = 'inspect';
+                dossierPanel = 'details';
                 if (window.innerWidth < 768) toggleEntities();
               }}
               onClose={() => toggleEntities()}
@@ -1539,10 +1539,13 @@
         gap: 0.5em;
     }
     
+    /* This cluster is only rendered while chat is open. Anchor it just above
+       the chat panel (bottom-right, up to 52vh tall) and let it grow upward,
+       so the toggles never sit on top of the chat. */
     .controls-middle-right {
         position: fixed;
         right: 1em;
-        top: 44%;
+        bottom: calc(52vh + 1.5em + env(safe-area-inset-bottom));
         z-index: 1001;
         display: flex;
         flex-direction: column;

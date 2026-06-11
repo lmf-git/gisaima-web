@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { game } from '$lib/stores/game.js';
     import { apiGet, apiPost } from '$lib/api.js';
+    import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
     import Stamp from '../../ui/Stamp.svelte';
     import Flourish from '../../ui/Flourish.svelte';
     import Button from '../../ui/Button.svelte';
@@ -24,6 +25,49 @@
     let proposeTitle = $state('');
     let proposing = $state(false);
 
+    // Bounty target (player) selection.
+    let targetQuery = $state('');
+    let targetResults = $state([]);
+    let targetSearching = $state(false);
+    let proposeTarget = $state(null); // { uid, displayName }
+    let targetSearchTimer = null;
+
+    // Public-works building/upgrade selection — drawn from the shared building
+    // catalogue, monster buildings excluded.
+    const buildingOptions = Object.entries(BUILDINGS)
+        .filter(([, b]) => !/monster/i.test(b?.name || ''))
+        .map(([id, b]) => ({ id, name: b.name || id }));
+    let proposeBuilding = $state(buildingOptions[0]?.id ?? '');
+
+    const GOLD_STEP = 25;
+    function bumpGold(delta) {
+        proposeGold = Math.max(1, Math.min(1_000_000, (Math.floor(Number(proposeGold) || 0)) + delta));
+    }
+
+    function onTargetInput() {
+        proposeTarget = null;
+        clearTimeout(targetSearchTimer);
+        const q = targetQuery.trim();
+        if (q.length < 2) { targetResults = []; return; }
+        targetSearchTimer = setTimeout(searchTargets, 250);
+    }
+    async function searchTargets() {
+        try {
+            targetSearching = true;
+            const r = await apiGet(`/worlds/${encodeURIComponent(worldId)}/players/search?q=${encodeURIComponent(targetQuery.trim())}`);
+            targetResults = r?.players || [];
+        } catch {
+            targetResults = [];
+        } finally {
+            targetSearching = false;
+        }
+    }
+    function pickTarget(p) {
+        proposeTarget = p;
+        targetQuery = p.displayName;
+        targetResults = [];
+    }
+
     const worldId = $derived($game.worldKey);
 
     async function load() {
@@ -45,13 +89,32 @@
     async function proposeMotion() {
         const gold = Math.max(1, Math.floor(Number(proposeGold) || 0));
         const kind = PROPOSAL_KINDS.find(k => k.id === proposeKind);
-        const title = proposeTitle.trim() || `${kind?.label || 'Motion'} (${gold} gold)`;
+
+        // Kind-specific params + a sensible default title.
+        const params = {};
+        let defaultTitle = `${kind?.label || 'Motion'} (${gold} gold)`;
+        if (proposeKind === 'bounty') {
+            if (!proposeTarget?.uid) { alert('Choose the player this bounty targets.'); return; }
+            params.targetUid = proposeTarget.uid;
+            params.targetName = proposeTarget.displayName;
+            defaultTitle = `Bounty on ${proposeTarget.displayName} (${gold} gold)`;
+        } else if (proposeKind === 'public_works') {
+            if (!proposeBuilding) { alert('Choose the building or upgrade to fund.'); return; }
+            const b = buildingOptions.find(o => o.id === proposeBuilding);
+            params.building = proposeBuilding;
+            params.buildingName = b?.name || proposeBuilding;
+            defaultTitle = `Public Works: ${b?.name || proposeBuilding} (${gold} gold)`;
+        }
+
+        const title = proposeTitle.trim() || defaultTitle;
         try {
             proposing = true;
             await apiPost(`/worlds/${encodeURIComponent(worldId)}/politics`, {
-                title, kind: proposeKind, cost: { gold },
+                title, kind: proposeKind, cost: { gold }, params,
             });
             proposeTitle = '';
+            proposeTarget = null;
+            targetQuery = '';
             await load();
         } catch (e) {
             alert(`Proposal failed: ${e.message}`);
@@ -111,9 +174,54 @@
                     {/each}
                 </div>
                 <p class="propose-hint">{PROPOSAL_KINDS.find(k => k.id === proposeKind)?.hint}</p>
+
+                {#if proposeKind === 'bounty'}
+                    <div class="propose-target">
+                        <span class="field-label">Target player</span>
+                        <div class="target-search">
+                            <input
+                                class="propose-title"
+                                type="text"
+                                placeholder="Search players by name…"
+                                bind:value={targetQuery}
+                                oninput={onTargetInput}
+                                autocomplete="off"
+                            />
+                            {#if proposeTarget}
+                                <span class="target-chosen">✓ {proposeTarget.displayName}</span>
+                            {/if}
+                            {#if targetResults.length > 0 && !proposeTarget}
+                                <ul class="target-results">
+                                    {#each targetResults as p (p.uid)}
+                                        <li><button type="button" onclick={() => pickTarget(p)}>{p.displayName}</button></li>
+                                    {/each}
+                                </ul>
+                            {:else if targetSearching}
+                                <span class="target-hint">Searching…</span>
+                            {/if}
+                        </div>
+                    </div>
+                {:else if proposeKind === 'public_works'}
+                    <div class="propose-target">
+                        <span class="field-label">Building / upgrade to fund</span>
+                        <select class="propose-building" bind:value={proposeBuilding}>
+                            {#each buildingOptions as b (b.id)}
+                                <option value={b.id}>{b.name}</option>
+                            {/each}
+                        </select>
+                    </div>
+                {/if}
+
                 <div class="propose-row">
                     <input class="propose-title" type="text" placeholder="Motion title (optional)" bind:value={proposeTitle} maxlength="120" />
-                    <label class="propose-gold">Gold <input type="number" min="1" bind:value={proposeGold} /></label>
+                    <div class="propose-gold">
+                        <span class="field-label">Gold</span>
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn" onclick={() => bumpGold(-GOLD_STEP)} disabled={proposeGold <= 1} aria-label="Decrease gold">−</button>
+                            <input class="qty-display" type="number" min="1" bind:value={proposeGold} aria-label="Gold amount" />
+                            <button type="button" class="qty-btn" onclick={() => bumpGold(GOLD_STEP)} aria-label="Increase gold">+</button>
+                        </div>
+                    </div>
                     <Button variant="primary" onclick={proposeMotion} disabled={proposing}>
                         {proposing ? 'Proposing…' : 'Propose'}
                     </Button>
@@ -239,8 +347,23 @@
     .propose-hint { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0.5em 0; font-size: 0.85rem; }
     .propose-row { display: flex; gap: 0.6em; align-items: center; flex-wrap: wrap; }
     .propose-title { flex: 1 1 12em; padding: 0.5em 0.7em; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); font-family: var(--font-body); }
-    .propose-gold { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--color-ink-500); display: flex; align-items: center; gap: 0.4em; }
-    .propose-gold input { width: 6em; padding: 0.5em 0.6em; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); font-family: var(--font-mono); }
+    .propose-gold { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; color: var(--color-ink-500); display: flex; align-items: center; gap: 0.5em; }
+    .field-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-500); }
+    .qty-control { display: inline-flex; align-items: stretch; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); }
+    .qty-btn { width: 2.2em; border: none; background: var(--color-parchment-200); color: var(--color-ink-900); font-size: 1.1rem; line-height: 1; cursor: pointer; font-family: var(--font-display); }
+    .qty-btn:hover:not(:disabled) { background: var(--color-wax-red); color: var(--color-parchment-100); }
+    .qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .qty-display { width: 5em; padding: 0.5em 0.4em; border: none; border-left: 1px solid rgba(26,32,48,.18); border-right: 1px solid rgba(26,32,48,.18); background: transparent; font-family: var(--font-mono); text-align: center; -moz-appearance: textfield; }
+    .qty-display::-webkit-outer-spin-button, .qty-display::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .propose-target { margin: 0.8em 0; display: flex; flex-direction: column; gap: 0.4em; }
+    .propose-building { padding: 0.5em 0.7em; border: 1px solid rgba(26,32,48,.25); background: var(--color-parchment-100); font-family: var(--font-body); max-width: 22em; }
+    .target-search { position: relative; max-width: 22em; }
+    .target-search .propose-title { width: 100%; }
+    .target-chosen { display: inline-block; margin-top: 0.3em; font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-forest, #2f5a4e); }
+    .target-hint { display: inline-block; margin-top: 0.3em; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-ink-500); }
+    .target-results { list-style: none; margin: 0.2em 0 0; padding: 0; position: absolute; z-index: 5; left: 0; right: 0; background: var(--color-parchment-100); border: 1px solid rgba(26,32,48,.25); max-height: 12em; overflow-y: auto; box-shadow: 0 0.4em 1em rgba(0,0,0,.18); }
+    .target-results li button { display: block; width: 100%; text-align: left; padding: 0.5em 0.7em; background: none; border: none; cursor: pointer; font-family: var(--font-body); color: var(--color-ink-900); }
+    .target-results li button:hover { background: var(--color-parchment-300); }
     @media (max-width: 700px) {
         .block.split { grid-template-columns: 1fr; }
         .coffers { grid-template-columns: 1fr; }

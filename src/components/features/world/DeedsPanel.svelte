@@ -1,18 +1,13 @@
 <script>
     import { onMount } from 'svelte';
     import { game } from '$lib/stores/game.js';
-    import { user } from '$lib/stores/user.js';
-    import { apiGet, apiPost } from '$lib/api.js';
+    import { apiGet } from '$lib/api.js';
     import WaxSeal from '../../ui/WaxSeal.svelte';
-    import Button from '../../ui/Button.svelte';
 
     let scores = $state([]);
     let mine = $state(null);
     let loading = $state(true);
     let error = $state(null);
-    let accuse = $state({ targetUid: '', polarity: 'evil', reportRef: '', comment: '' });
-    let submitting = $state(false);
-    let submitMsg = $state(null);
 
     const worldId = $derived($game.worldKey);
 
@@ -31,33 +26,16 @@
         }
     }
 
-    async function submit(e) {
-        e.preventDefault();
-        submitting = true;
-        submitMsg = null;
-        try {
-            const r = await apiPost(`/worlds/${encodeURIComponent(worldId)}/morality`, {
-                targetUid: accuse.targetUid.trim(),
-                polarity: accuse.polarity,
-                reportRef: accuse.reportRef || null,
-                comment: accuse.comment || ''
-            });
-            submitMsg = `Recorded. Target score: ${r.score}`;
-            accuse = { targetUid: '', polarity: 'evil', reportRef: '', comment: '' };
-            await load();
-        } catch (e) {
-            submitMsg = `Failed: ${e.message}`;
-        } finally {
-            submitting = false;
-        }
-    }
-
     onMount(load);
     $effect(() => { if (worldId) load(); });
 </script>
 
 <div class="deeds">
-    <p class="lede italic">Good and evil are decided by the realm. Five accusations a day, and a long memory.</p>
+    <p class="lede italic">
+        Good and evil are not declared — they are earned. The realm weighs your deeds:
+        preying on the weak, taking captives, and warring on your fellows blacken your name,
+        while slaying villains burnishes it.
+    </p>
 
     {#if mine}
         <section class="me">
@@ -73,35 +51,6 @@
                 </div>
             </div>
         </section>
-    {/if}
-
-    {#if $user && !$user.isAnonymous}
-        <form class="form" onsubmit={submit}>
-            <div class="eyebrow">Accuse a player</div>
-            <label>
-                <span>Target UID</span>
-                <input bind:value={accuse.targetUid} required placeholder="uid of player" />
-            </label>
-            <label>
-                <span>Polarity</span>
-                <select bind:value={accuse.polarity}>
-                    <option value="evil">Evil</option>
-                    <option value="good">Good</option>
-                </select>
-            </label>
-            <label>
-                <span>Justification (report ID, optional)</span>
-                <input bind:value={accuse.reportRef} placeholder="report:abc123" />
-            </label>
-            <label>
-                <span>Comment (optional)</span>
-                <textarea bind:value={accuse.comment} rows="2"></textarea>
-            </label>
-            {#if submitMsg}<div class="msg">{submitMsg}</div>{/if}
-            <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? 'Inking…' : 'Record'}
-            </Button>
-        </form>
     {/if}
 
     <section>
@@ -145,15 +94,6 @@
     .me-counts { display: flex; gap: 2em; margin-left: auto; }
     .me-counts span { font-family: var(--font-display); font-size: 1.4rem; }
     .me-counts small { display: block; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; color: var(--color-ink-500); margin-top: 0.2em; }
-    .form { background: var(--color-parchment-100); border: 1px solid var(--color-ink-900); padding: 1.5em; display: grid; gap: 0.8em; max-width: 500px; margin: 1.5em 0; }
-    .form label { display: grid; gap: 0.2em; }
-    .form label span { font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-ink-700); }
-    .form input, .form select, .form textarea {
-        padding: 0.5em 0.7em; background: var(--color-parchment-200);
-        border: 1px solid var(--color-parchment-shadow); font-family: var(--font-body);
-        color: var(--color-ink-900); border-radius: 2px;
-    }
-    .msg { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-700); }
     table { width: 100%; border-collapse: collapse; margin-top: 0.8em; }
     th { text-align: left; font-family: var(--font-display); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.6em 0.4em; border-bottom: 1px solid var(--color-ink-900); }
     th.num, td.num { text-align: right; font-family: var(--font-mono); font-size: 0.85rem; }

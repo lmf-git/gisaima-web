@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { user } from '$lib/stores/user.js';
     import { game, currentPlayer, listenToPlayerWorldData } from '$lib/stores/game.js';
+    import { diplomacy, getMyTribe } from '$lib/stores/diplomacy.js';
     import { apiPost } from '$lib/api.js';
     import WaxSeal from '../../components/ui/WaxSeal.svelte';
     import CompassRose from '../../components/ui/CompassRose.svelte';
@@ -11,27 +12,92 @@
     import FamilyTree from '../../components/features/FamilyTree.svelte';
     import HousePicker from '../../components/specific/worlds/HousePicker.svelte';
     import DeedsPanel from '../../components/features/world/DeedsPanel.svelte';
+    import Hammer from '../../components/icons/Hammer.svelte';
+    import Mine from '../../components/icons/Mine.svelte';
+    import Axe from '../../components/icons/Axe.svelte';
+    import Fish from '../../components/icons/Fish.svelte';
 
     const player = $derived($currentPlayer);
     const worldId = $derived($game.worldKey);
     const initial = $derived(($user?.displayName || $user?.email || 'G').slice(0, 1).toUpperCase());
 
-    // Character skill levels, read the same way the crafting UI does
-    // (`player.skills.<skill>.level`, defaulting to 1). Crafting is always shown
-    // since the game treats an absent crafting skill as level 1; any other skills
-    // the character has earned are surfaced alongside it.
-    const SKILL_LABELS = {
-        crafting: 'Crafting', gathering: 'Gathering', combat: 'Combat',
-        building: 'Building', smithing: 'Smithing', alchemy: 'Alchemy',
-    };
+    // Tribe membership lives in the tribes collection, not the player doc, so
+    // resolve it from the diplomacy store (fetched on mount).
+    const myTribe = $derived(getMyTribe($diplomacy.tribes, $user?.uid));
+
+    // ── Editable motto ──────────────────────────────────────────────
+    let editingMotto = $state(false);
+    let mottoDraft = $state('');
+    let savingMotto = $state(false);
+    function startEditMotto() {
+        mottoDraft = player?.motto || '';
+        editingMotto = true;
+    }
+    async function saveMotto() {
+        if (!worldId || savingMotto) return;
+        savingMotto = true;
+        try {
+            await apiPost(`/worlds/${encodeURIComponent(worldId)}/profile`, { motto: mottoDraft.trim() });
+            await refreshPlayer();
+            editingMotto = false;
+        } catch (e) {
+            alert(`Could not save motto: ${e.message}`);
+        } finally {
+            savingMotto = false;
+        }
+    }
+
+    // ── Avatar upload ───────────────────────────────────────────────
+    let uploadingAvatar = $state(false);
+    let avatarError = $state('');
+    async function handleAvatarChange(event) {
+        avatarError = '';
+        const file = event.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { avatarError = 'Choose an image file.'; return; }
+        if (file.size > 2 * 1024 * 1024) { avatarError = 'Image must be under 2MB.'; return; }
+        const dataUrl = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result);
+            r.onerror = reject;
+            r.readAsDataURL(file);
+        }).catch(() => null);
+        if (!dataUrl) { avatarError = 'Could not read that image.'; return; }
+        uploadingAvatar = true;
+        try {
+            await apiPost(`/worlds/${encodeURIComponent(worldId)}/profile`, { avatar: dataUrl });
+            await refreshPlayer();
+        } catch (e) {
+            avatarError = e.message || 'Upload failed';
+        } finally {
+            uploadingAvatar = false;
+        }
+    }
+
+    // The four trainable skills, each with its own SVG icon. Gathering skills
+    // (mining/woodcutting/fishing) track xp on the player doc and the level is
+    // derived (every 100 xp → +1 level); crafting keeps its stored level.
+    const SKILLS = [
+        { key: 'crafting',    label: 'Crafting',    icon: Hammer },
+        { key: 'mining',      label: 'Mining',      icon: Mine },
+        { key: 'woodcutting', label: 'Woodcutting', icon: Axe },
+        { key: 'fishing',     label: 'Fishing',     icon: Fish },
+    ];
+    function skillLevelFromXp(xp) { return Math.floor((Number(xp) || 0) / 100) + 1; }
     const skillLevels = $derived.by(() => {
         const s = player?.skills || {};
-        const keys = new Set(['crafting', ...Object.keys(s)]);
-        return [...keys].map(k => ({
-            key: k,
-            label: SKILL_LABELS[k] || (k.charAt(0).toUpperCase() + k.slice(1)),
-            level: s[k]?.level || 1,
-        }));
+        return SKILLS.map(def => {
+            const rec = s[def.key] || {};
+            const xp = Number(rec.xp) || 0;
+            const level = rec.level || skillLevelFromXp(xp);
+            return {
+                ...def,
+                level,
+                xp,
+                // Progress through the current level, 0–100 (xp-based skills only).
+                progress: rec.level ? null : (xp % 100),
+            };
+        });
     });
 
     // House membership is optional. From here a player can found a house, request
@@ -53,6 +119,9 @@
     async function refreshPlayer() {
         if ($user?.uid && worldId) await listenToPlayerWorldData($user.uid, worldId);
     }
+
+    onMount(() => { if (worldId) diplomacy.fetchTribes(worldId); });
+    $effect(() => { if (worldId) diplomacy.fetchTribes(worldId); });
 
     async function confirmHouseSwitch() {
         if (!houseSelection || !worldId) return;
@@ -123,12 +192,40 @@
     {:else}
         <header class="hero">
             <div class="crest">
-                <WaxSeal label={initial} color="#5b1a1f" size={84} />
+                {#if player?.avatar}
+                    <img class="avatar-img" src={player.avatar} alt="Your avatar" />
+                {:else}
+                    <WaxSeal label={initial} color="#5b1a1f" size={84} />
+                {/if}
+                <label class="avatar-edit" title="Change avatar">
+                    {uploadingAvatar ? '…' : 'Edit'}
+                    <input type="file" accept="image/*" onchange={handleAvatarChange} disabled={uploadingAvatar} hidden />
+                </label>
             </div>
             <div>
-                <div class="eyebrow wax">House</div>
+                <div class="eyebrow wax">{player?.houseName || 'Unhoused wanderer'}</div>
                 <h1>{$user.displayName || ($user.isAnonymous ? 'Guest' : $user.email?.split('@')[0]) || 'Wanderer'}</h1>
-                <div class="motto">"What is written here will outlast me."</div>
+
+                {#if editingMotto}
+                    <div class="motto-edit">
+                        <input
+                            type="text"
+                            class="motto-input"
+                            placeholder="A few words to live (and die) by"
+                            bind:value={mottoDraft}
+                            maxlength="120"
+                            disabled={savingMotto}
+                        />
+                        <Button variant="primary" onclick={saveMotto} disabled={savingMotto}>{savingMotto ? 'Saving…' : 'Save'}</Button>
+                        <Button variant="ghost" onclick={() => (editingMotto = false)} disabled={savingMotto}>Cancel</Button>
+                    </div>
+                {:else}
+                    <button class="motto motto-button" onclick={startEditMotto} title="Edit motto">
+                        {player?.motto ? `"${player.motto}"` : 'Set a personal motto…'}
+                        <span class="motto-pencil">✎</span>
+                    </button>
+                {/if}
+                {#if avatarError}<div class="avatar-error">{avatarError}</div>{/if}
                 <Flourish extraClass="page-flourish" />
             </div>
         </header>
@@ -149,19 +246,34 @@
                     <div class="label">Last seen</div>
                 </div>
                 <div class="stat">
-                    <div class="value">{$user.isAnonymous ? 'GUEST' : 'SWORN'}</div>
-                    <div class="label">Oath</div>
+                    {#if myTribe}
+                        <div class="value tribe-value">{myTribe.tag ? `[${myTribe.tag}]` : myTribe.name}</div>
+                        <div class="label">{myTribe.tag ? myTribe.name : 'Tribe'}</div>
+                    {:else}
+                        <div class="value"><a class="tribe-link" href="/house">No tribe</a></div>
+                        <div class="label">Find a tribe</div>
+                    {/if}
                 </div>
             </div>
         </section>
 
         <section class="block">
             <div class="eyebrow">Skills</div>
-            <div class="stat-grid">
+            <div class="skills-grid">
                 {#each skillLevels as skill (skill.key)}
-                    <div class="stat">
-                        <div class="value">Lvl {skill.level}</div>
-                        <div class="label">{skill.label}</div>
+                    <div class="skill-card">
+                        <div class="skill-icon"><skill.icon size="1.6em" extraClass="skill-svg" /></div>
+                        <div class="skill-body">
+                            <div class="skill-top">
+                                <span class="skill-name">{skill.label}</span>
+                                <span class="skill-level">Lvl {skill.level}</span>
+                            </div>
+                            {#if skill.progress !== null}
+                                <div class="skill-bar" title="{skill.progress}/100 XP to next level">
+                                    <span style="width: {skill.progress}%;"></span>
+                                </div>
+                            {/if}
+                        </div>
                     </div>
                 {/each}
             </div>
@@ -301,6 +413,57 @@
         color: var(--color-ink-500);
         margin-bottom: 0.6em;
     }
+    .motto-button {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 1rem;
+    }
+    .motto-button:hover { color: var(--color-ink-900); }
+    .motto-pencil { font-style: normal; font-size: 0.8em; opacity: 0.5; }
+    .motto-edit { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; margin-bottom: 0.6em; }
+    .motto-input {
+        flex: 1 1 16em;
+        padding: 0.5em 0.7em;
+        border: 1px solid var(--color-parchment-shadow);
+        background: var(--color-parchment-100);
+        font-family: var(--font-editorial);
+        font-style: italic;
+        color: var(--color-ink-900);
+    }
+    .crest { position: relative; }
+    .avatar-img {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--color-wax-red);
+        display: block;
+    }
+    .avatar-edit {
+        position: absolute;
+        bottom: -0.3em;
+        right: -0.3em;
+        background: var(--color-ink-900);
+        color: var(--color-parchment-100);
+        font-family: var(--font-display);
+        font-size: 0.6rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.25em 0.5em;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    .avatar-edit:hover { background: var(--color-ink-700); }
+    .avatar-error { color: var(--color-wax-red); font-family: var(--font-editorial); font-style: italic; font-size: 0.85em; margin: 0.3em 0; }
+    .tribe-value { color: var(--color-ink-900); }
+    .tribe-link { color: var(--color-wax-red); text-decoration: none; }
+    .tribe-link:hover { text-decoration: underline; }
     .block { margin: 2.5em 0; }
     .block.split { display: grid; grid-template-columns: 1fr 1fr; gap: 3em; align-items: start; }
     .stat-grid {
@@ -328,6 +491,34 @@
         color: var(--color-ink-500);
         margin-top: 0.3em;
     }
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8em;
+        border-top: 1px solid var(--color-ink-900);
+        border-bottom: 1px solid var(--color-ink-900);
+        padding: 1em 0;
+    }
+    .skill-card { display: flex; align-items: center; gap: 0.8em; }
+    .skill-icon {
+        flex: 0 0 auto;
+        width: 2.4em;
+        height: 2.4em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-wax-red);
+        border: 1px solid rgba(26, 32, 48, 0.18);
+        border-radius: 50%;
+        background: var(--color-parchment-100);
+    }
+    .skill-body { flex: 1; min-width: 0; }
+    .skill-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5em; }
+    .skill-name { font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 0.03em; }
+    .skill-level { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-ink-500); }
+    .skill-bar { margin-top: 0.35em; height: 5px; background: var(--color-parchment-300); border-radius: 2px; overflow: hidden; }
+    .skill-bar span { display: block; height: 100%; background: var(--color-sage-deep, #3f5a4e); }
+
     .heraldry { display: flex; gap: 1.5em; align-items: center; }
     .lede {
         font-family: var(--font-editorial);

@@ -14,7 +14,7 @@
   import { game, currentPlayer, cancelMove } from "../../../lib/stores/game.js";
   
   import Torch from '../../icons/Torch.svelte';
-  import Structure from '../../icons/Structure.svelte';
+  import StructureIcon from '../../icons/StructureIcon.svelte';
   import Cancel from '../../icons/Close.svelte';
   import Horn from '../../icons/Horn.svelte';
   import Human from '../../icons/Human.svelte';
@@ -25,7 +25,6 @@
   import Monster from '../../icons/Monster.svelte';
   import Swords from '../../icons/Swords.svelte';
   import Compass from '../../icons/Compass.svelte';
-  import Eye from '../../icons/Eye.svelte';
   import Crop from '../../icons/Crop.svelte';
   import Rally from '../../icons/Rally.svelte';
   import Rings from '../../icons/Rings.svelte';
@@ -248,6 +247,19 @@
     !!detailsData?.groups?.some(g => g.owner === $currentPlayer?.id && g.status === 'idle')
   );
 
+  // ─── Structure explainer modal ──────────────────────────────────
+  // Clicking a build-opportunity chip opens a modal describing that structure
+  // (durability, build time, costs, features) so players can compare options
+  // before committing an idle group to building.
+  let infoStructureId = $state(null);
+  const infoStructure = $derived(infoStructureId ? STRUCTURES[infoStructureId] : null);
+  function openStructureInfo(id) { infoStructureId = id; }
+  function closeStructureInfo() { infoStructureId = null; }
+  function structureBonusList(def) {
+    if (!def?.bonuses) return [];
+    return Object.entries(def.bonuses).map(([k, v]) => ({ label: _fmt(k), value: v }));
+  }
+
   // Function to execute action
   function executeAction(action, data = null) {
     if (!onShowModal || !detailsData) return;
@@ -293,24 +305,6 @@
         
       case 'joinBattle':
         onShowModal({ type: 'joinBattle', data: data ? { ...tileData, group: data.group } : tileData });
-        break;
-        
-      case 'inspect':
-        // For structure inspection, pass both the structure and its location
-        if (!tileData.structure) {
-          console.error("No structure to inspect on this tile");
-          return;
-        }
-        
-        // Pass the complete tile data for rendering in StructureOverview
-        onShowModal({ 
-          type: 'inspect', 
-          data: { 
-            x: tileData.x, 
-            y: tileData.y, 
-            tile: tileData 
-          } 
-        });
         break;
         
       // Change 'recruit' to 'recruitment' to match what +page.svelte expects
@@ -855,10 +849,15 @@
               </div>
               <div class="potential-tags">
                 {#each buildableStructures as s (s.id)}
-                  <span class="build-chip">
-                    <Structure size="1em" extraClass="build-chip-icon {s.type}-icon" />
-                    {s.name}
-                  </span>
+                  <button
+                    type="button"
+                    class="build-chip"
+                    onclick={() => openStructureInfo(s.id)}
+                    title="Learn about the {s.name}"
+                  >
+                    <StructureIcon type={s.type} size="1.1em" extraClass="build-chip-icon" />
+                    <span class="build-chip-name">{s.name}</span>
+                  </button>
                 {/each}
                 {#if nearWater}
                   <span class="build-chip water">
@@ -1537,6 +1536,81 @@
     </div>
 </div>
 
+<!-- Structure explainer modal — opened from a Build-opportunity chip -->
+{#if infoStructure}
+  <div
+    class="struct-info-overlay"
+    role="button"
+    tabindex="0"
+    aria-label="Close structure details"
+    onclick={closeStructureInfo}
+    onkeydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeStructureInfo(); } }}
+  >
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="struct-info" role="dialog" tabindex="-1" aria-modal="true" aria-label="{infoStructure.name} details" onclick={(e) => e.stopPropagation()}>
+      <div class="struct-info-head">
+        <StructureIcon type={infoStructure.type} size="2em" extraClass="struct-info-icon" />
+        <div class="struct-info-titles">
+          <h3>{infoStructure.name}</h3>
+          <span class="struct-info-type">{_fmt(infoStructure.type)}</span>
+        </div>
+        <button class="struct-info-close" onclick={closeStructureInfo} aria-label="Close">×</button>
+      </div>
+
+      {#if infoStructure.description}
+        <p class="struct-info-desc">{infoStructure.description}</p>
+      {/if}
+
+      <div class="struct-info-stats">
+        {#if infoStructure.durability}
+          <div class="struct-stat"><span class="struct-stat-label">Durability</span><span class="struct-stat-value">{infoStructure.durability}</span></div>
+        {/if}
+        {#if infoStructure.buildTime}
+          <div class="struct-stat"><span class="struct-stat-label">Build time</span><span class="struct-stat-value">{infoStructure.buildTime} tick{infoStructure.buildTime !== 1 ? 's' : ''}</span></div>
+        {/if}
+        {#if infoStructure.capacity}
+          <div class="struct-stat"><span class="struct-stat-label">Capacity</span><span class="struct-stat-value">{infoStructure.capacity}</span></div>
+        {/if}
+        {#if infoStructure.sightRange}
+          <div class="struct-stat"><span class="struct-stat-label">Sight</span><span class="struct-stat-value">{infoStructure.sightRange}</span></div>
+        {/if}
+        {#each structureBonusList(infoStructure) as b}
+          <div class="struct-stat"><span class="struct-stat-label">{b.label}</span><span class="struct-stat-value">+{b.value}</span></div>
+        {/each}
+      </div>
+
+      {#if infoStructure.requiredResources?.length}
+        <div class="struct-info-section">
+          <div class="struct-info-section-title">Build cost</div>
+          <div class="struct-cost-list">
+            {#each infoStructure.requiredResources as r}
+              <span class="struct-cost-item">
+                <ItemIcon code={String(r.id).toUpperCase()} extraClass="struct-cost-icon" />
+                {ITEMS[r.id]?.name || _fmt(r.id)} ×{r.quantity}
+              </span>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      {#if infoStructure.features?.length}
+        <div class="struct-info-section">
+          <div class="struct-info-section-title">Features</div>
+          <ul class="struct-feature-list">
+            {#each infoStructure.features as f}
+              <li class="struct-feature">
+                {#if f.icon}<span class="struct-feature-icon">{f.icon}</span>{/if}
+                <span class="struct-feature-text"><strong>{f.name}</strong> — {f.description}</span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
+
 <style>
   .details-modal {
     display: flex;
@@ -1784,16 +1858,6 @@
     transform: translateY(-1px);
   }
   
-  
-  .inspect-button {
-    background-color: rgba(176, 141, 74, 0.14);
-    border-color: rgba(33, 150, 243, 0.3);
-  }
-  
-  .inspect-button:hover {
-    background-color: rgba(176, 141, 74, 0.22);
-  }
-
   
   .action-button:has(.compass-icon) {
     background-color: rgba(63, 90, 78, 0.22);
@@ -2843,9 +2907,38 @@
     line-height: 1.2;
   }
 
+  /* Build chips are interactive: clicking opens the structure explainer. */
+  button.build-chip {
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease,
+                transform 0.12s ease, box-shadow 0.15s ease, color 0.15s ease;
+  }
+  button.build-chip:hover {
+    background: var(--chrome-gold);
+    border-color: var(--chrome-gold);
+    color: var(--color-ink-900, #1a2030);
+    transform: translateY(-1px);
+    box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.35);
+  }
+  button.build-chip:hover :global(.build-chip-icon) {
+    opacity: 1;
+    fill: var(--color-ink-900, #1a2030);
+    stroke: var(--color-ink-900, #1a2030);
+  }
+  button.build-chip:focus-visible {
+    outline: none;
+    border-color: var(--chrome-gold);
+    box-shadow: 0 0 0 2px var(--chrome-gold-soft);
+  }
+  button.build-chip:active { transform: translateY(0); }
+
+  .build-chip-name { white-space: nowrap; }
+
   :global(.build-chip-icon) {
     opacity: 0.85;
     filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
+    transition: opacity 0.15s ease, fill 0.15s ease, stroke 0.15s ease;
   }
 
   .build-chip.water {
@@ -2853,6 +2946,124 @@
     border-color: rgba(93, 153, 184, 0.4);
     color: var(--chrome-text-dim);
   }
+
+  /* ── Structure explainer modal ── */
+  .struct-info-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5em;
+    background: rgba(8, 11, 18, 0.62);
+    backdrop-filter: blur(3px);
+    cursor: default;
+  }
+  .struct-info {
+    width: min(420px, 92vw);
+    max-height: 82vh;
+    overflow-y: auto;
+    background: linear-gradient(180deg, var(--chrome-panel-a) 0%, var(--chrome-panel-b) 100%);
+    border: 1px solid var(--chrome-gold-border);
+    border-radius: 0.5em;
+    box-shadow: 0 1em 3em rgba(0, 0, 0, 0.5);
+    padding: 1.2em 1.3em 1.4em;
+    color: var(--chrome-text);
+  }
+  .struct-info-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    margin-bottom: 0.8em;
+  }
+  :global(.struct-info-icon) {
+    fill: var(--chrome-gold);
+    flex-shrink: 0;
+  }
+  .struct-info-titles { flex: 1; min-width: 0; }
+  .struct-info-titles h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.15em;
+    letter-spacing: 0.03em;
+    color: var(--chrome-gold);
+  }
+  .struct-info-type {
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--chrome-text-faint);
+  }
+  .struct-info-close {
+    background: none;
+    border: none;
+    color: var(--chrome-text-dim);
+    font-size: 1.6em;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.1em;
+    transition: color 0.15s ease;
+  }
+  .struct-info-close:hover { color: var(--chrome-gold); }
+  .struct-info-desc {
+    margin: 0 0 1em;
+    font-family: var(--font-editorial, serif);
+    font-style: italic;
+    color: var(--chrome-text-dim);
+    line-height: 1.4;
+  }
+  .struct-info-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4em;
+    margin-bottom: 1em;
+  }
+  .struct-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5em;
+    padding: 0.35em 0.55em;
+    background: var(--chrome-gold-soft);
+    border-radius: 0.3em;
+    font-size: 0.82em;
+  }
+  .struct-stat-label { color: var(--chrome-text-dim); }
+  .struct-stat-value { font-weight: 600; color: var(--chrome-text); }
+  .struct-info-section { margin-bottom: 0.9em; }
+  .struct-info-section-title {
+    font-size: 0.74em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--chrome-gold);
+    margin-bottom: 0.45em;
+  }
+  .struct-cost-list { display: flex; flex-wrap: wrap; gap: 0.4em; }
+  .struct-cost-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.8em;
+    padding: 0.25em 0.55em;
+    border-radius: 0.3em;
+    background: rgba(176, 141, 74, 0.1);
+    border: 1px solid rgba(176, 141, 74, 0.22);
+    color: var(--chrome-text-dim);
+  }
+  :global(.struct-cost-icon) { width: 1.1em; height: 1.1em; }
+  .struct-feature-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4em; }
+  .struct-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+    font-size: 0.85em;
+    line-height: 1.35;
+    color: var(--chrome-text-dim);
+  }
+  .struct-feature-icon { flex-shrink: 0; }
+  .struct-feature-text strong { color: var(--chrome-text); }
 
   /* Resource rarity tinting — reuse the palette used elsewhere in this file */
   .resource-chip.uncommon { border-color: rgba(76, 175, 80, 0.4);  color: #8fd494; }

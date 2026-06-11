@@ -151,7 +151,6 @@
     craft:       'Crafting',
     research:    'Research',
     achievements:'Achievements',
-    inspect:     'Inspect',
   };
 
   const panelTitle = $derived(panel ? (PANEL_TITLES[panel] ?? null) : null);
@@ -262,15 +261,25 @@
       {:else if panel === 'achievements'}
         <div class="ds-panel"><Achievements onClose={onClose} /></div>
 
-      {:else if panel === 'inspect' && tile}
-        <div class="ds-panel"><StructureOverview x={tile.x} y={tile.y} tile={tile} onClose={onClose} onShowModal={() => {}} onPlaceBuilding={onPlaceBuilding} /></div>
-
       {:else if panel === 'details' && !selectedUnit}
-        <div class="ds-panel"><Details
-          onClose={onClose}
-          onShowModal={({ type }) => onSwitchPanel(type)}
-          onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
-        /></div>
+        <div class="ds-panel">
+          <!-- Structure overview (formerly the separate "Inspect" action) is
+               folded into Details so a tile with a structure shows it here
+               alongside groups/players/items. -->
+          {#if struct && tile}
+            <StructureOverview
+              x={tile.x} y={tile.y} tile={tile}
+              onClose={onClose}
+              onShowModal={({ type }) => { if (type === 'recruitment' || type === 'craft') onSwitchPanel(type); }}
+              onPlaceBuilding={onPlaceBuilding}
+            />
+          {/if}
+          <Details
+            onClose={onClose}
+            onShowModal={({ type }) => onSwitchPanel(type)}
+            onOpenUnitDetails={(unit, unitId, group) => { selectedUnit = { unit, unitId, group }; }}
+          />
+        </div>
 
       {:else if panel === 'details' && selectedUnit}
         <div class="ds-panel"><UnitDetails

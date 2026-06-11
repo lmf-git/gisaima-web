@@ -65,6 +65,9 @@
   // the selected one. Keep an index so prev/next can cycle through.
   let currentRaceIndex = $state(0);
   let displayName = $state(untrack(() => initialName));
+  let motto = $state('');
+  let avatarDataUrl = $state(null); // base64 data-URI, sent to the API
+  let avatarError = $state('');
   let houseSelection = $state(null); // from HousePicker: { mode, houseId? | houseName? }
   let displayNameError = $state('');
   let submitting = $state(false);
@@ -176,6 +179,19 @@
     currentStep = 1;
   }
 
+  // Read a chosen avatar file into a base64 data-URI (≤2MB, images only).
+  function handleAvatarChange(event) {
+    avatarError = '';
+    const file = event.target.files?.[0];
+    if (!file) { avatarDataUrl = null; return; }
+    if (!file.type.startsWith('image/')) { avatarError = 'Choose an image file.'; return; }
+    if (file.size > 2 * 1024 * 1024) { avatarError = 'Image must be under 2MB.'; return; }
+    const reader = new FileReader();
+    reader.onload = () => { avatarDataUrl = reader.result; };
+    reader.onerror = () => { avatarError = 'Could not read that image.'; };
+    reader.readAsDataURL(file);
+  }
+
   // Handle confirmation
   async function handleConfirm() {
     if (!selectedRace) return;
@@ -186,7 +202,10 @@
     submitting = true;
     try {
       // Include spawn information if available
-      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseSelection, selectedSex);
+      await onConfirm(world.id, selectedRace.id, displayName.trim(), houseSelection, selectedSex, {
+        motto: motto.trim(),
+        avatar: avatarDataUrl,
+      });
 
     } catch (error) {
       console.error('Error joining world:', error);
@@ -344,6 +363,35 @@
         {#if displayNameError && displayNameTouched}
           <div class="input-error">{displayNameError}</div>
         {/if}
+
+        <label class="field-label" for="motto-input">Personal motto <span class="optional">(optional)</span></label>
+        <input
+          type="text"
+          id="motto-input"
+          placeholder="A few words to live (and die) by"
+          bind:value={motto}
+          maxlength="120"
+          disabled={submitting}
+        />
+
+        <span class="field-label">Avatar <span class="optional">(optional)</span></span>
+        <div class="avatar-row">
+          <div class="avatar-preview">
+            {#if avatarDataUrl}
+              <img src={avatarDataUrl} alt="Chosen avatar preview" />
+            {:else}
+              {@render raceIcon(selectedRace, 'confirmation-race-icon')}
+            {/if}
+          </div>
+          <label class="avatar-upload-btn">
+            {avatarDataUrl ? 'Change image' : 'Upload image'}
+            <input type="file" accept="image/*" onchange={handleAvatarChange} disabled={submitting} hidden />
+          </label>
+          {#if avatarDataUrl}
+            <button type="button" class="avatar-clear" onclick={() => { avatarDataUrl = null; avatarError = ''; }} disabled={submitting}>Remove</button>
+          {/if}
+        </div>
+        {#if avatarError}<div class="input-error">{avatarError}</div>{/if}
 
         <span class="field-label">Sex</span>
         <div class="sex-toggle" role="radiogroup" aria-label="Character sex">
@@ -812,6 +860,52 @@
     font-style: italic;
     font-size: 0.85em;
     margin-top: 0.5em;
+  }
+
+  .optional { text-transform: none; letter-spacing: 0; font-style: italic; color: var(--color-ink-500); }
+
+  .avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .avatar-preview {
+    width: 3.2em;
+    height: 3.2em;
+    flex: 0 0 auto;
+    border: 1px solid var(--color-parchment-shadow);
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-parchment-200);
+  }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-preview :global(.confirmation-race-icon) { width: 1.8em; height: 1.8em; }
+  .avatar-upload-btn {
+    padding: 0.5em 0.9em;
+    background: var(--color-parchment-200);
+    border: 1px solid var(--color-parchment-shadow);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-900);
+  }
+  .avatar-upload-btn:hover { background: var(--color-parchment-300); }
+  .avatar-clear {
+    background: none;
+    border: none;
+    color: var(--color-wax-red);
+    cursor: pointer;
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-size: 0.85em;
   }
   
   @media (max-width: 768px) {

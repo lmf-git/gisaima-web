@@ -40,6 +40,16 @@
   // Loading state
   let loading = $state(false);
   let errorMessage = $state('');
+
+  // Capture vs no-quarter when fighting other players. Capture (default) spares
+  // a beaten player for ransom; no-quarter kills them outright but stains the
+  // attacker's morality far more heavily.
+  let quarter = $state('capture');
+  // True when at least one selected enemy group belongs to another player
+  // (monsters are always fought to the death — the choice is moot for them).
+  const targetingPlayers = $derived(
+    selectedEnemyGroups.some(g => g.owner && g.owner !== 'monster' && g.type !== 'monster')
+  );
   
   // Memoize player ID to reduce calculations
   let currentPlayerId = $derived($currentPlayer?.id);
@@ -229,6 +239,9 @@
         params.structureId = selectedStructure.id;
         console.log('Targeting structure with ID:', selectedStructure.id);
       }
+
+      // Only meaningful when fighting players; harmless otherwise.
+      if (targetingPlayers) params.quarter = quarter;
       
       console.log('Starting attack with params:', params);
       
@@ -475,6 +488,34 @@
         </div>
       </div>
       
+      {#if targetingPlayers}
+        <div class="quarter-section">
+          <h3>Rules of Engagement</h3>
+          <div class="quarter-options">
+            <button
+              type="button"
+              class="quarter-option"
+              class:selected={quarter === 'capture'}
+              onclick={() => (quarter = 'capture')}
+              disabled={loading}
+            >
+              <span class="quarter-label">Offer Quarter</span>
+              <span class="quarter-desc">Spare the beaten for ransom. The honourable path.</span>
+            </button>
+            <button
+              type="button"
+              class="quarter-option no-quarter"
+              class:selected={quarter === 'no_quarter'}
+              onclick={() => (quarter = 'no_quarter')}
+              disabled={loading}
+            >
+              <span class="quarter-label">No Quarter</span>
+              <span class="quarter-desc">Put them to the sword. The realm will mark your cruelty.</span>
+            </button>
+          </div>
+        </div>
+      {/if}
+
       <div class="actions">
         <button class="cancel-btn" onclick={onClose} disabled={loading}>Cancel</button>
         <button 
@@ -755,6 +796,51 @@
     opacity: 0.85;
     fill: var(--color-gold-pale);
   }
+
+  .quarter-section {
+    margin: 0 0 1em;
+    padding: 1em;
+    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    background: rgba(176, 141, 74, 0.03);
+  }
+  .quarter-options {
+    display: flex;
+    gap: 0.6em;
+  }
+  .quarter-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+    text-align: left;
+    padding: 0.7em 0.8em;
+    cursor: pointer;
+    background: rgba(176, 141, 74, 0.05);
+    border: 0.075em solid rgba(176, 141, 74, 0.25);
+    color: var(--color-parchment-100);
+    font-family: var(--font-body);
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .quarter-option:hover:not(:disabled) { background: rgba(176, 141, 74, 0.1); }
+  .quarter-option.selected {
+    background: rgba(176, 141, 74, 0.16);
+    border-color: var(--color-aged-gold);
+  }
+  .quarter-option.no-quarter.selected {
+    background: rgba(91, 26, 31, 0.18);
+    border-color: var(--color-wax-red);
+  }
+  .quarter-option:disabled { opacity: 0.7; cursor: not-allowed; }
+  .quarter-label {
+    font-family: var(--font-display);
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-aged-gold);
+  }
+  .quarter-option.no-quarter .quarter-label { color: #d98a8a; }
+  .quarter-desc { font-size: 0.82em; color: var(--color-parchment-200); }
 
   .target-section {
     margin-bottom: 1em;

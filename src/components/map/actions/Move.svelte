@@ -21,9 +21,12 @@
   const eligibleGroups = $derived(getEligibleGroups());
   
   onMount(() => {
-    // Auto-select the group if there's only one eligible option
+    // With a single eligible group there's nothing to choose — skip the
+    // selection step and go straight to path drawing, matching the action
+    // wheel's Move behaviour.
     if (eligibleGroups.length === 1) {
       selectedGroupId = eligibleGroups[0].id;
+      startPathDrawing();
     }
   });
 
