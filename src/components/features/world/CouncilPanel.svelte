@@ -33,10 +33,10 @@
     let targetSearchTimer = null;
 
     // Public-works building/upgrade selection — drawn from the shared building
-    // catalogue, monster buildings excluded.
-    const buildingOptions = Object.entries(BUILDINGS)
-        .filter(([, b]) => !/monster/i.test(b?.name || ''))
-        .map(([id, b]) => ({ id, name: b.name || id }));
+    // catalogue (definitions live under BUILDINGS.types), monster buildings excluded.
+    const buildingOptions = Object.entries(BUILDINGS.types || {})
+        .filter(([id, b]) => !/monster/i.test(`${id} ${b?.name || ''}`))
+        .map(([id, b]) => ({ id, name: b?.name || id }));
     let proposeBuilding = $state(buildingOptions[0]?.id ?? '');
 
     const GOLD_STEP = 25;
@@ -120,6 +120,24 @@
             alert(`Proposal failed: ${e.message}`);
         } finally {
             proposing = false;
+        }
+    }
+
+    let donating = $state(false);
+    async function donate() {
+        if (donating) return;
+        const raw = prompt('How much gold to donate to the coffers?', '100');
+        if (raw === null) return;
+        const amount = Math.floor(Number(raw));
+        if (!Number.isFinite(amount) || amount <= 0) { alert('Enter a positive amount.'); return; }
+        donating = true;
+        try {
+            await apiPost(`/worlds/${encodeURIComponent(worldId)}/politics/donate`, { amount });
+            await load();
+        } catch (e) {
+            alert(`Donation failed: ${e.message}`);
+        } finally {
+            donating = false;
         }
     }
 
@@ -267,7 +285,9 @@
                     <div class="cof"><span class="big">{(coffers?.taxes ?? 0).toLocaleString()}</span><span class="cof-label">TAXES / TICK</span></div>
                     <div class="cof"><span class="big">{(coffers?.debt ?? 0).toLocaleString()}</span><span class="cof-label">DEBT</span></div>
                 </div>
-                <Button variant="primary"><Stamp kind="coin" size={14} /> Donate</Button>
+                <Button variant="primary" onclick={donate} disabled={donating}>
+                    <Stamp kind="coin" size={14} /> {donating ? 'Donating…' : 'Donate'}
+                </Button>
             </div>
 
             <div>

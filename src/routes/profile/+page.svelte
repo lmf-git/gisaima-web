@@ -272,6 +272,10 @@
                                 <div class="skill-bar" title="{skill.progress}/100 XP to next level">
                                     <span style="width: {skill.progress}%;"></span>
                                 </div>
+                                <div class="skill-xp">
+                                    <span>{skill.xp.toLocaleString()} XP</span>
+                                    <span>{100 - skill.progress} to Lvl {skill.level + 1}</span>
+                                </div>
                             {/if}
                         </div>
                     </div>
@@ -518,6 +522,7 @@
     .skill-level { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-ink-500); }
     .skill-bar { margin-top: 0.35em; height: 5px; background: var(--color-parchment-300); border-radius: 2px; overflow: hidden; }
     .skill-bar span { display: block; height: 100%; background: var(--color-sage-deep, #3f5a4e); }
+    .skill-xp { display: flex; justify-content: space-between; gap: 0.5em; margin-top: 0.25em; font-family: var(--font-mono); font-size: 0.68rem; color: var(--color-ink-500); }
 
     .heraldry { display: flex; gap: 1.5em; align-items: center; }
     .lede {

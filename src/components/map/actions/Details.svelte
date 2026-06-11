@@ -40,14 +40,15 @@
     onOpenUnitDetails = () => {},
   } = $props();
 
-  // Add state to track collapsed sections
+  // Add state to track collapsed sections — all sections start collapsed so the
+  // panel opens compact; the player expands what they want.
   let collapsedSections = $state({
-    actions: false,
-    structures: false,
-    players: false,
-    groups: false,
-    items: false,
-    battles: false
+    actions: true,
+    structures: true,
+    players: true,
+    groups: true,
+    items: true,
+    battles: true
   });
 
   // Add state to track sorting options
@@ -2907,38 +2908,39 @@
     line-height: 1.2;
   }
 
-  /* Build chips are interactive: clicking opens the structure explainer. */
+  /* Build chips are interactive: clicking opens the structure explainer.
+     Hover changes only colours (no transform/shadow) so the icon and label
+     stay put — a lift caused the row to jitter as chips reflowed. */
   button.build-chip {
     cursor: pointer;
     font-family: inherit;
-    transition: background 0.15s ease, border-color 0.15s ease,
-                transform 0.12s ease, box-shadow 0.15s ease, color 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   button.build-chip:hover {
     background: var(--chrome-gold);
     border-color: var(--chrome-gold);
     color: var(--color-ink-900, #1a2030);
-    transform: translateY(-1px);
-    box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.35);
   }
   button.build-chip:hover :global(.build-chip-icon) {
     opacity: 1;
+    color: var(--color-ink-900, #1a2030);
     fill: var(--color-ink-900, #1a2030);
-    stroke: var(--color-ink-900, #1a2030);
   }
   button.build-chip:focus-visible {
     outline: none;
     border-color: var(--chrome-gold);
     box-shadow: 0 0 0 2px var(--chrome-gold-soft);
   }
-  button.build-chip:active { transform: translateY(0); }
 
   .build-chip-name { white-space: nowrap; }
 
+  /* Fixed icon box so the SVG can't change the chip's metrics on hover. */
   :global(.build-chip-icon) {
+    width: 1.1em;
+    height: 1.1em;
+    flex: 0 0 auto;
     opacity: 0.85;
-    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
-    transition: opacity 0.15s ease, fill 0.15s ease, stroke 0.15s ease;
+    transition: opacity 0.15s ease, color 0.15s ease, fill 0.15s ease;
   }
 
   .build-chip.water {

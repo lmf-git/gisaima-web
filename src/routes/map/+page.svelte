@@ -159,7 +159,6 @@
     const MAX_INIT_RETRIES = 3;
     
     let lastActivePanel = $state('none'); // 'none', 'details', 'overview', 'chat', 'achievements'
-    let shouldShowAchievementsAfterSpawn = $state(false); // New state to track if achievements should show after spawn
     let tutorialAutoShown = $state(false); // Track whether the tutorial was auto-opened this session
 
     const unreadCount = $derived($unreadMessages);
@@ -232,29 +231,10 @@
         }
     }
 
-    // Add new effect to handle showing achievements after spawn
-    $effect(() => {
-        // Check if player just spawned (alive changed from false to true)
-        if ($game?.player?.alive && shouldShowAchievementsAfterSpawn) {
-            console.log('Player spawned, checking if achievements should show');
-            // Check if achievements aren't manually closed in localStorage
-            const achievementsClosed = localStorage.getItem('achievements_closed') === 'true';
-            if (!achievementsClosed) {
-                showChat = false;
-                dossierPanel = 'achievements';
-                console.log('Showing achievements after spawn');
-            } else {
-                console.log('Achievements closed by user preference, not showing after spawn');
-            }
-            shouldShowAchievementsAfterSpawn = false; // Reset for next time
-        }
-    });
-
-    // Add function to handle spawn completion
-    function handleSpawnComplete() {
-        console.log('Spawn complete, flagging achievements to show');
-        shouldShowAchievementsAfterSpawn = true;
-    }
+    // Spawn completion is a no-op for the UI now — achievements no longer open
+    // automatically when a new player joins/spawns (the player opens them from
+    // the toggle when they want to).
+    function handleSpawnComplete() {}
 
     function parseUrlCoordinates() {
         if (!browser || !page) return null;

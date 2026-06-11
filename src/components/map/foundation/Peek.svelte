@@ -3,6 +3,7 @@
   
   import { currentPlayer } from '../../../lib/stores/game.js';
   import { targetStore } from '../../../lib/stores/map.js';
+  import { groupCarryCapacity, itemCount } from 'gisaima-shared/economy/items.js';
 
   import Logo from '../../Logo.svelte';
 
@@ -101,15 +102,15 @@
   
   function canGather() {
     if (!currentTileData || !$currentPlayer) return false;
-    
-    // Check if player is in an idle group
-    const playerInIdleGroup = currentTileData.groups?.some(g => 
-      g.owner === $currentPlayer.id && 
-      g.status === 'idle'
-    );
-    
-    // Can gather if player is in an idle group
-    return playerInIdleGroup;
+
+    // Can gather only with an idle, player-owned group that still has room to
+    // carry more — a full group has nothing to gather into. A group with no
+    // explicit capacity (capacity 0 / unlimited) is always eligible.
+    return currentTileData.groups?.some(g => {
+      if (g.owner !== $currentPlayer.id || g.status !== 'idle') return false;
+      const capacity = groupCarryCapacity(g);
+      return capacity <= 0 || itemCount(g.items) < capacity;
+    });
   }
   
   function canJoinBattle() {

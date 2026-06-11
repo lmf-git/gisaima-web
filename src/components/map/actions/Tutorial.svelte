@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { ACHIEVEMENTS } from 'gisaima-shared/definitions/ACHIEVEMENTS.js';
-  import { currentPlayer } from '../../../lib/stores/game.js';
+  import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game.js';
   import { targetStore } from '../../../lib/stores/map.js';
   import Trophy from '../../icons/Trophy.svelte';
 
@@ -122,6 +122,12 @@
 
   // Dossier action panel currently open, read from its topbar title. Lets a step
   // say "configuring…" while the action's panel is up and the wheel has closed.
+  // Blocking modals/backdrops — while any is on screen the tutorial overlay and
+  // card hide so they never paint over a dialog (e.g. the convert-account modal).
+  const MODAL_SELECTORS = [
+    '.warning-backdrop', '.confirmation-backdrop', '.house-backdrop',
+    '.struct-info-overlay', '.modal-container', '.overview-container',
+  ];
   const DOSSIER_TITLE_SELECTOR = '.ds-topbar-action';
   // wheelAction → dossier panel title (see PANEL_TITLES in TileDossier.svelte).
   const DOSSIER_TITLE_FOR = {
@@ -146,6 +152,7 @@
   let wheelOpen = $state(false);
   let pathDrawing = $state(false);
   let dossierTitle = $state('');
+  let modalOpen = $state(false);
 
   const step = $derived(STEPS[stepIndex]);
   const playerAchievements = $derived($currentPlayer?.achievements || {});
@@ -168,6 +175,11 @@
   const hasIdleGroup = $derived(myGroups.some(g => g.status === 'idle'));
   const hasMobilising = $derived(myGroups.some(g => g.status === 'mobilizing'));
   const hasGathering = $derived(myGroups.some(g => g.status === 'gathering'));
+  const hasMoving = $derived(myGroups.some(g => g.status === 'moving'));
+  // Ticks left on a gathering group (for a "(N ticks left)" hint).
+  const gatheringTicksLeft = $derived(
+    myGroups.find(g => g.status === 'gathering')?.gatheringTicksRemaining || 0
+  );
   // Structure on the current tile — Recruit and Craft can only be done while
   // standing on one, so the cue must send the player back to it.
   const tileStructure = $derived($targetStore?.structure ?? null);
@@ -186,6 +198,17 @@
     dossierTitle === DOSSIER_TITLE_FOR[step.wheelAction]
   );
 
+  // True while the step is blocked waiting on the server (a group mobilising,
+  // moving, gathering, or a structure building). During these waits we suppress
+  // the dimming spotlight — a lone bright tile with everything else dark is
+  // confusing when the player simply has to wait for a tick.
+  const waitingOnGame = $derived(
+    (step.id === 'mobilise' && hasMobilising) ||
+    (step.id === 'movement' && ((hasMobilising && !hasIdleGroup) || hasMoving) && !pathDrawing) ||
+    (step.id === 'gather'   && (hasGathering || (!hasIdleGroup && hasMoving))) ||
+    (step.id === 'build'    && hasBuildingSite)
+  );
+
   // The live call-to-action shown beneath the step body for interactive steps.
   // It reads real game state so the player is never told to do something the
   // game won't yet allow (e.g. Move before a group has finished mobilising).
@@ -194,23 +217,29 @@
     const action = step.wheelAction;
 
     if (step.id === 'mobilise') {
-      if (hasMobilising) return 'Mobilising your group… hold on.';
+      if (hasMobilising) return `Mobilising your group… ready in ${$timeUntilNextTick}.`;
     }
 
     if (step.id === 'movement') {
       if (pathDrawing) return 'Draw a path across the map, then confirm to send your group.';
-      if (hasMobilising && !hasIdleGroup) return 'Your group is still mobilising — wait until it is ready.';
+      if (hasMobilising && !hasIdleGroup) return `Your group is still mobilising — ready in ${$timeUntilNextTick}.`;
+      if (hasMoving) return `Your group is on the move — next step in ${$timeUntilNextTick}.`;
       if (!hasIdleGroup) return 'Wait for your group to be ready to move.';
     }
 
     if (step.id === 'gather') {
-      if (hasGathering) return 'Gathering resources… hold on.';
+      if (hasGathering) {
+        const left = gatheringTicksLeft > 1 ? ` (${gatheringTicksLeft} ticks left)` : '';
+        return `Gathering resources… next yield in ${$timeUntilNextTick}${left}.`;
+      }
+      if (hasMoving) return `Your group is on the move — arrives in ${$timeUntilNextTick}.`;
       if (!hasIdleGroup) return 'Wait for your group to finish moving, then act on its tile.';
     }
 
     if (step.id === 'build') {
-      if (hasBuildingSite) return 'Construction under way… your structure will rise shortly.';
+      if (hasBuildingSite) return `Construction under way… completes in ${$timeUntilNextTick}.`;
       if (onStructure) return 'This tile already has a structure — move your group to an empty tile, then choose Build.';
+      if (hasMoving) return `Your group is on the move — arrives in ${$timeUntilNextTick}.`;
       if (!hasIdleGroup) return 'Wait for your group to be ready, then act on its tile.';
     }
 
@@ -254,9 +283,10 @@
   // For interactive steps the spotlight target depends on wheel state: the tile
   // until the wheel opens, then the specific action sector inside it.
   function currentSelector() {
-    if (isInteractive && wheelOpen) {
-      const sel = wheelActionSelector(step.wheelAction);
-      if (document.querySelector(sel)) return sel;
+    // Once the wheel is open, spotlight the wheel itself rather than the tile
+    // beneath it (and rather than a single sector, which read as cramped).
+    if (isInteractive && wheelOpen && document.querySelector(WHEEL_SELECTOR)) {
+      return WHEEL_SELECTOR;
     }
     return step.selector;
   }
@@ -266,6 +296,15 @@
     wheelOpen = !!document.querySelector(WHEEL_SELECTOR);
     pathDrawing = !!document.querySelector(PATH_DRAWING_SELECTOR);
     dossierTitle = document.querySelector(DOSSIER_TITLE_SELECTOR)?.textContent?.trim() || '';
+    modalOpen = MODAL_SELECTORS.some(s => document.querySelector(s));
+
+    // While blocked on a server tick (mobilising/moving/gathering/building) or
+    // while a blocking modal is up, show no spotlight — don't darken the map
+    // around a lone tile (confusing) or paint over a modal.
+    if (waitingOnGame || modalOpen) {
+      spotlightRect = null;
+      return;
+    }
 
     const selector = currentSelector();
     const el = selector ? resolveSelector(selector) : null;
@@ -414,15 +453,18 @@
   }
 </script>
 
-<!-- Spotlight overlay — portaled to <body> so nothing can clip it -->
-<div class="tutorial-overlay" use:portal aria-hidden="true">
-  <!-- Dark backdrop with spotlight hole via SVG mask -->
-  <svg class="backdrop">
-    <defs>
-      <mask id="spotlight-mask">
-        <!-- White = show backdrop (dark), black = hide backdrop (reveal) -->
-        <rect width="100%" height="100%" fill="white" />
-        {#if spotlightRect}
+<!-- Spotlight overlay — portaled to <body> so nothing can clip it. Only shown
+     when there's a concrete target to spotlight (not while waiting on a tick)
+     and no blocking modal is open, so the map is never dimmed around a lone
+     tile or painted over a dialog. -->
+{#if spotlightRect && !modalOpen}
+  <div class="tutorial-overlay" use:portal aria-hidden="true">
+    <!-- Dark backdrop with spotlight hole via SVG mask -->
+    <svg class="backdrop">
+      <defs>
+        <mask id="spotlight-mask">
+          <!-- White = show backdrop (dark), black = hide backdrop (reveal) -->
+          <rect width="100%" height="100%" fill="white" />
           <rect
             x={spotlightRect.left}
             y={spotlightRect.top}
@@ -431,20 +473,18 @@
             rx="4"
             fill="black"
           />
-        {/if}
-      </mask>
-    </defs>
-    <rect width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#spotlight-mask)" />
-  </svg>
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#spotlight-mask)" />
+    </svg>
 
-  {#if spotlightRect}
     <!-- Visible border around spotlight target -->
     <div
       class="spotlight-border"
       style="top:{spotlightRect.top}px;left:{spotlightRect.left}px;width:{spotlightRect.width}px;height:{spotlightRect.height}px"
     ></div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <!-- Instruction card — floats above the map, persists across action panels -->
 <div
@@ -452,6 +492,7 @@
   use:portal
   role="dialog"
   aria-label="Interactive tutorial"
+  style:display={modalOpen ? 'none' : ''}
   onkeydown={e => { if (e.key === 'Escape') skip(); else if (e.key === 'ArrowRight' && !isInteractive) next(); }}
   tabindex="-1"
 >

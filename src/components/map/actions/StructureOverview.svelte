@@ -30,11 +30,13 @@
   } = $props();
   
   // Add to the state
+  // All sections start collapsed so the panel opens compact and shares the
+  // dossier's single scroll; the player expands what they want.
   let collapsedSections = $state({
-    items: false,
-    building: false,
-    buildings: false,
-    availableBuildings: false,  // Add this line
+    items: true,
+    building: true,
+    buildings: true,
+    availableBuildings: true,
     access: true
   });
 
@@ -788,10 +790,6 @@
     }
   }
 
-  // Set buildings section to be expanded by default since it now contains more content
-  $effect(() => {
-    collapsedSections.buildings = false;
-  });
 </script>
 
 <div class="structure-modal">

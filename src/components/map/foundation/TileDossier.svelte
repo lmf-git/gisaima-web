@@ -614,6 +614,16 @@
   }
   .ds-panel :global(*::-webkit-scrollbar) { display: none; }
 
+  /* Single scroll: panels embedded here (Details, StructureOverview) own a
+     `.modal-content` that normally scrolls itself. Inside the dossier we let
+     ds-body be the only scroller so the structure overview and the
+     groups/items lists share one continuous scroll instead of nesting two. */
+  .ds-panel :global(.modal-content) {
+    overflow: visible;
+    max-height: none;
+    flex: none;
+  }
+
   /* ── Scoped typography improvements for panels rendered in the dossier ── */
 
   /* Section headings: compact but readable */
