@@ -93,9 +93,11 @@
       // Set loading state
       game.update(state => ({ ...state, loading: true, error: null }));
       
-      // Clear any saved target position when joining a world
+      // Clear any saved target position and tutorial state when joining a world
       if (browser) {
         clearSavedTargetPosition(selectedWorld.id);
+        localStorage.removeItem('tutorial-step');
+        localStorage.removeItem('tutorial-state');
       }
       
       const result = await apiPost('/actions/joinWorld', {
