@@ -124,18 +124,24 @@
     }
 
     let donating = $state(false);
-    async function donate() {
-        if (donating) return;
-        const raw = prompt('How much gold to donate to the coffers?', '100');
-        if (raw === null) return;
-        const amount = Math.floor(Number(raw));
-        if (!Number.isFinite(amount) || amount <= 0) { alert('Enter a positive amount.'); return; }
+    let showDonateModal = $state(false);
+    let donateAmount = $state(100);
+    let donateError = $state('');
+
+    function openDonateModal() { donateAmount = 100; donateError = ''; showDonateModal = true; }
+    function closeDonateModal() { showDonateModal = false; }
+
+    async function confirmDonate() {
+        const amount = Math.floor(Number(donateAmount));
+        if (!Number.isFinite(amount) || amount <= 0) { donateError = 'Enter a positive amount.'; return; }
         donating = true;
+        donateError = '';
         try {
             await apiPost(`/worlds/${encodeURIComponent(worldId)}/politics/donate`, { amount });
+            showDonateModal = false;
             await load();
         } catch (e) {
-            alert(`Donation failed: ${e.message}`);
+            donateError = e.message;
         } finally {
             donating = false;
         }
@@ -285,8 +291,8 @@
                     <div class="cof"><span class="big">{(coffers?.taxes ?? 0).toLocaleString()}</span><span class="cof-label">TAXES / TICK</span></div>
                     <div class="cof"><span class="big">{(coffers?.debt ?? 0).toLocaleString()}</span><span class="cof-label">DEBT</span></div>
                 </div>
-                <Button variant="primary" onclick={donate} disabled={donating}>
-                    <Stamp kind="coin" size={14} /> {donating ? 'Donating…' : 'Donate'}
+                <Button variant="primary" onclick={openDonateModal} disabled={donating}>
+                    <Stamp kind="coin" size={14} /> Donate
                 </Button>
             </div>
 
@@ -322,6 +328,37 @@
         </section>
     {/if}
 </div>
+
+{#if showDonateModal}
+    <div class="donate-overlay" role="dialog" aria-modal="true" aria-label="Donate to coffers">
+        <div class="donate-modal">
+            <div class="donate-head">
+                <h3>Donate to the Coffers</h3>
+                <button class="donate-close" onclick={closeDonateModal} aria-label="Close">✕</button>
+            </div>
+            <div class="donate-body">
+                <p class="donate-hint">Gold you contribute goes directly to the council treasury and funds proposals.</p>
+                <label class="donate-label" for="donate-amount">Amount (gold)</label>
+                <input
+                    id="donate-amount"
+                    class="donate-input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    bind:value={donateAmount}
+                    onkeydown={e => { if (e.key === 'Enter') confirmDonate(); if (e.key === 'Escape') closeDonateModal(); }}
+                />
+                {#if donateError}<p class="donate-error">{donateError}</p>{/if}
+            </div>
+            <div class="donate-actions">
+                <button class="donate-cancel" onclick={closeDonateModal}>Cancel</button>
+                <button class="donate-confirm" onclick={confirmDonate} disabled={donating}>
+                    {donating ? 'Donating…' : 'Confirm Donation'}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
 
 <style>
     .panel { color: var(--color-ink-900); }
@@ -390,4 +427,51 @@
         .cof { border-left: none; border-top: 1px solid rgba(26,32,48,.18); }
         .cof:first-child { border-top: none; }
     }
+
+    /* ── Donate modal ── */
+    .donate-overlay {
+        position: fixed; inset: 0; z-index: 300;
+        background: rgba(14, 19, 32, 0.6); backdrop-filter: blur(3px);
+        display: flex; align-items: center; justify-content: center; padding: 1.5em;
+    }
+    .donate-modal {
+        background: var(--color-parchment-100); border: 1px solid rgba(176, 141, 74, 0.4);
+        width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .donate-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 1em 1.2em; border-bottom: 1px solid rgba(26,32,48,0.15);
+    }
+    .donate-head h3 { font-family: var(--font-display); font-size: 1.1rem; margin: 0; letter-spacing: 0.04em; }
+    .donate-close { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--color-ink-500); padding: 0.2em 0.4em; }
+    .donate-close:hover { color: var(--color-ink-900); }
+    .donate-body { padding: 1.1em 1.2em; display: flex; flex-direction: column; gap: 0.6em; }
+    .donate-hint { font-family: var(--font-editorial); font-style: italic; color: var(--color-ink-500); margin: 0; font-size: 0.88rem; }
+    .donate-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-500); }
+    .donate-input {
+        width: 100%; padding: 0.55em 0.7em; border: 1px solid rgba(26,32,48,0.25);
+        background: var(--color-parchment-200); font-family: var(--font-mono); font-size: 1.1rem;
+        color: var(--color-ink-900); -moz-appearance: textfield;
+    }
+    .donate-input::-webkit-outer-spin-button, .donate-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .donate-input:focus { outline: 2px solid rgba(176,141,74,0.5); }
+    .donate-error { color: var(--color-wax-red); font-family: var(--font-body); font-size: 0.85rem; margin: 0; }
+    .donate-actions {
+        display: flex; justify-content: flex-end; gap: 0.7em;
+        padding: 0.8em 1.2em; border-top: 1px solid rgba(26,32,48,0.12);
+    }
+    .donate-cancel {
+        background: transparent; border: 1px solid rgba(26,32,48,0.25);
+        padding: 0.55em 1em; cursor: pointer; font-family: var(--font-display);
+        font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-500);
+    }
+    .donate-cancel:hover { background: var(--color-parchment-200); }
+    .donate-confirm {
+        background: var(--color-aged-gold); border: none; color: var(--color-ink-900);
+        padding: 0.55em 1.2em; cursor: pointer; font-family: var(--font-display);
+        font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+        transition: background-color 0.15s;
+    }
+    .donate-confirm:hover:not(:disabled) { background: var(--color-gold-pale); }
+    .donate-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

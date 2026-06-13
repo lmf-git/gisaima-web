@@ -484,7 +484,7 @@
   </div>
   
   <div class="build-status">
-    {#if selectedStructure}
+    {#if selectedStructure?.status === 'building'}
       <div class="progress-bar">
         <div class="progress" style="width: {calculateBuildProgress(selectedStructure)}%"></div>
       </div>

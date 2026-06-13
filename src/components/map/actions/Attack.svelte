@@ -536,7 +536,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
     font-family: var(--font-body);
   }
 
@@ -551,7 +551,7 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
 
   .content {
@@ -569,9 +569,9 @@
 
   .selection-section {
     flex: 1;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-gold-border);
     padding: 1em;
-    background: rgba(176, 141, 74, 0.03);
+    background: var(--chrome-field-bg);
   }
 
   .selection-section.enemies {
@@ -581,7 +581,7 @@
 
   .selection-count {
     font-size: 0.8em;
-    color: rgba(232, 228, 210, 0.55);
+    color: var(--chrome-text-faint);
     font-weight: normal;
     margin-bottom: 0.8em;
     margin-top: -0.5em;
@@ -597,23 +597,23 @@
 
   .group-item {
     padding: 0.8em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
+    border: 0.075em solid var(--chrome-gold-border);
     cursor: pointer;
     transition: background-color 0.2s;
-    background: rgba(176, 141, 74, 0.05);
+    background: var(--chrome-field-bg);
     display: flex;
     align-items: center;
     gap: 0.8em;
     width: 100%;
     font-family: var(--font-body);
     font-size: 1em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .custom-checkbox {
     width: 1.2em;
     height: 1.2em;
-    border: 0.075em solid rgba(176, 141, 74, 0.4);
+    border: 0.075em solid var(--chrome-gold-border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -623,8 +623,8 @@
   }
 
   .custom-checkbox.checked {
-    background-color: var(--color-aged-gold);
-    border-color: var(--color-aged-gold);
+    background-color: var(--chrome-gold);
+    border-color: var(--chrome-gold);
   }
 
   .custom-checkbox.checked::after {
@@ -640,8 +640,8 @@
   }
 
   .structure-item .custom-checkbox.checked {
-    background-color: rgba(176, 141, 74, 0.7);
-    border-color: var(--color-aged-gold);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold);
   }
 
   .group-info {
@@ -649,12 +649,12 @@
   }
 
   .group-item:hover {
-    background-color: rgba(176, 141, 74, 0.1);
+    background-color: var(--chrome-gold-soft);
   }
 
   .group-item.selected {
-    background-color: rgba(176, 141, 74, 0.14);
-    border-color: rgba(176, 141, 74, 0.45);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
   }
 
   .group-item.enemy-group {
@@ -671,44 +671,44 @@
   }
 
   .group-item.structure-item {
-    border-color: rgba(176, 141, 74, 0.25);
+    border-color: var(--chrome-gold-border);
   }
 
   .group-item.structure-item:hover {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-gold-soft);
   }
 
   .group-item.structure-item.selected {
-    background-color: rgba(176, 141, 74, 0.14);
-    border-color: rgba(176, 141, 74, 0.45);
+    background-color: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
   }
 
   .group-name {
     font-weight: 600;
     margin-bottom: 0.3em;
-    color: var(--color-parchment-100);
+    color: var(--chrome-text);
   }
 
   .group-details {
     font-size: 0.9em;
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     display: flex;
     justify-content: space-between;
   }
 
   .unit-count, .structure-type {
-    color: var(--color-parchment-200);
+    color: var(--chrome-text-dim);
     font-weight: 500;
   }
 
   .group-race, .structure-race {
-    color: var(--color-gold-pale);
+    color: var(--chrome-gold);
     font-weight: 500;
   }
 
   .structure-owner {
     font-size: 0.9em;
-    color: rgba(232, 228, 210, 0.65);
+    color: var(--chrome-text-dim);
     margin-top: 0.2em;
   }
 
@@ -733,17 +733,17 @@
 
   .cancel-btn {
     background: transparent;
-    color: var(--color-parchment-200);
-    border: 0.075em solid rgba(176, 141, 74, 0.35);
+    color: var(--chrome-text-dim);
+    border: 0.075em solid var(--chrome-gold-border);
   }
 
   .cancel-btn:hover:not(:disabled) {
-    background-color: rgba(176, 141, 74, 0.08);
+    background-color: var(--chrome-gold-soft);
   }
 
   .attack-btn {
     background-color: var(--color-wax-red);
-    color: var(--color-parchment-100);
+    color: #f3eeda;
   }
 
   .attack-btn:hover:not(:disabled) {
@@ -760,7 +760,7 @@
     background-color: rgba(91, 26, 31, 0.15);
     border-left: 3px solid rgba(91, 26, 31, 0.5);
     margin-bottom: 1em;
-    color: #ff5757;
+    color: var(--color-vermilion-2);
   }
 
   .message.error {
@@ -768,7 +768,7 @@
     background-color: rgba(91, 26, 31, 0.15);
     border-left: 3px solid rgba(91, 26, 31, 0.5);
     margin-bottom: 1em;
-    color: #ff5757;
+    color: var(--color-vermilion-2);
     display: flex;
     flex-direction: column;
     gap: 1em;
@@ -787,21 +787,21 @@
     width: 1.4em;
     height: 1.4em;
     opacity: 0.85;
-    fill: var(--color-gold-pale);
+    fill: var(--chrome-gold);
   }
 
   :global(.structure-icon-attack) {
     width: 1.4em;
     height: 1.4em;
     opacity: 0.85;
-    fill: var(--color-gold-pale);
+    fill: var(--chrome-gold);
   }
 
   .quarter-section {
     margin: 0 0 1em;
     padding: 1em;
-    border: 0.075em solid rgba(176, 141, 74, 0.18);
-    background: rgba(176, 141, 74, 0.03);
+    border: 0.075em solid var(--chrome-gold-border);
+    background: var(--chrome-field-bg);
   }
   .quarter-options {
     display: flex;
@@ -815,16 +815,16 @@
     text-align: left;
     padding: 0.7em 0.8em;
     cursor: pointer;
-    background: rgba(176, 141, 74, 0.05);
-    border: 0.075em solid rgba(176, 141, 74, 0.25);
-    color: var(--color-parchment-100);
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-text);
     font-family: var(--font-body);
     transition: background-color 0.15s, border-color 0.15s;
   }
-  .quarter-option:hover:not(:disabled) { background: rgba(176, 141, 74, 0.1); }
+  .quarter-option:hover:not(:disabled) { background: var(--chrome-gold-soft); }
   .quarter-option.selected {
-    background: rgba(176, 141, 74, 0.16);
-    border-color: var(--color-aged-gold);
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold);
   }
   .quarter-option.no-quarter.selected {
     background: rgba(91, 26, 31, 0.18);
@@ -837,14 +837,14 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
-  .quarter-option.no-quarter .quarter-label { color: #d98a8a; }
-  .quarter-desc { font-size: 0.82em; color: var(--color-parchment-200); }
+  .quarter-option.no-quarter .quarter-label { color: var(--color-wax-red); }
+  .quarter-desc { font-size: 0.82em; color: var(--chrome-text-dim); }
 
   .target-section {
     margin-bottom: 1em;
-    border-top: 0.075em solid rgba(176, 141, 74, 0.18);
+    border-top: 0.075em solid var(--chrome-gold-border);
     padding-top: 0.8em;
   }
 
@@ -860,6 +860,6 @@
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-aged-gold);
+    color: var(--chrome-gold);
   }
 </style>
