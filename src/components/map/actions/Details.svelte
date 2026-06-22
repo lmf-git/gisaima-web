@@ -1681,28 +1681,31 @@
     margin-top: 1em;
   }
   
+  /* Match StructureOverview's collapsible sections: a flat field-bg container
+     with a hairline border and a gold-soft header — no rounded "card" look. */
   .entities-section {
-    margin-bottom: 1.2em;
-    border-radius: 0.3em;
-    overflow: hidden;
+    margin-bottom: 0.6em;
+    border: 0.075em solid var(--chrome-hairline);
+    background: var(--chrome-field-bg);
   }
-  
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5em 1em;
+    padding: 0.5em 0.8em;
     cursor: pointer;
     user-select: none;
     position: relative;
     width: 100%;
     background-color: var(--chrome-gold-soft);
-    border-radius: 0.3em 0.3em 0 0;
+    border-bottom: 0.075em solid var(--chrome-hairline);
     transition: background-color 0.2s ease;
   }
 
   .section-header:hover {
-    background-color: var(--chrome-card-strong);
+    background-color: var(--chrome-gold-soft);
+    filter: brightness(1.08);
   }
 
   .section-title {
@@ -1828,7 +1831,7 @@
   
   
   .section-content {
-    padding: 0.5em;
+    padding: 0.7em 0.85em;
   }
 
   .actions-grid {
@@ -1998,7 +2001,6 @@
   }
 
   .player-owned {
-    border-color: var(--chrome-gold-border);
     background-color: var(--chrome-gold-soft);
     position: relative;
   }
@@ -2042,28 +2044,29 @@
     flex-shrink: 0;
   }
 
+  /* Rarity shown as a subtle left accent + faint tint rather than a full box. */
   .entity.item.uncommon {
-    border-color: rgba(76, 175, 80, 0.3);
+    box-shadow: inset 0.2em 0 0 rgba(76, 175, 80, 0.5);
     background-color: rgba(76, 175, 80, 0.05);
   }
 
   .entity.item.rare {
-    border-color: rgba(33, 150, 243, 0.3);
+    box-shadow: inset 0.2em 0 0 rgba(33, 150, 243, 0.5);
     background-color: rgba(33, 150, 243, 0.05);
   }
 
   .entity.item.epic {
-    border-color: rgba(156, 39, 176, 0.3);
+    box-shadow: inset 0.2em 0 0 rgba(156, 39, 176, 0.5);
     background-color: rgba(156, 39, 176, 0.05);
   }
 
   .entity.item.legendary {
-    border-color: rgba(255, 152, 0, 0.3);
+    box-shadow: inset 0.2em 0 0 rgba(255, 152, 0, 0.5);
     background-color: rgba(255, 152, 0, 0.05);
   }
 
   .entity.item.mythic {
-    border-color: rgba(233, 30, 99, 0.3);
+    box-shadow: inset 0.2em 0 0 rgba(233, 30, 99, 0.5);
     background-color: rgba(233, 30, 99, 0.05);
     animation: pulseMythic 2s infinite alternate;
   }
@@ -2090,6 +2093,8 @@
     align-items: stretch;
     gap: 0.5em;
     cursor: default;
+    padding: 0.6em 0.7em;
+    margin: 0.4em 0;
     background-color: rgba(139, 0, 0, 0.05);
     border: 1px solid rgba(139, 0, 0, 0.2);
   }
@@ -2426,10 +2431,10 @@
 
   @keyframes pulseMythic {
     from {
-      box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.1);
+      box-shadow: inset 0.2em 0 0 rgba(233, 30, 99, 0.5), 0 0 0 0 rgba(233, 30, 99, 0.1);
     }
     to {
-      box-shadow: 0 0 10px 2px rgba(233, 30, 99, 0.3);
+      box-shadow: inset 0.2em 0 0 rgba(233, 30, 99, 0.5), 0 0 8px 1px rgba(233, 30, 99, 0.25);
     }
   }
 
@@ -2510,20 +2515,22 @@
   }
 
   
+  /* Flat rows separated by hairlines — consistent with StructureOverview's
+     feature/info rows, instead of raised bordered cards. */
   .entity {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.6em;
-    padding: 0.5em 0.7em;
-    border-radius: 0.3em;
-    background-color: var(--chrome-card);
-    border: 1px solid var(--chrome-gold-border);
+    margin-bottom: 0;
+    padding: 0.5em 0.3em;
+    background-color: transparent;
+    border-bottom: 0.04em solid var(--chrome-hairline);
     transition: background-color 0.2s ease;
     position: relative;
     cursor: pointer;
   }
+  .entity:last-child { border-bottom: none; }
 
   .entity-left {
     display: flex;

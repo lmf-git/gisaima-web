@@ -5,6 +5,8 @@
     import { apiGet } from '$lib/api.js';
     import Stamp from '../../components/ui/Stamp.svelte';
     import Flourish from '../../components/ui/Flourish.svelte';
+    import Unit from '../../components/icons/Unit.svelte';
+    import Race from '../../components/icons/Race.svelte';
 
     let entries = $state([]);
     let loading = $state(true);
@@ -23,6 +25,13 @@
     const counts = $derived.by(() => {
         const c = { personal: 0, house: 0, tribe: 0 };
         for (const e of entries) c[e.scope] = (c[e.scope] || 0) + 1;
+        return c;
+    });
+
+    // Per-scope unread tally so each tab can flag how many new dispatches await.
+    const unreadCounts = $derived.by(() => {
+        const c = { personal: 0, house: 0, tribe: 0 };
+        for (const e of entries) if (!e.read) c[e.scope] = (c[e.scope] || 0) + 1;
         return c;
     });
 
@@ -92,6 +101,27 @@
         return Object.entries(loot).filter(([k, v]) => !k.startsWith('_') && v > 0);
     }
 
+    // Collapse a flat roster into icon rows grouped by unit type (and race for
+    // players), mirroring the unit listing in the tile Details panel.
+    function groupRoster(roster) {
+        if (!Array.isArray(roster) || roster.length === 0) return [];
+        const byKey = new Map();
+        for (const u of roster) {
+            const type = u?.type || 'unit';
+            const race = u?.race || null;
+            const key = `${type}|${race || ''}`;
+            const existing = byKey.get(key);
+            if (existing) existing.count++;
+            else byKey.set(key, { type, race, name: u?.name || type, count: 1 });
+        }
+        return [...byKey.values()];
+    }
+
+    function _fmt(text) {
+        if (!text) return '';
+        return text.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
     onMount(load);
     $effect(() => { if (worldId) load(); });
 </script>
@@ -116,7 +146,11 @@
                 onclick={() => (scope = t.id)}
             >
                 {t.label}
-                {#if counts[t.id]}<span class="badge">{counts[t.id]}</span>{/if}
+                {#if unreadCounts[t.id]}
+                    <span class="badge unread-badge" title="{unreadCounts[t.id]} unread">{unreadCounts[t.id]}</span>
+                {:else if counts[t.id]}
+                    <span class="badge">{counts[t.id]}</span>
+                {/if}
             </button>
         {/each}
     </div>
@@ -136,12 +170,18 @@
     {:else}
         <ol class="list">
             {#each visible as e}
-                <li class:unread={e.read === false}>
-                    <div class="ic"><Stamp kind={glyphForType(e.type)} size={20} /></div>
+                <li class:unread={!e.read}>
+                    <div class="ic">
+                        <Stamp kind={glyphForType(e.type)} size={20} />
+                        {#if !e.read}<span class="unread-dot" aria-hidden="true"></span>{/if}
+                    </div>
                     <button class="card" onclick={() => openReport(e)}>
                         <div class="card-head">
                             <span class="kind">{(e.type || 'report').replace(/_/g, ' ').toUpperCase()}</span>
-                            <span class="time">{timeLabel(e.timestamp || e.createdAt)}</span>
+                            <span class="head-right">
+                                {#if !e.read}<span class="new-pill">New</span>{/if}
+                                <span class="time">{timeLabel(e.timestamp || e.createdAt)}</span>
+                            </span>
                         </div>
                         <h3>{e.title || e.summary || 'A report.'}</h3>
                         {#if e.summary && e.title}
@@ -234,6 +274,46 @@
                     </div>
                 {/if}
 
+                {#if isBattle(selectedReport) && (selectedReport.friendlyRoster?.length || selectedReport.enemyRoster?.length)}
+                    <div class="forces-section">
+                        <h4>Forces</h4>
+                        <div class="forces-grid">
+                            <div class="force-col">
+                                <span class="force-side-label">{selectedReport.type === 'battle_victory' ? (selectedReport.winnerName || 'Your side') : (selectedReport.loserName || 'Your side')}</span>
+                                {#each groupRoster(selectedReport.friendlyRoster) as u}
+                                    <div class="force-unit">
+                                        <span class="force-unit-icon">
+                                            {#if u.type === 'player'}
+                                                <Race raceKey={u.race} extraClass="report-unit-icon" />
+                                            {:else}
+                                                <Unit unitIconKey={u.type} extraClass="report-unit-icon" />
+                                            {/if}
+                                        </span>
+                                        <span class="force-unit-name">{u.name || _fmt(u.type)}</span>
+                                        {#if u.count > 1}<span class="force-unit-count">×{u.count}</span>{/if}
+                                    </div>
+                                {/each}
+                            </div>
+                            <div class="force-col enemy">
+                                <span class="force-side-label">{selectedReport.type === 'battle_victory' ? (selectedReport.loserName || 'Enemy') : (selectedReport.winnerName || 'Enemy')}</span>
+                                {#each groupRoster(selectedReport.enemyRoster) as u}
+                                    <div class="force-unit">
+                                        <span class="force-unit-icon">
+                                            {#if u.type === 'player'}
+                                                <Race raceKey={u.race} extraClass="report-unit-icon" />
+                                            {:else}
+                                                <Unit unitIconKey={u.type} extraClass="report-unit-icon" />
+                                            {/if}
+                                        </span>
+                                        <span class="force-unit-name">{u.name || _fmt(u.type)}</span>
+                                        {#if u.count > 1}<span class="force-unit-count">×{u.count}</span>{/if}
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
+                    </div>
+                {/if}
+
                 {#if lootEntries(selectedReport.loot).length > 0}
                     <div class="loot-section">
                         <h4>{selectedReport.type === 'battle_victory' ? 'Items Captured' : 'Items Lost'}</h4>
@@ -270,7 +350,7 @@
     .tab.active { color: var(--color-wax-red); border-bottom-color: var(--color-wax-red); }
     .badge {
         font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
-        background: var(--color-wax-red); color: var(--color-parchment-100);
+        background: rgba(26, 32, 48, 0.18); color: var(--color-ink-700);
         border-radius: 1em; padding: 0.05em 0.5em; min-width: 1.4em; text-align: center;
     }
 
@@ -284,7 +364,29 @@
         transition: background-color 0.15s, border-color 0.15s; font-family: inherit;
     }
     .card:hover { background: var(--color-parchment-200); border-color: rgba(176, 141, 74, 0.4); }
-    .list li.unread .card { border-left: 3px solid var(--color-wax-red); }
+    .list li.unread .card {
+        border-left: 3px solid var(--color-wax-red);
+        background: rgba(139, 32, 32, 0.05);
+    }
+    .list li.unread .card h3 { font-weight: 700; }
+
+    /* Unread affordances: a wax dot on the stamp + a "New" pill in the head. */
+    .ic { position: relative; }
+    .unread-dot {
+        position: absolute; top: 0.35em; right: -0.1em;
+        width: 0.55em; height: 0.55em; border-radius: 50%;
+        background: var(--color-wax-red);
+        box-shadow: 0 0 0 2px var(--color-parchment-100);
+    }
+    .head-right { display: inline-flex; align-items: center; gap: 0.6em; }
+    .new-pill {
+        font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700;
+        letter-spacing: 0.1em; text-transform: uppercase;
+        background: var(--color-wax-red); color: var(--color-parchment-100);
+        border-radius: 1em; padding: 0.1em 0.55em;
+    }
+    .unread-badge { background: var(--color-wax-red); color: var(--color-parchment-100); }
+
     .card-head { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-ink-500); }
     .card-head .kind { color: var(--color-wax-red); letter-spacing: 0.16em; }
     .card h3 { font-family: var(--font-display); font-size: 1.05rem; margin: 0.4em 0 0.3em; letter-spacing: 0.04em; color: var(--color-ink-900); }
@@ -355,6 +457,20 @@
     .casualty-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-500); }
     .casualty-num { font-family: var(--font-display); font-size: 1.6rem; color: var(--color-ink-900); }
     .casualty-block.enemy .casualty-num { color: var(--color-wax-red); }
+
+    /* ── Forces (unit rosters with icons) ── */
+    .forces-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+    .force-col { display: flex; flex-direction: column; gap: 0.4em; }
+    .force-side-label {
+        font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--color-ink-500); margin-bottom: 0.2em;
+    }
+    .force-col.enemy .force-side-label { color: var(--color-wax-red); }
+    .force-unit { display: flex; align-items: center; gap: 0.5em; font-family: var(--font-body); font-size: 0.86rem; }
+    .force-unit-icon { display: inline-flex; align-items: center; color: var(--color-aged-gold); flex-shrink: 0; }
+    :global(.report-unit-icon) { width: 1.3em; height: 1.3em; }
+    .force-unit-name { color: var(--color-ink-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .force-unit-count { font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-ink-500); margin-left: auto; }
 
     .loot-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5em; }
     .loot-list li {

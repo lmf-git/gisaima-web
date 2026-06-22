@@ -231,6 +231,12 @@
   let keyboardNavigationInterval = $state(null);
   let wasDrag = $state(false);
   let dist = $state(0);
+  // True only while the map is ACTUALLY being panned (pointer moved past the
+  // drag threshold) — distinct from $map.isDragging, which flips true on the
+  // initial mousedown before we know whether it's a pan or just a click. Paths
+  // key off this so a plain click (e.g. opening the peek menu) doesn't flicker
+  // them off; they only hide during a real pan.
+  let mapPanning = $state(false);
   
   // Add new state to track when animations are finished
   let animationsComplete = $state(false);
@@ -270,8 +276,11 @@
   // Change this to only depend on initial animation completion, not on current movement
   const shouldRenderDetails = $derived(introduced && animationsComplete);
   
-  // Add a separate check just for paths which should hide during movement
-  const shouldRenderPaths = $derived(shouldRenderDetails && !isMoving);
+  // Add a separate check just for paths which should hide during movement.
+  // Use mapPanning (real pan) rather than isMoving/$map.isDragging so a click
+  // that merely opens the peek menu doesn't briefly hide the movement paths.
+  const isPanningMap = $derived(mapPanning || keyboardNavigationInterval !== null);
+  const shouldRenderPaths = $derived(shouldRenderDetails && !isPanningMap);
   
   // Overlay spawn structures from world data onto coordinates at read-time so
   // they are never wiped by chunk loads (spawns live in world.spawns, not chunks).
@@ -429,6 +438,7 @@
 
       dist = 0;
       wasDrag = false;
+      mapPanning = false;
       isSnapBack = false;
       dragVisualX = 0;
       dragVisualY = 0;
@@ -467,6 +477,7 @@
       
       if (dist > DRAG_THRESHOLD) {
         wasDrag = true;
+        mapPanning = true;
       }
 
       const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -538,6 +549,7 @@
       isSnapBack = true;
       dragVisualX = 0;
       dragVisualY = 0;
+      mapPanning = false;
 
       map.update(state => ({
         ...state,
@@ -632,6 +644,7 @@
     
     // Reset drag tracking for new touch
     wasDrag = false;
+    mapPanning = false;
     dist = 0;
     
     // Handle pinch zoom first if we have multiple touch points
@@ -686,8 +699,9 @@
     
     if (moveDist > DRAG_THRESHOLD) {
       wasDrag = true;
+      mapPanning = true;
     }
-    
+
     handleDragAction({
       type: 'touchmove',
       touches: event.touches

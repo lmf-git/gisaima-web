@@ -214,10 +214,13 @@
         {:else}
           <span class="ds-topbar-name">Tile</span>
         {/if}
-        <!-- Coords/biome: hidden on desktop for Details (now in topbar itself), hidden for Achievements. -->
-        {#if tile && panel !== 'achievements'}
-          <span class="ds-topbar-coords" class:ds-hide-desktop={panel === 'details'}>{tile.x},{tile.y}</span>
-          {#if tile.biome?.name}<span class="ds-topbar-biome" class:ds-hide-desktop={panel === 'details'}>{_fmt(tile.biome.name)}</span>{/if}
+        <!-- Coords + biome badge: only on the Details header. Action panels
+             (mobilise, attack, move, …) keep a clean title with no tile meta. -->
+        {#if tile && panel === 'details'}
+          <span class="ds-topbar-coords">{tile.x},{tile.y}</span>
+          {#if tile.biome?.name}
+            <span class="ds-topbar-biome-badge" style="--biome-color: {tile.biome.color || tile.color || 'var(--chrome-text-faint)'}">{_fmt(tile.biome.name)}</span>
+          {/if}
         {/if}
       </div>
       <button class="ds-close" onclick={onClose} aria-label="Close dossier">
@@ -508,20 +511,34 @@
     flex-shrink: 0;
   }
 
-  .ds-topbar-biome {
+  /* Biome badge: tinted with the tile's own biome colour, plus a solid swatch
+     dot so the colour reads clearly regardless of the badge tint. */
+  .ds-topbar-biome-badge {
+    display: inline-flex;
+    align-items: center;
     font-family: var(--font-mono);
-    font-size: 0.65em;
-    color: var(--chrome-text-faint);
+    font-size: 0.62em;
+    letter-spacing: 0.06em;
+    padding: 0.15em 0.55em;
+    border-radius: 0.25em;
+    border: 1px solid color-mix(in srgb, var(--biome-color) 55%, transparent);
+    background: color-mix(in srgb, var(--biome-color) 20%, transparent);
+    color: var(--chrome-text);
     flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 7em;
+    max-width: 8em;
   }
-
-  /* Details panel: drop the redundant topbar coords/biome on desktop only. */
-  @media (min-width: 601px) {
-    .ds-hide-desktop { display: none; }
+  .ds-topbar-biome-badge::before {
+    content: '';
+    flex-shrink: 0;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    background: var(--biome-color);
+    border: 1px solid color-mix(in srgb, var(--biome-color) 70%, #0006);
+    margin-right: 0.45em;
   }
 
   /* Structure identity row in Details header */
