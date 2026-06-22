@@ -615,9 +615,22 @@
   .ds-panel :global(*::-webkit-scrollbar) { display: none; }
 
   /* Single scroll: panels embedded here (Details, StructureOverview) own a
-     `.modal-content` that normally scrolls itself. Inside the dossier we let
+     `.modal-content` that normally scrolls itself, wrapped in a `flex: 1`
+     `*-modal` element with its own `overflow: hidden`. Inside the dossier we let
      ds-body be the only scroller so the structure overview and the
-     groups/items lists share one continuous scroll instead of nesting two. */
+     groups/items lists share one continuous scroll instead of nesting two.
+
+     This matters most on a Details tile that HAS a structure: there both
+     StructureOverview (`.structure-modal`) and Details (`.details-modal`)
+     render as siblings, so without neutralising the wrappers they each take
+     `flex: 1` (half the panel) and clip/scroll independently — appearing as two
+     separate scroll regions. Flattening both wrappers to natural height with
+     visible overflow merges them into the single ds-body scroll. */
+  .ds-panel :global(.structure-modal),
+  .ds-panel :global(.details-modal) {
+    overflow: visible;
+    flex: none;
+  }
   .ds-panel :global(.modal-content) {
     overflow: visible;
     max-height: none;
