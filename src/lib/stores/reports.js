@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import { apiGet, apiPost } from '../api.js';
+import { apiGet, apiPost, apiDelete } from '../api.js';
 
 function createReportsStore() {
   const { subscribe, set, update } = writable({ reports: [], loading: false });
@@ -27,6 +27,15 @@ function createReportsStore() {
           reports: s.reports.map(r => r._id === reportId ? { ...r, read: true } : r),
         }));
       } catch { /* ignore */ }
+    },
+
+    async remove(worldId, reportId) {
+      // Optimistically drop it; the server deletes personal reports and hides
+      // shared (house/tribe) ones for this user.
+      update(s => ({ ...s, reports: s.reports.filter(r => r._id !== reportId) }));
+      try {
+        await apiDelete(`/worlds/${worldId}/reports/${reportId}`);
+      } catch { /* best-effort; a refetch will restore it if it failed */ }
     },
   };
 }

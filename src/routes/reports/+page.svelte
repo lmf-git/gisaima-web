@@ -61,6 +61,14 @@
 
     function closeReport() { selectedReport = null; }
 
+    function deleteReport(e, ev) {
+        if (ev) ev.stopPropagation();
+        if (!e?._id || !worldId) return;
+        entries = entries.filter(r => r._id !== e._id);
+        if (selectedReport?._id === e._id) selectedReport = null;
+        reports.remove(worldId, e._id);
+    }
+
     function handleKeydown(ev) {
         if (ev.key === 'Escape') closeReport();
     }
@@ -191,6 +199,12 @@
                             <div class="meta"><Stamp kind="compass" size={11} /> {e.location.x}, {e.location.y}</div>
                         {/if}
                     </button>
+                    <button
+                        class="delete-btn"
+                        title="Delete report"
+                        aria-label="Delete report"
+                        onclick={(ev) => deleteReport(e, ev)}
+                    >✕</button>
                 </li>
             {/each}
         </ol>
@@ -325,6 +339,10 @@
                     </div>
                 {/if}
             </div>
+
+            <div class="modal-foot">
+                <button class="modal-delete" onclick={() => deleteReport(selectedReport)}>Delete report</button>
+            </div>
         </div>
     </div>
 {/if}
@@ -355,7 +373,16 @@
     }
 
     .list { list-style: none; padding: 0; margin: 1.5em 0 0; display: grid; gap: 0.8em; }
-    .list li { display: grid; grid-template-columns: 40px 1fr; gap: 1em; align-items: start; }
+    .list li { display: grid; grid-template-columns: 40px 1fr auto; gap: 1em; align-items: start; }
+
+    .delete-btn {
+        align-self: start; margin-top: 0.6em;
+        background: none; border: none; cursor: pointer;
+        font-size: 0.95rem; line-height: 1; color: var(--color-ink-500);
+        padding: 0.3em 0.4em; border-radius: 3px;
+        transition: color 0.15s, background-color 0.15s;
+    }
+    .delete-btn:hover { color: var(--color-wax-red); background: rgba(139, 32, 32, 0.08); }
     .ic { display: flex; align-items: center; justify-content: center; color: var(--color-wax-red); padding-top: 0.6em; }
 
     .card {
@@ -423,6 +450,15 @@
 
     .modal-body { padding: 1.2em 1.4em; overflow-y: auto; display: flex; flex-direction: column; gap: 1.2em; }
 
+    .modal-foot { padding: 0.9em 1.4em; border-top: 1px solid rgba(26, 32, 48, 0.15); display: flex; justify-content: flex-end; }
+    .modal-delete {
+        background: none; border: 1px solid rgba(139, 32, 32, 0.4);
+        color: var(--color-wax-red); cursor: pointer;
+        font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+        padding: 0.5em 1em; transition: background-color 0.15s;
+    }
+    .modal-delete:hover { background: rgba(139, 32, 32, 0.1); }
+
     .modal-summary {
         font-family: var(--font-body); color: var(--color-ink-700); margin: 0; line-height: 1.55;
     }
@@ -484,7 +520,7 @@
     @media (max-width: 600px) {
         .page { padding: 6em 1.2em 3em; }
         h1 { font-size: 1.9rem; }
-        .list li { grid-template-columns: 30px 1fr; gap: 0.7em; }
+        .list li { grid-template-columns: 30px 1fr auto; gap: 0.7em; }
         .modal { max-height: 92vh; }
         .casualties-row { flex-direction: column; }
     }

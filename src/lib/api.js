@@ -73,8 +73,9 @@ export async function apiFetch(path, { method = 'GET', body } = {}) {
   return data;
 }
 
-export const apiGet  = (path)         => apiFetch(path);
-export const apiPost = (path, body)   => apiFetch(path, { method: 'POST', body });
+export const apiGet    = (path)       => apiFetch(path);
+export const apiPost   = (path, body) => apiFetch(path, { method: 'POST', body });
+export const apiDelete = (path)       => apiFetch(path, { method: 'DELETE' });
 
 // ---------------------------------------------------------------------------
 // WebSocket

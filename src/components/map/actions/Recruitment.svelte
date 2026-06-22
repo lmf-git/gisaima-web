@@ -8,6 +8,7 @@
     import { ITEMS } from "gisaima-shared/definitions/ITEMS.js";
 
     import { game, currentPlayer } from "../../../lib/stores/game.js";
+    import { coordinates } from "../../../lib/stores/map.js";
 
     import Unit from "../../icons/Unit.svelte";
     import BuildingIcon from "../../icons/BuildingIcon.svelte";
@@ -81,11 +82,36 @@
         }
     });
 
+    // Boats are water-motion units; mirror the server gate that only allows them
+    // to be recruited at a structure on or beside water.
+    function isWaterTile(t) {
+        if (!t) return false;
+        if (t.biome?.water) return true;
+        return (t.riverValue > 0.2) || (t.lakeValue > 0.2);
+    }
+    function isBoatUnit(unit) {
+        return unit?.type === 'boat'
+            || unit?.type === 'ship'
+            || (Array.isArray(unit?.motion) && unit.motion.includes('water'));
+    }
+    // True if this structure's tile or any of its 8 neighbours is water.
+    function hasWaterAccess() {
+        const tiles = get(coordinates) || [];
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const t = tiles.find(c => c.x === x + dx && c.y === y + dy);
+                if (isWaterTile(t)) return true;
+            }
+        }
+        return false;
+    }
+
     // Function to get available units directly from UNITS
     function getAvailableUnits(structure) {
         const race = structure.race?.toLowerCase();
         const structureLevel = structure.level || 1;
         const structureType = structure.type;
+        const waterAccess = hasWaterAccess();
         
         // Get buildings inside the structure (if any)
         const buildings = structure.buildings || {};
@@ -197,7 +223,15 @@
                         }
                     }
                 }
-                
+
+                // Water access check for boats — must be on or beside water.
+                if (isBoatUnit(unit) && !waterAccess) {
+                    available = false;
+                    if (!unavailableReason) {
+                        unavailableReason = 'Requires water access (build on or beside water)';
+                    }
+                }
+
                 // Return the unit with availability info
                 return {
                     ...cleanUnit,
