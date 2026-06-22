@@ -1,7 +1,7 @@
 <script>
   import { apiPost } from '../../../lib/api.js';
 
-  import { targetStore } from '../../../lib/stores/map';
+  import { targetStore, entities } from '../../../lib/stores/map';
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
 
   const {
@@ -90,6 +90,24 @@
       });
 
       console.log('Demobilization started:', result);
+
+      // Optimistic update — like mobilise, no chunk_update is broadcast until the
+      // next world tick. Flip the group to 'demobilising' locally so it stops
+      // reading as idle: the peek wheel and Details gate demobilise/move/gather
+      // on status === 'idle', so without this the player could fire those
+      // actions again on a group that's no longer available.
+      const tileKey = `${tileData.x},${tileData.y}`;
+      entities.update(current => {
+        const groups = { ...current.groups };
+        const list = groups[tileKey] || [];
+        groups[tileKey] = list.map(g =>
+          g.id === selectedGroup.id
+            ? { ...g, status: 'demobilising', storageDestination }
+            : g
+        );
+        return { ...current, groups };
+      });
+
       const nextTickFormatted = timeUntilNextTick;
       statusMessage = `Demobilization started! Your group will be disbursed at the next game tick (in approximately ${nextTickFormatted}).`;
 

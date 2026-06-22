@@ -3,8 +3,10 @@
 
   // Import unit definitions to get boat capacities
   import UNITS from 'gisaima-shared/definitions/UNITS.js';
+  import { merge, groupCarryCapacity } from 'gisaima-shared/economy/items.js';
   import Checkbox from '../../ui/Checkbox.svelte';
   import UnitIcon from '../../icons/UnitIcon.svelte';
+  import ItemIcon from '../../icons/ItemIcon.svelte';
 
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
   import { targetStore, entities } from '../../../lib/stores/map';
@@ -104,6 +106,55 @@
   
 
   
+  // ─── Items to mobilise with ─────────────────────────────────────
+  // The new group can be loaded with items drawn from the structure on this
+  // tile: its shared storage or the player's personal bank. Selection is capped
+  // at the forming group's carry capacity (matched on the server).
+  let itemSource = $state('shared');           // 'shared' | 'personal'
+  let selectedItems = $state({});              // { CODE: qty }
+
+  function normItems(raw) {
+    const out = merge({}, raw);
+    for (const k of Object.keys(out)) if (k.startsWith('_')) delete out[k];
+    return out;
+  }
+
+  const sharedItems = $derived(normItems(tileData?.structure?.items));
+  const bankItems   = $derived(normItems(tileData?.structure?.banks?.[$currentPlayer?.id]));
+  const sourceItems = $derived(itemSource === 'personal' ? bankItems : sharedItems);
+  const hasStorage  = $derived(
+    !!tileData?.structure &&
+    (Object.keys(sharedItems).length > 0 || Object.keys(bankItems).length > 0)
+  );
+
+  // Carry capacity of the forming group (units + player, incl. genetic bonus),
+  // computed via the shared helper so it matches the server's cap exactly.
+  const carryCapacity = $derived.by(() => {
+    const units = {};
+    for (const u of selectedUnits) units[u.id ?? u.unitId] = u;
+    if (includePlayer && myEntity && myLifeId) {
+      units[myLifeId] = { ...myEntity, id: myLifeId, type: 'player', race: $currentPlayer?.race };
+    }
+    return groupCarryCapacity({ units });
+  });
+  const selectedItemCount = $derived(
+    Object.values(selectedItems).reduce((s, q) => s + (Number(q) || 0), 0)
+  );
+  const itemCapacityExceeded = $derived(carryCapacity > 0 && selectedItemCount > carryCapacity);
+
+  function setItemSource(src) {
+    if (itemSource === src) return;
+    itemSource = src;
+    selectedItems = {};   // selections belong to a single source
+  }
+
+  function setItemQty(code, qty, max) {
+    const q = Math.max(0, Math.min(Math.floor(Number(qty) || 0), max));
+    const next = { ...selectedItems };
+    if (q > 0) next[code] = q; else delete next[code];
+    selectedItems = next;
+  }
+
   // Function to check if a unit is a boat
   function isBoatUnit(unit) {
     if (!unit || !unit.type) return false;
@@ -173,6 +224,11 @@
       return;
     }
 
+    if (itemCapacityExceeded) {
+      mobilizeError = `Selected items (${selectedItemCount}) exceed the group's carry capacity (${carryCapacity}).`;
+      return;
+    }
+
     mobilizeError = null;
     processing = true;
     mobilizeSuccess = false; // Reset success state
@@ -190,6 +246,10 @@
         race: $currentPlayer?.race
       });
 
+      const itemsPayload = Object.fromEntries(
+        Object.entries(selectedItems).filter(([, q]) => q > 0)
+      );
+
       const result = await apiPost('/actions/mobiliseUnits', {
         worldId: $game.worldKey,
         tileX: tileData.x,
@@ -200,7 +260,9 @@
         name: groupName,
         fleeAtLosses,
         joinBattlesInProgress,
-        race: $currentPlayer?.race
+        race: $currentPlayer?.race,
+        items: itemsPayload,
+        itemSource
       });
 
       console.log('Mobilization result:', result);
@@ -231,7 +293,8 @@
         x: tileData.x,
         y: tileData.y,
         race: $currentPlayer?.race || null,
-        units: optimisticUnits
+        units: optimisticUnits,
+        items: { ...itemsPayload }
       };
       entities.update(current => {
         const groups = { ...current.groups };
@@ -240,7 +303,29 @@
         if (includePlayer && $currentPlayer && myLifeId) {
           players[tileKey] = (players[tileKey] || []).filter(p => p.id !== myLifeId);
         }
-        return { ...current, groups, players };
+        // Deduct the loaded items from the structure's storage so they don't
+        // appear both in the new group and in the structure until the next tick.
+        const structure = { ...current.structure };
+        const s = structure[tileKey];
+        if (s && Object.keys(itemsPayload).length) {
+          const deduct = (raw) => {
+            const out = normItems(raw);
+            for (const [code, qty] of Object.entries(itemsPayload)) {
+              const c = code.toUpperCase();
+              out[c] = (out[c] || 0) - qty;
+              if (out[c] <= 0) delete out[c];
+            }
+            return out;
+          };
+          if (itemSource === 'personal') {
+            const banks = { ...(s.banks || {}) };
+            banks[$currentPlayer.id] = deduct(banks[$currentPlayer.id]);
+            structure[tileKey] = { ...s, banks };
+          } else {
+            structure[tileKey] = { ...s, items: deduct(s.items) };
+          }
+        }
+        return { ...current, groups, players, structure };
       });
 
       onClose();
@@ -259,7 +344,8 @@
   
   let canMobilize = $derived(
     ((selectedUnits.length > 0) || (includePlayer && !!myEntity))
-    && !capacityExceeded // Add capacity check
+    && !capacityExceeded // boat capacity
+    && !itemCapacityExceeded // carry capacity for loaded items
   );
 
   // Rule-of-march (flee at losses, join battles) only matters for a real force.
@@ -460,6 +546,52 @@
           </div>
         {/if}
         
+        {#if hasStorage}
+          <div class="items-section">
+            <h3>Load Items</h3>
+            <div class="item-source-toggle">
+              <button
+                type="button"
+                class:active={itemSource === 'shared'}
+                disabled={Object.keys(sharedItems).length === 0}
+                onclick={() => setItemSource('shared')}
+              >Shared Storage</button>
+              <button
+                type="button"
+                class:active={itemSource === 'personal'}
+                disabled={Object.keys(bankItems).length === 0}
+                onclick={() => setItemSource('personal')}
+              >Your Bank</button>
+            </div>
+
+            {#if Object.keys(sourceItems).length === 0}
+              <p class="no-items-msg">No items in this store.</p>
+            {:else}
+              <div class="items-list">
+                {#each Object.entries(sourceItems) as [code, avail] (code)}
+                  <div class="item-row">
+                    <ItemIcon {code} size="1.4em" extraClass="mobilise-item-icon" />
+                    <span class="item-name">{_fmt(code.toLowerCase())}</span>
+                    <span class="item-avail">/ {avail}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max={avail}
+                      value={selectedItems[code] || 0}
+                      oninput={(e) => setItemQty(code, e.currentTarget.value, avail)}
+                    />
+                    <button type="button" class="max-btn" onclick={() => setItemQty(code, avail, avail)}>max</button>
+                  </div>
+                {/each}
+              </div>
+              <div class="item-capacity" class:exceeded={itemCapacityExceeded}>
+                Carrying {selectedItemCount}{#if carryCapacity > 0} / {carryCapacity}{/if} items
+                {#if itemCapacityExceeded}<span class="capacity-warning">over capacity</span>{/if}
+              </div>
+            {/if}
+          </div>
+        {/if}
+
         <div class="summary">
           <h3>Summary</h3>
           {#if summaryUnits.length > 0 || (includePlayer && myEntity)}
@@ -480,6 +612,19 @@
             </div>
           {:else}
             <p>No units selected.</p>
+          {/if}
+          {#if selectedItemCount > 0}
+            <div class="summary-items">
+              {#each Object.entries(selectedItems) as [code, qty] (code)}
+                {#if qty > 0}
+                  <span class="summary-unit">
+                    <ItemIcon {code} size="1.1em" extraClass="summary-unit-icon" />
+                    <span class="summary-unit-count">{qty}×</span>
+                    <span class="summary-unit-name">{_fmt(code.toLowerCase())}</span>
+                  </span>
+                {/if}
+              {/each}
+            </div>
           {/if}
           {#if selectedBoatUnits.length > 0}
             <p class="transport-note">
@@ -717,6 +862,116 @@
   .group-tag {
     color: var(--chrome-text-dim);
     background-color: rgba(176, 141, 74, 0.08);
+  }
+
+  /* ── Load items ── */
+  .items-section {
+    padding-bottom: 1em;
+    border-bottom: 0.075em solid rgba(176, 141, 74, 0.18);
+  }
+
+  .item-source-toggle {
+    display: flex;
+    gap: 0.4em;
+    margin-bottom: 0.6em;
+  }
+  .item-source-toggle button {
+    flex: 1;
+    padding: 0.4em 0.6em;
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 0.075em solid rgba(176, 141, 74, 0.25);
+    color: var(--chrome-text-dim);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .item-source-toggle button.active {
+    background: var(--chrome-gold-soft);
+    border-color: var(--chrome-gold-border);
+    color: var(--chrome-gold);
+  }
+  .item-source-toggle button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+    max-height: 22vh;
+    overflow-y: auto;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.3em 0.4em;
+    border: 0.075em solid rgba(176, 141, 74, 0.15);
+    background-color: rgba(176, 141, 74, 0.05);
+  }
+  :global(.mobilise-item-icon) { color: var(--chrome-gold); flex-shrink: 0; }
+  .item-row .item-name {
+    flex: 1;
+    min-width: 0;
+    text-transform: capitalize;
+    color: var(--chrome-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .item-row .item-avail {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    color: var(--chrome-text-faint);
+  }
+  .item-row input {
+    width: 4em;
+    padding: 0.25em 0.4em;
+    background: var(--chrome-field-bg);
+    border: 0.075em solid rgba(176, 141, 74, 0.3);
+    color: var(--chrome-text);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+  .max-btn {
+    padding: 0.25em 0.5em;
+    background: transparent;
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-gold);
+    font-family: var(--font-display);
+    font-size: 0.62em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .max-btn:hover { background: var(--chrome-gold-soft); }
+
+  .item-capacity {
+    margin-top: 0.5em;
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    color: var(--chrome-text-dim);
+  }
+  .item-capacity.exceeded { color: #f44336; }
+  .item-capacity .capacity-warning { color: #f44336; margin-left: 0.5em; font-weight: 600; }
+
+  .no-items-msg {
+    font-style: italic;
+    color: var(--chrome-text-faint);
+    font-size: 0.85em;
+    margin: 0.3em 0;
+  }
+
+  .summary-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 0.5em;
   }
 
   .summary {

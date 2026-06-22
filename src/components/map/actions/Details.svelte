@@ -1624,7 +1624,7 @@
   }
 
   .modal-content {
-    padding: 1em 1.5em 1.5em;
+    padding: 0.75em 0.9em;
     overflow-y: auto;
     max-height: calc(85vh - 4em);
     color: var(--chrome-text);
@@ -1708,16 +1708,19 @@
     filter: brightness(1.08);
   }
 
+  /* Match StructureOverview's collapsible section heading (its <h4>): small
+     aged-gold display caps with wide tracking, not a heavy body-weight title. */
   .section-title {
     margin: 0;
-    font-size: 0.9em;
-    font-weight: 600;
-    color: var(--chrome-text-dim);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.62em;
+    font-weight: 400;
+    color: var(--color-aged-gold, #b08d4a);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.2em;
     display: flex;
     align-items: center;
-    gap: 0.3em;
+    gap: 0.4em;
   }
 
   .section-controls {
@@ -1731,21 +1734,18 @@
     background: none;
     border: none;
     color: var(--chrome-text-faint);
-    font-size: 0.8em;
+    font-size: 0.75em;
     cursor: pointer;
-    padding: 0.2em 0.5em;
-    transition: all 0.2s ease;
+    padding: 0.2em 0.4em;
+    transition: color 0.15s;
+    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.5em;
-    min-height: 1.5em;
   }
 
   .collapse-button:hover {
-    color: var(--chrome-text);
-    background-color: var(--chrome-gold-soft);
-    border-radius: 50%;
+    color: var(--chrome-gold);
   }
 
   
