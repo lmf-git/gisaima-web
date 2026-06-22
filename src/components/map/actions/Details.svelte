@@ -1618,7 +1618,7 @@
     flex-direction: column;
     flex: 1;
     background: transparent;
-    color: var(--chrome-text-dim);
+    color: var(--chrome-text);
     font-family: var(--font-body);
     overflow: hidden;
   }
@@ -1708,16 +1708,18 @@
     filter: brightness(1.08);
   }
 
-  /* Match StructureOverview's collapsible section heading (its <h4>): small
-     aged-gold display caps with wide tracking, not a heavy body-weight title. */
+  /* Match StructureOverview's collapsible section heading. Those titles are
+     <h4>s, which the global `.app.map h4` rule forces to --chrome-text with
+     0.06em tracking; mirror that exactly here so the two panels' section
+     headers read identically (StructureOverview uses <h4>, this uses a span). */
   .section-title {
     margin: 0;
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.62em;
     font-weight: 400;
-    color: var(--color-aged-gold, #b08d4a);
+    color: var(--chrome-text);
     text-transform: uppercase;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.06em;
     display: flex;
     align-items: center;
     gap: 0.4em;

@@ -827,7 +827,6 @@
     :global(.app.map.app.map .build-menu),
     :global(.app.map.app.map .build-modal),
     :global(.app.map.app.map .build-status),
-    :global(.app.map.app.map .details-modal),
     :global(.app.map.app.map .crafting-menu),
     :global(.app.map.app.map .crafting-modal),
     :global(.app.map.app.map .recruitment-menu),
