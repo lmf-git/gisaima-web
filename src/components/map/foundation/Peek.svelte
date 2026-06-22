@@ -16,6 +16,7 @@
   import Structure from '../../icons/Structure.svelte';
   import Info from '../../icons/Info.svelte';
   import Horn from '../../icons/Horn.svelte';
+  import Research from '../../icons/Research.svelte';
   
   
 
@@ -177,7 +178,7 @@
     { id: 'details', label: 'Details', icon: Info, condition: () => true }, // Always show details (incl. structure overview)
     { id: 'build', label: 'Build', icon: Hammer, condition: canBuild },
     { id: 'craft', label: 'Craft', icon: Hammer, condition: canCraft },
-    { id: 'research', label: 'Research', icon: Info, condition: canResearch },
+    { id: 'research', label: 'Research', icon: Research, condition: canResearch },
     { id: 'move', label: 'Move', icon: Compass, condition: canMove },
     { id: 'mobilise', label: 'Mobilise', icon: Rally, condition: canMobilize },
     { id: 'gather', label: 'Gather', icon: Crop, condition: canGather },

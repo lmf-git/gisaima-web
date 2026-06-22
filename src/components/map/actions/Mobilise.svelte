@@ -569,17 +569,28 @@
             {:else}
               <div class="items-list">
                 {#each Object.entries(sourceItems) as [code, avail] (code)}
+                  {@const qty = selectedItems[code] || 0}
                   <div class="item-row">
                     <ItemIcon {code} size="1.4em" extraClass="mobilise-item-icon" />
                     <span class="item-name">{_fmt(code.toLowerCase())}</span>
+                    <div class="quantity-control" role="group" aria-label={`Quantity of ${_fmt(code.toLowerCase())}`}>
+                      <button
+                        type="button"
+                        class="quantity-button"
+                        aria-label="Decrease"
+                        onclick={() => setItemQty(code, qty - 1, avail)}
+                        disabled={qty <= 0}
+                      >−</button>
+                      <span class="quantity-display" aria-live="polite">{qty}</span>
+                      <button
+                        type="button"
+                        class="quantity-button"
+                        aria-label="Increase"
+                        onclick={() => setItemQty(code, qty + 1, avail)}
+                        disabled={qty >= avail}
+                      >+</button>
+                    </div>
                     <span class="item-avail">/ {avail}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max={avail}
-                      value={selectedItems[code] || 0}
-                      oninput={(e) => setItemQty(code, e.currentTarget.value, avail)}
-                    />
                     <button type="button" class="max-btn" onclick={() => setItemQty(code, avail, avail)}>max</button>
                   </div>
                 {/each}
@@ -929,14 +940,46 @@
     font-size: 0.8em;
     color: var(--chrome-text-faint);
   }
-  .item-row input {
-    width: 4em;
-    padding: 0.25em 0.4em;
-    background: var(--chrome-field-bg);
-    border: 0.075em solid rgba(176, 141, 74, 0.3);
-    color: var(--chrome-text);
-    font-family: var(--font-mono);
+
+  /* Stepper matching Recruit's quantity control, sized down for the item rows. */
+  .quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+  }
+  .quantity-button {
+    width: 1.7em;
+    height: 1.7em;
+    background-color: rgba(176, 141, 74, 0.08);
+    border: 0.075em solid rgba(176, 141, 74, 0.25);
+    color: var(--chrome-text-dim);
+    font-size: 1em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .quantity-button:hover:not(:disabled) {
+    background-color: rgba(176, 141, 74, 0.15);
+    border-color: rgba(176, 141, 74, 0.4);
+  }
+  .quantity-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .quantity-display {
+    min-width: 2em;
+    height: 1.7em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0.075em solid var(--chrome-border);
     font-size: 0.85em;
+    color: var(--chrome-text);
+    background: var(--chrome-field-bg);
+    font-family: var(--font-mono);
   }
   .max-btn {
     padding: 0.25em 0.5em;

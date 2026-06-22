@@ -1377,7 +1377,6 @@
   /* ── Collapsible sections ── */
   .entities-section {
     margin-bottom: 0.6em;
-    border: 0.075em solid var(--chrome-hairline);
     background: var(--chrome-field-bg);
   }
 

@@ -1682,10 +1682,10 @@
   }
   
   /* Match StructureOverview's collapsible sections: a flat field-bg container
-     with a hairline border and a gold-soft header — no rounded "card" look. */
+     with a gold-soft header. Borderless — the background fill and the header's
+     bottom hairline provide enough separation without a boxed outline. */
   .entities-section {
     margin-bottom: 0.6em;
-    border: 0.075em solid var(--chrome-hairline);
     background: var(--chrome-field-bg);
   }
 
@@ -1761,7 +1761,6 @@
     line-height: 1;
     background: var(--chrome-field-bg);
     color: var(--chrome-text);
-    border: 1px solid var(--chrome-border);
   }
 
   .entity-count.groups-count {
@@ -2095,8 +2094,8 @@
     cursor: default;
     padding: 0.6em 0.7em;
     margin: 0.4em 0;
-    background-color: rgba(139, 0, 0, 0.05);
-    border: 1px solid rgba(139, 0, 0, 0.2);
+    background-color: rgba(139, 0, 0, 0.08);
+    box-shadow: inset 0.2em 0 0 rgba(139, 0, 0, 0.45);
   }
 
   .battle-status-tag {

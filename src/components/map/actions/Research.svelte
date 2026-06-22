@@ -2,6 +2,8 @@
   import { apiPost } from '../../../lib/api.js';
   import { game } from '../../../lib/stores/game.js';
   import { RESEARCH, getAvailableResearch, highestAcademyLevel } from 'gisaima-shared/definitions/RESEARCH.js';
+  import Lock from '../../icons/Lock.svelte';
+  import Check from '../../icons/Check.svelte';
 
   const { structure = null, x, y, onClose = () => {} } = $props();
 
@@ -81,11 +83,11 @@
     {/if}
 
     {#each Object.keys(completed).filter(k => completed[k]) as id (id)}
-      <div class="done">✓ {RESEARCH[id]?.name || id}</div>
+      <div class="done"><Check size="0.85em" extraClass="r-tag-icon" /> {RESEARCH[id]?.name || id}</div>
     {/each}
 
     {#each locked as r (r.id)}
-      <div class="locked">🔒 {r.name} — {r.reason}</div>
+      <div class="locked"><Lock size="0.85em" extraClass="r-tag-icon" /> {r.name} — {r.reason}</div>
     {/each}
   {/if}
 </div>
@@ -108,6 +110,7 @@
   .r-go:disabled { opacity: 0.4; cursor: default; }
   .r-desc { font-family: var(--font-editorial, serif); font-style: italic; font-size: 0.75em; color: var(--chrome-text-dim, #a09070); margin: 0.3em 0; }
   .r-cost { font-family: var(--font-mono, monospace); font-size: 0.65em; color: var(--chrome-text-faint, #6a5f45); margin: 0; }
-  .done { font-size: 0.72em; color: var(--chrome-gold, #b08d4a); margin-top: 0.4em; }
-  .locked { font-size: 0.72em; color: var(--chrome-text-faint, #6a5f45); margin-top: 0.4em; }
+  .done { display: flex; align-items: center; gap: 0.4em; font-size: 0.72em; color: var(--chrome-gold, #b08d4a); margin-top: 0.4em; }
+  .locked { display: flex; align-items: center; gap: 0.4em; font-size: 0.72em; color: var(--chrome-text-faint, #6a5f45); margin-top: 0.4em; }
+  :global(.r-tag-icon) { flex-shrink: 0; }
 </style>
