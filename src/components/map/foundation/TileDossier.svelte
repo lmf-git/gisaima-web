@@ -653,6 +653,11 @@
     max-height: none;
     flex: none;
   }
+  /* When StructureOverview sits above Details, collapse the doubled padding at
+     their seam so every section is separated by the same gap — the structure's
+     last section margin — rather than a larger gap between the two panels. */
+  .ds-panel :global(.structure-modal .modal-content) { padding-bottom: 0; }
+  .ds-panel :global(.structure-modal + .details-modal .modal-content) { padding-top: 0; }
 
   /* ── Scoped typography improvements for panels rendered in the dossier ── */
 

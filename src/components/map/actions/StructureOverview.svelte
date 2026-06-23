@@ -857,7 +857,7 @@
           tabindex="0"
           aria-expanded={!collapsedSections.building}
         >
-          <h4>Building Info</h4>
+          <span class="section-title">Building Info</span>
           <button class="collapse-button">
             {collapsedSections.building ? '▼' : '▲'}
           </button>
@@ -987,7 +987,7 @@
           tabindex="0"
           aria-expanded={!collapsedSections.buildings}
         >
-          <h4>Buildings <span class="entity-count buildings-count">{tileData?.structure?.buildings ? Object.keys(tileData?.structure?.buildings).length : 0}</span></h4>
+          <span class="section-title">Buildings <span class="entity-count buildings-count">{tileData?.structure?.buildings ? Object.keys(tileData?.structure?.buildings).length : 0}</span></span>
           <button class="collapse-button">
             {collapsedSections.buildings ? '▼' : '▲'}
           </button>
@@ -1115,7 +1115,7 @@
             tabindex="0"
             aria-expanded={!collapsedSections.access}
           >
-            <h4>Access</h4>
+            <span class="section-title">Access</span>
             <button class="collapse-button">{collapsedSections.access ? '▼' : '▲'}</button>
           </div>
 
@@ -1160,18 +1160,18 @@
             tabindex="0"
             aria-expanded={!collapsedSections.items}
           >
-            <h4>Storage 
+            <span class="section-title">Storage
               <span class="entity-count items-count">
-                {activeTab === 'shared' 
-                  ? (Array.isArray(tileData?.structure?.items) 
-                    ? tileData?.structure?.items.length 
+                {activeTab === 'shared'
+                  ? (Array.isArray(tileData?.structure?.items)
+                    ? tileData?.structure?.items.length
                     : Object.keys(tileData?.structure?.items || {}).filter(k => !k.startsWith('_')).length)
-                  : (Array.isArray(tileData?.structure?.banks?.$currentPlayer?.id) 
+                  : (Array.isArray(tileData?.structure?.banks?.$currentPlayer?.id)
                     ? tileData?.structure?.banks?.$currentPlayer?.id.length
                     : Object.keys(tileData?.structure?.banks?.$currentPlayer?.id || {}).filter(k => !k.startsWith('_')).length)
                 }
               </span>
-            </h4>
+            </span>
             <button class="collapse-button">
               {collapsedSections.items ? '▼' : '▲'}
             </button>
@@ -1405,14 +1405,17 @@
   }
   .collapse-button:hover { color: var(--chrome-gold); }
 
-  h4 {
+  /* Section title — a plain span, not an <h4>, so it isn't recoloured by the
+     global `.app.map h4` rule. Kept identical to Details' .section-title so the
+     two panels stacked in the tile-dossier read as one consistent list. */
+  .section-title {
     margin: 0;
     font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.62em;
     font-weight: 400;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-aged-gold, #b08d4a);
+    color: var(--chrome-text);
     display: flex;
     align-items: center;
     gap: 0.4em;

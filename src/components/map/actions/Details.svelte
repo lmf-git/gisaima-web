@@ -1708,10 +1708,10 @@
     filter: brightness(1.08);
   }
 
-  /* Match StructureOverview's collapsible section heading. Those titles are
-     <h4>s, which the global `.app.map h4` rule forces to --chrome-text with
-     0.06em tracking; mirror that exactly here so the two panels' section
-     headers read identically (StructureOverview uses <h4>, this uses a span). */
+  /* Section title — kept identical to StructureOverview's .section-title so the
+     two panels stacked in the tile-dossier read as one consistent list. Both are
+     plain spans (not <h4>) so neither is recoloured by the global `.app.map h4`
+     rule, which is why no specificity gymnastics are needed here. */
   .section-title {
     margin: 0;
     font-family: var(--font-display, 'Cinzel', serif);
