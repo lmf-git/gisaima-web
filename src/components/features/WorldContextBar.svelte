@@ -362,7 +362,9 @@
         border-bottom: 0.075em solid var(--chrome-border);
         color: var(--chrome-text);
         font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
-        backdrop-filter: blur(0.5em);
+        /* No backdrop-filter: the gradient background is already opaque, so the
+           blur added nothing but a compositing layer that glitched the page
+           background (notably the worlds loader) behind it. */
     }
     /* The LeftRail appears on map + all world-scoped pages; offset the dossier. */
     :global(.app.map) .dossier,

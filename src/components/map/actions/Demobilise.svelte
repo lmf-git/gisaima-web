@@ -55,12 +55,14 @@
     
     // Update state only once
     availableGroups = filteredGroups;
-    
-    // Auto-select only after setting availableGroups
-    if (filteredGroups.length === 1 && !selectedGroup) {
-      selectedGroup = filteredGroups[0];
-    } else if (filteredGroups.length === 0) {
+
+    // Always keep a valid group selected when any are available, so the
+    // Demobilise button is never left disabled (clicking it would otherwise do
+    // nothing). Falls back to the first group if the prior selection is gone.
+    if (filteredGroups.length === 0) {
       selectedGroup = null;
+    } else if (!selectedGroup || !filteredGroups.some(g => g.id === selectedGroup.id)) {
+      selectedGroup = filteredGroups[0];
     }
   });
 
