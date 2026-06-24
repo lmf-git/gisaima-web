@@ -15,6 +15,7 @@
   
   import Torch from '../../icons/Torch.svelte';
   import StructureIcon from '../../icons/StructureIcon.svelte';
+  import FeatureIcon from '../../icons/FeatureIcon.svelte';
   import Cancel from '../../icons/Close.svelte';
   import Horn from '../../icons/Horn.svelte';
   import Human from '../../icons/Human.svelte';
@@ -27,7 +28,6 @@
   import Compass from '../../icons/Compass.svelte';
   import Crop from '../../icons/Crop.svelte';
   import Rally from '../../icons/Rally.svelte';
-  import Rings from '../../icons/Rings.svelte';
   import Sword from '../../icons/Sword.svelte';
   import Hammer from '../../icons/Hammer.svelte';
   import Unit from '../../icons/Unit.svelte';
@@ -174,28 +174,9 @@
   const sortedGroups  = $derived(sortEntities(detailsData?.groups  || [], 'groups'));
   const sortedPlayers = $derived(sortEntities(detailsData?.players || [], 'players'));
 
-  // Marriage: wed the controlled character to another character standing on the
-  // same tile (in a group together or demobilised at a structure). The server
-  // enforces co-location, single-marriage, and ownership — here we just offer it
-  // for any character that isn't the one you're currently controlling.
-  let marryBusy = $state(false);
-  function canWed(player) {
-    return !!player?.id && !!$currentPlayer?.lifeId && String(player.id) !== String($currentPlayer.lifeId);
-  }
-  async function marryTo(otherLifeId) {
-    if (marryBusy || !$currentPlayer?.lifeId) return;
-    marryBusy = true;
-    try {
-      await apiPost(`/worlds/${encodeURIComponent($game.worldKey)}/lives/marry`, {
-        lifeIdA: $currentPlayer.lifeId,
-        lifeIdB: otherLifeId,
-      });
-    } catch (e) {
-      alert(`Marriage failed: ${e.message}`);
-    } finally {
-      marryBusy = false;
-    }
-  }
+  // Marriage is no longer offered from the tile dossier — it is now courted via
+  // friend-gated proposals on the Friends page (a proposal the other player must
+  // accept). See web/src/routes/friends/+page.svelte.
   const sortedItems   = $derived(sortEntities(detailsData?.items   || [], 'items'));
   const sortedBattles = $derived(sortEntities(detailsData?.battles || [], 'battles'));
 
@@ -1266,14 +1247,6 @@
                   </div>
 
                   <!-- Mobilise sits at entity level so it right-aligns correctly -->
-                  {#if canWed(player)}
-                    <div class="entity-actions">
-                      <button class="entity-action" onclick={() => marryTo(player.id)} disabled={marryBusy} title="Wed your character to this one (must be on the same tile)">
-                        <Rings extraClass="action-icon-small" />
-                        Wed
-                      </button>
-                    </div>
-                  {/if}
                   {#if canMobilizePlayer(player)}
                     <div class="entity-actions">
                       <button class="entity-action" onclick={() => executeAction('mobilise')}>
@@ -1337,7 +1310,7 @@
           {#if !collapsedSections.items}
             <div class="section-content" transition:slide|local={{ duration: 300 }}>
               {#each sortedItems as item}
-                {@const itemCode = (item.id || item.type || '').toUpperCase()}
+                {@const itemCode = (item.code || item.id || item.type || '').toUpperCase()}
                 <div class="entity item {getRarityClass(item.rarity)}">
                   <div class="entity-icon">
                     <ItemIcon code={itemCode} extraClass="tile-item-icon" />
@@ -1601,7 +1574,7 @@
           <ul class="struct-feature-list">
             {#each infoStructure.features as f}
               <li class="struct-feature">
-                {#if f.icon}<span class="struct-feature-icon">{f.icon}</span>{/if}
+                <span class="struct-feature-icon"><FeatureIcon feature={f} size="1em" /></span>
                 <span class="struct-feature-text"><strong>{f.name}</strong> — {f.description}</span>
               </li>
             {/each}
@@ -3072,7 +3045,13 @@
     line-height: 1.35;
     color: var(--chrome-text-dim);
   }
-  .struct-feature-icon { flex-shrink: 0; }
+  .struct-feature-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    color: var(--chrome-gold, #d4b170);
+    margin-top: 0.1em;
+  }
   .struct-feature-text strong { color: var(--chrome-text); }
 
   /* Resource rarity tinting — reuse the palette used elsewhere in this file */

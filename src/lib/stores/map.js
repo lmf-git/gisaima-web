@@ -192,16 +192,52 @@ export const currentPlayerPosition = derived(
   }
 );
 
-// When the controlled player's position changes (e.g. the group they're in moved
-// a tile), re-pull loaded chunks so tiles newly within sight refresh at once.
-// The server only broadcasts chunks that actually changed during a tick — chunks
-// that merely came into view are not rebroadcast, so without this they'd stay
-// hidden until the next change or a page refresh. Mirrors the spawn refetch.
+// A token capturing both WHERE the controlled character is and WHAT FORM it's in
+// (a standalone entity vs mobilised into a unit group). The two forms have
+// different sight radii (player ≈7, group ≈5), so mobilising/demobilising — even
+// on the same tile — changes which tiles are in sight. Keying the chunk refetch
+// on this (not position alone) means item drops and entities that come into (or
+// out of) view on a mobilise/demobilise refresh at once instead of lingering
+// stale until the next move or page reload.
+export const controlledPresenceKey = derived(
+  [entities, game, user],
+  ([$entities, $game, $user]) => {
+    if (!$game.player?.alive) return null;
+    const uid = $user?.uid;
+    const controlledLifeId = $game.player?.controlledLifeId?.toString();
+    if (!uid || !controlledLifeId) return null;
+
+    // Standalone (not in a group).
+    for (const players of Object.values($entities.players)) {
+      if (!players) continue;
+      for (const p of players) {
+        if (p.id?.toString() === controlledLifeId) return `${p.x},${p.y}:solo`;
+      }
+    }
+    // Mobilised into a unit group.
+    for (const groups of Object.values($entities.groups || {})) {
+      if (!Array.isArray(groups)) continue;
+      for (const g of groups) {
+        if (!g?.units) continue;
+        const units = Array.isArray(g.units) ? g.units : Object.values(g.units);
+        for (const u of units) {
+          if (u?.type === 'player' && u.id?.toString() === controlledLifeId) return `${g.x},${g.y}:group`;
+        }
+      }
+    }
+    return null;
+  }
+);
+
+// Re-pull loaded chunks whenever the controlled character moves OR changes form
+// (mobilise/demobilise). The server only broadcasts chunks that actually changed
+// during a tick — chunks that merely came into view are not rebroadcast, so
+// without this they'd stay hidden until the next change or a page refresh.
+// Mirrors the spawn refetch.
 if (typeof window !== 'undefined') {
   let _lastControlledKey = null;
-  currentPlayerPosition.subscribe(pos => {
-    if (!pos) return;
-    const key = `${pos.x},${pos.y}`;
+  controlledPresenceKey.subscribe(key => {
+    if (!key) return;
     if (_lastControlledKey === null) { _lastControlledKey = key; return; } // skip initial value
     if (key !== _lastControlledKey) {
       _lastControlledKey = key;

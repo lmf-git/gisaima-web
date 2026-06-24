@@ -542,7 +542,7 @@
           </div>
         {:else}
           <div class="no-units">
-            <p>You have no units that can be mobilized at this location.</p>
+            <p>No other units to mobilise here besides yourself.</p>
           </div>
         {/if}
         
@@ -939,6 +939,9 @@
     font-family: var(--font-mono);
     font-size: 0.8em;
     color: var(--chrome-text-faint);
+    min-width: 3em;
+    text-align: right;
+    flex-shrink: 0;
   }
 
   /* Stepper matching Recruit's quantity control, sized down for the item rows. */

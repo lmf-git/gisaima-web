@@ -6,13 +6,20 @@
     import Flourish from '../../components/ui/Flourish.svelte';
     import WaxSeal from '../../components/ui/WaxSeal.svelte';
     import Button from '../../components/ui/Button.svelte';
+    import Rings from '../../components/icons/Rings.svelte';
 
     let friends = $state([]);          // [{ uid, displayName }]
     let incoming = $state([]);         // [{ from, displayName, createdAt }]
     let outgoing = $state([]);         // [{ to, displayName, createdAt }]
+    let proposalsIn = $state([]);      // [{ from, displayName, fromLifeName }]  marriage proposals to me
+    let proposalsOut = $state([]);     // [{ to, displayName }]                  my pending proposals
     let loading = $state(true);
     let error = $state(null);
     let busy = $state(false);
+
+    // Friends already entangled in a betrothal — for tailoring the row button.
+    const proposedToUids = $derived(new Set(proposalsOut.map(p => p.to)));
+    const proposedByUids = $derived(new Set(proposalsIn.map(p => p.from)));
 
     // Player search
     let query = $state('');
@@ -41,13 +48,16 @@
         if (!worldId) { loading = false; return; }
         try {
             loading = true;
-            const [f, r] = await Promise.all([
+            const [f, r, m] = await Promise.all([
                 apiGet(`/worlds/${wid}/friends`),
                 apiGet(`/worlds/${wid}/friends/requests`),
+                apiGet(`/worlds/${wid}/marriage/proposals`),
             ]);
             friends  = f?.friends || [];
             incoming = r?.incoming || [];
             outgoing = r?.outgoing || [];
+            proposalsIn  = m?.incoming || [];
+            proposalsOut = m?.outgoing || [];
             error = null;
         } catch (e) {
             error = e.message;
@@ -93,6 +103,11 @@
     const cancel       = (toUid)   => act(() => apiPost(`/worlds/${wid}/friends/requests/${encodeURIComponent(toUid)}/decline`, {}));
     const remove       = (uid)     => act(() => apiPost(`/worlds/${wid}/friends/${encodeURIComponent(uid)}/remove`, {}));
 
+    // ── Marriage proposals ──────────────────────────────────────────
+    const propose        = (toUid)     => act(() => apiPost(`/worlds/${wid}/marriage/proposals`, { toUid }));
+    const acceptMarriage = (fromUid)   => act(() => apiPost(`/worlds/${wid}/marriage/proposals/${encodeURIComponent(fromUid)}/accept`, {}));
+    const declineMarriage = (uid)      => act(() => apiPost(`/worlds/${wid}/marriage/proposals/${encodeURIComponent(uid)}/decline`, {}));
+
     onMount(load);
     $effect(() => { if (worldId) load(); });
 </script>
@@ -130,6 +145,27 @@
             </section>
         {/if}
 
+        {#if proposalsIn.length}
+            <section class="block">
+                <div class="eyebrow">Marriage proposals</div>
+                <ul class="list">
+                    {#each proposalsIn as p}
+                        <li>
+                            <WaxSeal label={(p.displayName || '?')[0]} color="#7a1f3a" size={42} />
+                            <div>
+                                <div class="t-name">{p.displayName}</div>
+                                <div class="t-sub">{p.fromLifeName || 'A suitor'} asks for your hand</div>
+                            </div>
+                            <div class="actions">
+                                <button class="ok" disabled={busy} onclick={() => acceptMarriage(p.from)}>Accept</button>
+                                <button class="ghost" disabled={busy} onclick={() => declineMarriage(p.from)}>Decline</button>
+                            </div>
+                        </li>
+                    {/each}
+                </ul>
+            </section>
+        {/if}
+
         <section class="block">
             <div class="eyebrow">Your friends</div>
             {#if !friends.length}
@@ -140,7 +176,22 @@
                         <li>
                             <WaxSeal label={(f.displayName || '?')[0]} color="#3f5a4e" size={42} />
                             <div><div class="t-name">{f.displayName}</div></div>
-                            <button class="ghost" disabled={busy} onclick={() => remove(f.uid)}>Remove</button>
+                            <div class="actions">
+                                {#if proposedByUids.has(f.uid)}
+                                    <button class="ok wed" disabled={busy} onclick={() => acceptMarriage(f.uid)} title="Accept their proposal">
+                                        <Rings extraClass="wed-icon" /> Accept
+                                    </button>
+                                {:else if proposedToUids.has(f.uid)}
+                                    <button class="ghost wed" disabled title="Proposal awaiting their reply">
+                                        <Rings extraClass="wed-icon" /> Proposed
+                                    </button>
+                                {:else}
+                                    <button class="ghost wed" disabled={busy} onclick={() => propose(f.uid)} title="Propose marriage">
+                                        <Rings extraClass="wed-icon" /> Propose
+                                    </button>
+                                {/if}
+                                <button class="ghost" disabled={busy} onclick={() => remove(f.uid)}>Remove</button>
+                            </div>
                         </li>
                     {/each}
                 </ul>
@@ -221,5 +272,7 @@
     .ok:hover { background: var(--color-ink-700); }
     .ghost { background: transparent; color: var(--color-ink-900); border: 1px solid var(--color-ink-900); }
     .ghost:hover { background: var(--color-parchment-200); }
+    .wed { display: inline-flex; align-items: center; gap: 0.4em; }
+    .wed :global(.wed-icon) { width: 1.1em; height: 1.1em; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

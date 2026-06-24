@@ -11,6 +11,9 @@
     battle_defeat:      'Defeat',
     structure_captured: 'Captured',
     structure_lost:     'Lost',
+    marriage_proposal:  'Proposal',
+    marriage_accepted:  'Betrothed',
+    marriage_declined:  'Declined',
   };
 
   function formatDate(ts) {

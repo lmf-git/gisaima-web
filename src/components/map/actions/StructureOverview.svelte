@@ -16,6 +16,8 @@
   import Fairy from '../../icons/Fairy.svelte';
   import Hammer from '../../icons/Hammer.svelte';
   import BuildingIcon from '../../icons/BuildingIcon.svelte';
+  import FeatureIcon from '../../icons/FeatureIcon.svelte';
+  import ItemIcon from '../../icons/ItemIcon.svelte';
   import Select from '../../ui/Select.svelte';
 
 
@@ -164,22 +166,44 @@
     return [];
   }
   
-  // Fix the displayItems derived function to ensure it works with the object format
-  let displayItems = $derived(() => {
+  // The items shown for the active tab, as an enriched array. NOTE: this must be
+  // `$derived.by` (returns the array) — a plain `$derived(() => …)` would make
+  // displayItems the *function* itself, so `.length` was always 0 and the
+  // personal-bank tab never rendered.
+  let displayItems = $derived.by(() => {
     let items = null;
-    
+
     if (activeTab === 'shared') {
       items = tileData?.structure?.items;
     } else {
       items = hasPersonalBank ? tileData?.structure?.banks[$currentPlayer.id] : null;
     }
-    
-    // Early return if no items exist
+
     if (!items) return [];
-    
-    // Convert items to displayable format if needed
     return convertItemsToDisplayFormat(items);
   });
+
+  // ── Move items between shared storage and your personal bank ──────
+  let transferring = $state(false);
+  let transferError = $state(null);
+  async function transferItem(code, quantity, direction) {
+    if (transferring || !(quantity > 0)) return;
+    transferring = true;
+    transferError = null;
+    try {
+      await apiPost('/actions/transferStorage', {
+        worldId: $game.worldKey,
+        tileX: x,
+        tileY: y,
+        direction,                 // 'toBank' | 'toShared'
+        items: { [code]: quantity },
+      });
+    } catch (e) {
+      transferError = e?.message || 'Transfer failed';
+    } finally {
+      transferring = false;
+    }
+  }
   
   let showStorageTabs = $derived(
     hasPersonalBank || 
@@ -897,7 +921,7 @@
                   <h5>Features</h5>
                   {#each tileData.structure.features as feature}
                     <div class="feature-item">
-                      <div class="feature-icon">{feature.icon}</div>
+                      <div class="feature-icon"><FeatureIcon {feature} size="1.1em" /></div>
                       <div class="feature-details">
                         <div class="feature-name">{feature.name}</div>
                         <div class="feature-description">{feature.description}</div>
@@ -1216,38 +1240,17 @@
               
               <!-- Combined storage display -->
               {#if !displayItems || displayItems.length === 0}
-                {#if activeTab === 'shared' && tileData?.structure?.items && Object.keys(tileData?.structure?.items).filter(k => !k.startsWith('_')).length > 0}
-                  <!-- Fallback rendering when normal conversion fails -->
-                  <div class="items-count-info">Showing {Object.keys(tileData.structure.items).filter(k => !k.startsWith('_')).length} items</div>
-                  {#each Object.entries(tileData.structure.items).filter(([key]) => !key.startsWith('_')) as [itemCode, quantity]}
-                    <div class="entity item common">
-                      <div class="item-info">
-                        <div class="item-name">
-                          <span class="item-name-text">{ITEMS[itemCode]?.name || formatText(itemCode)}</span>
-                          <span class="item-quantity">×{quantity}</span>
-                          {#if ITEMS[itemCode]?.rarity && ITEMS[itemCode].rarity !== 'common'}
-                            <span class="item-rarity {ITEMS[itemCode].rarity}">{formatText(ITEMS[itemCode].rarity)}</span>
-                          {/if}
-                        </div>
-                        <div class="item-details">
-                          <span class="item-type">{ITEMS[itemCode]?.type ? formatText(ITEMS[itemCode].type) : 'Resource'}</span>
-                        </div>
-                        {#if ITEMS[itemCode]?.description}
-                          <div class="item-description">{ITEMS[itemCode].description}</div>
-                        {/if}
-                      </div>
-                    </div>
-                  {/each}
-                {:else}
-                  <div class="empty-state">
-                    {activeTab === 'shared' ? 'No items in shared storage' : 'Your personal bank is empty'}
-                  </div>
-                {/if}
+                <div class="empty-state">
+                  {activeTab === 'shared' ? 'No items in shared storage' : 'Your personal bank is empty'}
+                </div>
               {:else}
-                <!-- Normal item display when conversion worked -->
+                {#if transferError}<div class="transfer-error">{transferError}</div>{/if}
                 <div class="items-count-info">Showing {displayItems.length} items</div>
                 {#each displayItems as item}
                   <div class="entity item {item?.rarity || 'common'}">
+                    <div class="item-icon-wrap">
+                      <ItemIcon code={String(item.code || '').toUpperCase()} size="1.4em" extraClass="storage-item-icon" />
+                    </div>
                     <div class="item-info">
                       <div class="item-name">
                         <span class="item-name-text">{item.name || formatText(item.code) || "Unknown Item"}</span>
@@ -1265,6 +1268,23 @@
                         <div class="item-description">{item.description}</div>
                       {/if}
                     </div>
+                    {#if activeTab === 'shared'}
+                      <button
+                        type="button"
+                        class="transfer-btn"
+                        disabled={transferring}
+                        title="Move to your personal bank"
+                        onclick={() => transferItem(item.code, item.quantity, 'toBank')}
+                      >→ Bank</button>
+                    {:else}
+                      <button
+                        type="button"
+                        class="transfer-btn"
+                        disabled={transferring}
+                        title="Move to shared storage"
+                        onclick={() => transferItem(item.code, item.quantity, 'toShared')}
+                      >→ Storage</button>
+                    {/if}
                   </div>
                 {/each}
               {/if}
@@ -1628,7 +1648,43 @@
   .entity:last-child { margin-bottom: 0; }
   .entity:hover { background: var(--chrome-gold-soft); }
 
-  .item-info { flex: 1; }
+  .item-info { flex: 1; min-width: 0; }
+
+  .item-icon-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.55em;
+  }
+  :global(.storage-item-icon) { color: var(--chrome-gold); }
+
+  .transfer-btn {
+    flex-shrink: 0;
+    align-self: center;
+    margin-left: 0.5em;
+    padding: 0.3em 0.55em;
+    background: transparent;
+    border: 0.075em solid var(--chrome-gold-border);
+    color: var(--chrome-gold);
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.62em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .transfer-btn:hover:not(:disabled) { background: var(--chrome-gold-soft); }
+  .transfer-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .transfer-error {
+    color: var(--color-wax-red, #b04a3a);
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    font-size: 0.8em;
+    margin-bottom: 0.5em;
+  }
 
   .item-name {
     display: flex;

@@ -4,6 +4,7 @@
   import { BUILDINGS } from 'gisaima-shared/definitions/BUILDINGS.js';
 
   import StructureIcon from '../../icons/StructureIcon.svelte';
+  import FeatureIcon from '../../icons/FeatureIcon.svelte';
   import Info from '../../icons/Info.svelte';
 
   import { currentPlayer, timeUntilNextTick } from '../../../lib/stores/game';
@@ -396,6 +397,7 @@
                     <div class="structure-features">
                       {#each structure.features as feature}
                         <div class="feature">
+                          <FeatureIcon {feature} size="0.95em" extraClass="feature-svg" />
                           <span class="feature-name">{feature.name}</span>
                         </div>
                       {/each}
@@ -722,12 +724,14 @@
   .feature {
     display: flex;
     align-items: center;
+    gap: 0.4em;
     padding: 0.3em 0.6em;
     background: var(--chrome-gold-soft);
     border: 0.075em solid var(--chrome-gold-border);
     color: var(--chrome-text-dim);
     font-size: 0.9em;
   }
+  .feature :global(.feature-svg) { color: var(--chrome-gold, #d4b170); flex-shrink: 0; }
 
   .required-resources {
     margin: 0.8em 0;
