@@ -3,6 +3,7 @@
 
   import { targetStore, entities } from '../../../lib/stores/map';
   import { currentPlayer, game, timeUntilNextTick } from '../../../lib/stores/game';
+  import Radio from '../../ui/Radio.svelte';
 
   const {
     onClose = () => {},
@@ -198,31 +199,21 @@
         <div class="storage-options">
           <h3>Storage Options</h3>
           <div class="radio-options">
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                name="storage" 
-                value="shared" 
-                checked={storageDestination === 'shared'}
-                onchange={() => storageDestination = 'shared'}
-                disabled={processing}
-              />
-              <span class="radio-text">Shared Storage</span>
-              <span class="radio-description">Items will be accessible by anyone at this structure</span>
-            </label>
-            
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                name="storage" 
-                value="personal"
-                checked={storageDestination === 'personal'} 
-                onchange={() => storageDestination = 'personal'}
-                disabled={processing}
-              />
-              <span class="radio-text">Personal Bank</span>
-              <span class="radio-description">Items will only be accessible by you</span>
-            </label>
+            <Radio
+              bind:group={storageDestination}
+              value="shared"
+              label="Shared Storage"
+              description="Items will be accessible by anyone at this structure"
+              disabled={processing}
+            />
+
+            <Radio
+              bind:group={storageDestination}
+              value="personal"
+              label="Personal Bank"
+              description="Items will only be accessible by you"
+              disabled={processing}
+            />
           </div>
         </div>
         
@@ -372,51 +363,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.8em;
-  }
-
-  .radio-label {
-    display: flex;
-    flex-direction: column;
-    padding: 0.8em;
-    border: 0.075em solid var(--chrome-border);
-    cursor: pointer;
-    transition: background-color 0.2s;
-    position: relative;
-    padding-left: 2.5em;
-  }
-
-  .radio-label:hover {
-    background: var(--chrome-gold-soft);
-  }
-
-  .radio-label input {
-    position: absolute;
-    left: 0.8em;
-    top: 0.9em;
-  }
-
-  .radio-text {
-    font-weight: 500;
-    margin-bottom: 0.3em;
-    color: var(--chrome-text);
-  }
-
-  .radio-description {
-    font-size: 0.8em;
-    color: var(--chrome-text-faint);
-  }
-
-  .radio-label input:checked + .radio-text {
-    color: var(--chrome-gold);
-  }
-
-  .radio-label input:checked ~ .radio-description {
-    color: var(--chrome-text-dim);
-  }
-
-  .radio-label:has(input:checked) {
-    border-color: var(--chrome-gold-border);
-    background: var(--chrome-gold-soft);
   }
 
   .error {
