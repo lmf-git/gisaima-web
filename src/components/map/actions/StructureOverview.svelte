@@ -543,12 +543,15 @@
     return structure.owner === $currentPlayer.id;
   }
 
-  // New function: Check if player can modify this structure (owner or spawn)
+  // New function: Check if player can modify this structure (owner, or a spawn
+  // of the player's own race). A spawn belonging to a different race must be
+  // read-only — its buildings, upgrade requirements and storage are not the
+  // viewer's business.
   function canModifyStructure(structure) {
     if (!structure || !$currentPlayer) return false;
     const isPlayerOwner = structure.owner === $currentPlayer.id;
-    const isSpawn = structure.type === 'spawn';
-    return isPlayerOwner || isSpawn;
+    const isOwnRaceSpawn = structure.type === 'spawn' && structure.race === $currentPlayer.race;
+    return isPlayerOwner || isOwnRaceSpawn;
   }
 
   // Function to check if a building can be upgraded
@@ -630,6 +633,12 @@
 
   function canAddNewBuilding() {
     if (!tileData?.structure) return false;
+
+    // Only the owner (or a same-race spawn member) may add buildings — and so
+    // only they should see the available-to-build options together with their
+    // resource requirements and the structure's "Have:" storage counts. Without
+    // this gate a passer-by sees another structure's upgrade costs and stock.
+    if (!canModifyStructure(tileData.structure)) return false;
 
     const buildingsCount = tileData?.structure?.buildings ?
       Object.keys(tileData.structure.buildings).length : 0;
