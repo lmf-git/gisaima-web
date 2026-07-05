@@ -1227,7 +1227,11 @@
                   </div>
                   <div class="entity-info">
                     <div class="entity-name">
-                      {player.displayName || 'Player'}
+                      <a
+                        class="player-profile-link"
+                        href={player.uid === $currentPlayer?.id ? '/profile' : `/players/${player.uid}`}
+                        title="View {player.displayName || 'this player'}'s profile"
+                      >{player.displayName || 'Player'}</a>
                       {#if player.uid === $currentPlayer?.id}
                         <span class="entity-badge owner-badge">You</span>
                       {/if}
@@ -1729,9 +1733,10 @@
     align-items: center;
     justify-content: center;
     border-radius: 1em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
     font-size: 0.7em;
     font-weight: bold;
-    padding: 0.1em 0.6em;
+    padding: 0.15em 0.55em;
     margin-left: 0.3em;
     line-height: 1;
     background: var(--chrome-field-bg);
@@ -2536,6 +2541,18 @@
   
   .entity-name, .entity-details {
     width: 100%;
+  }
+
+  /* Player names link through to that player's public profile. */
+  .player-profile-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .player-profile-link:hover {
+    color: var(--chrome-gold, #b08d4a);
+    border-bottom-color: var(--chrome-gold-border, #5a4520);
   }
 
   /* Tile item rows: name, quantity and rarity badge share one line. */

@@ -21,7 +21,7 @@
         '/rankings', '/trade', '/house',
         '/ransoms', '/trails', '/currency', '/banks', '/cosmetics',
         '/wealth', '/deaths', '/scouting', '/chronicle', '/reports', '/profile',
-        '/settlement', '/pending', '/characters', '/items', '/friends'
+        '/settlement', '/pending', '/characters', '/items', '/friends', '/players'
     ];
 
     const { children } = $props();

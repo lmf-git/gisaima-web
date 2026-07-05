@@ -283,9 +283,13 @@
   // For interactive steps the spotlight target depends on wheel state: the tile
   // until the wheel opens, then the specific action sector inside it.
   function currentSelector() {
-    // Once the wheel is open, spotlight the wheel itself rather than the tile
-    // beneath it (and rather than a single sector, which read as cramped).
+    // Once the wheel is open, spotlight the exact action sector the step asks
+    // for — highlighting the whole wheel doesn't tell the player which action to
+    // pick. Fall back to the whole wheel only if that sector isn't rendered
+    // (e.g. the action's condition isn't met yet).
     if (isInteractive && wheelOpen && document.querySelector(WHEEL_SELECTOR)) {
+      const actionSel = wheelActionSelector(step.wheelAction);
+      if (document.querySelector(actionSel)) return actionSel;
       return WHEEL_SELECTOR;
     }
     return step.selector;
@@ -605,6 +609,9 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     color: var(--chrome-text, #e8e0cc);
     font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+    /* Anchor a base size in rem so the card doesn't shrink with the map's own
+       font context, and so the sub-1em children below stay legible. */
+    font-size: 1.1rem;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -666,7 +673,7 @@
   .card-text {
     font-family: var(--font-editorial, serif);
     font-style: italic;
-    font-size: 0.78em;
+    font-size: 0.92em;
     line-height: 1.5;
     color: var(--chrome-text-dim, #a09070);
     margin: 0;
@@ -675,7 +682,7 @@
   /* Live call-to-action for interactive steps */
   .card-cue {
     font-family: var(--font-display, 'Cinzel', serif);
-    font-size: 0.7em;
+    font-size: 0.82em;
     letter-spacing: 0.06em;
     line-height: 1.4;
     color: var(--chrome-text, #e8e0cc);
