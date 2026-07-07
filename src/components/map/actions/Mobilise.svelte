@@ -149,7 +149,15 @@
   }
 
   function setItemQty(code, qty, max) {
-    const q = Math.max(0, Math.min(Math.floor(Number(qty) || 0), max));
+    // Cap to what's available in the store *and* to the group's remaining carry
+    // capacity (units + player character). Room for this code = total capacity
+    // minus everything else already selected, so "max" stops exactly at full.
+    let cap = max;
+    if (carryCapacity > 0) {
+      const others = selectedItemCount - (selectedItems[code] || 0);
+      cap = Math.min(cap, Math.max(0, carryCapacity - others));
+    }
+    const q = Math.max(0, Math.min(Math.floor(Number(qty) || 0), cap));
     const next = { ...selectedItems };
     if (q > 0) next[code] = q; else delete next[code];
     selectedItems = next;
@@ -570,6 +578,7 @@
               <div class="items-list">
                 {#each Object.entries(sourceItems) as [code, avail] (code)}
                   {@const qty = selectedItems[code] || 0}
+                  {@const atCapacity = carryCapacity > 0 && selectedItemCount >= carryCapacity}
                   <div class="item-row">
                     <ItemIcon {code} size="1.4em" extraClass="mobilise-item-icon" />
                     <span class="item-name">{_fmt(code.toLowerCase())}</span>
@@ -581,13 +590,20 @@
                         onclick={() => setItemQty(code, qty - 1, avail)}
                         disabled={qty <= 0}
                       >−</button>
-                      <span class="quantity-display" aria-live="polite">{qty}</span>
+                      <input
+                        type="text"
+                        inputmode="numeric"
+                        class="quantity-display"
+                        value={qty}
+                        aria-label={`Quantity of ${_fmt(code.toLowerCase())}`}
+                        oninput={(e) => setItemQty(code, e.currentTarget.value.replace(/[^0-9]/g, ''), avail)}
+                      />
                       <button
                         type="button"
                         class="quantity-button"
                         aria-label="Increase"
                         onclick={() => setItemQty(code, qty + 1, avail)}
-                        disabled={qty >= avail}
+                        disabled={qty >= avail || atCapacity}
                       >+</button>
                     </div>
                     <span class="item-avail">/ {avail}</span>
@@ -973,16 +989,18 @@
     cursor: not-allowed;
   }
   .quantity-display {
-    min-width: 2em;
+    width: 3em;
     height: 1.7em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
     border: 0.075em solid var(--chrome-border);
     font-size: 0.85em;
     color: var(--chrome-text);
     background: var(--chrome-field-bg);
     font-family: var(--font-mono);
+  }
+  .quantity-display:focus {
+    outline: none;
+    border-color: var(--chrome-gold);
   }
   .max-btn {
     padding: 0.25em 0.5em;
