@@ -149,6 +149,18 @@
         dossierPanel !== null
     );
 
+    // WASD / arrow-key panning stays live while the passive dossier (details) or
+    // the player-global achievements panel is open, so the player can browse
+    // tiles — e.g. hunt for the mountain biomes that yield metal ore — without
+    // closing the rail. Tile-bound action panels (gather, recruit, mobilise, …)
+    // still freeze panning: they read the live centre tile, so letting the map
+    // drift would swap the tile out from under the action mid-setup.
+    const keyboardNavBlocked = $derived(
+        buildingPlacementMode ||
+        !$game?.player?.alive ||
+        (dossierPanel !== null && dossierPanel !== 'details' && dossierPanel !== 'achievements')
+    );
+
     let showMinimap = $state(false); // Changed from true to false - default closed
     let showEntities = $state(false);
     let showChat = $state(false);
@@ -1202,6 +1214,7 @@
             onUndoPoint={undoLastPathPoint}
             customPathPoints={currentPath}
             modalOpen={peekBlocked}
+            keyboardNavBlocked={keyboardNavBlocked}
             openPeekTrigger={openPeekTrigger}
             pathDrawingGroup={pathDrawingGroup}
             buildingPlacementMode={buildingPlacementMode}

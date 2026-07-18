@@ -74,6 +74,7 @@
     onUndoPoint = null,
     customPathPoints = [],
     modalOpen = false,
+    keyboardNavBlocked = false,
     initialZoom = 1.0,
     pathDrawingGroup = null,
     buildingPlacementMode = false,
@@ -581,8 +582,11 @@
 
   function setupKeyboardNavigation() {
     const keyHandler = event => {
-      // Skip navigation when a modal is open or map isn't introduced
-      if (!introduced || modalOpen) return;
+      // Skip navigation before the map is introduced, or when the parent blocks
+      // it (spawn menu, building placement, or a tile-bound dossier action).
+      // The passive details dossier deliberately does NOT block panning, so the
+      // player can browse tiles with the rail open (see keyboardNavBlocked).
+      if (!introduced || keyboardNavBlocked) return;
       
       const key = event.key.toLowerCase();
       const isNavigationKey = ["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"].includes(key);
