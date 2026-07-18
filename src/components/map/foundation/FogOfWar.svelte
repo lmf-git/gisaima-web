@@ -38,10 +38,12 @@
         out.push({ x: s.x, y: s.y, r });
       }
 
-      // Collapse sources that sit on the same tile into a single max-radius
-      // circle. Without this, a player standing inside their own group (player
-      // sight + group sight at identical coords) paints two overlapping reveal
-      // gradients, producing a visible doubled/banded fog ring.
+      // Collapse sources that sit on the exact same tile into a single
+      // max-radius circle. This is now just an overdraw optimisation for the
+      // common player-inside-own-group case; overlapping circles on *different*
+      // tiles (e.g. a nearby structure) are handled by the `darken` blend on
+      // the mask circles below, which unions the reveals instead of letting a
+      // later circle's fogged rim overwrite an already-revealed area.
       const byTile = new Map();
       for (const s of out) {
         const key = `${s.x},${s.y}`;
@@ -86,11 +88,22 @@
            the dark rect is hidden (the reveal). -->
       <mask id="fog-mask" maskUnits="userSpaceOnUse"
             x="0" y="0" width={$map.cols} height={$map.rows}>
-        <rect x="0" y="0" width={$map.cols} height={$map.rows} fill="white" />
-        {#each $sightSources as src}
-          {@const p = project(src, $map, dx, dy)}
-          <circle cx={p.cx} cy={p.cy} r={p.r} fill="url(#fog-reveal)" />
-        {/each}
+        <!-- Isolated so the darken blend only combines the reveal circles with
+             the white base rect, never with anything behind the mask. Each
+             circle is composited with `darken` (min) so overlapping reveals
+             union — the darkest (most-revealed) value wins and a circle's
+             fogged white rim can never overwrite an area another source has
+             already revealed (which produced the ring at a structure/group
+             overlap). -->
+        <g style="isolation: isolate">
+          <rect x="0" y="0" width={$map.cols} height={$map.rows} fill="white" />
+          {#each $sightSources as src}
+            {@const p = project(src, $map, dx, dy)}
+            <circle cx={p.cx} cy={p.cy} r={p.r}
+                    fill="url(#fog-reveal)"
+                    style="mix-blend-mode: darken" />
+          {/each}
+        </g>
       </mask>
     </defs>
 

@@ -2,8 +2,9 @@
   import { slide } from "svelte/transition";
 
   import { BUILDINGS, ITEMS } from "gisaima-shared";
+  import { STRUCTURES } from "gisaima-shared/definitions/STRUCTURES.js";
 
-  import { currentPlayer, game } from "../../../lib/stores/game.js";
+  import { currentPlayer, game, timeUntilNextTick, timeUntilTick } from "../../../lib/stores/game.js";
   import { targetStore, coordinates } from "../../../lib/stores/map.js";
   import { apiPost } from "../../../lib/api.js";
 
@@ -94,7 +95,19 @@
 
   // Fix the derived value to return the actual data, not a function
   let tileData = $derived($targetStore || null);
-  
+
+  // ── Construction status ──────────────────────────────────────────
+  // A structure with status 'building' is still under construction — it isn't
+  // functional yet (no upgrades, no buildings, no storage). While it's being
+  // built we show a progress readout with a tick-based countdown instead of the
+  // completed-structure UI (upgrade requirements, building slots, storage).
+  // buildProgress counts ticks done; STRUCTURES[type].buildTime is the total.
+  let isBuilding      = $derived(tileData?.structure?.status === 'building');
+  let buildTotalTicks = $derived(STRUCTURES[tileData?.structure?.type]?.buildTime || 1);
+  let buildDoneTicks  = $derived(Math.min(buildTotalTicks, tileData?.structure?.buildProgress || 0));
+  let buildTicksLeft  = $derived(Math.max(0, buildTotalTicks - buildDoneTicks));
+  let buildPct        = $derived(Math.round((buildDoneTicks / buildTotalTicks) * 100));
+
   // Function to toggle section collapse state
   function toggleSection(sectionId) {
     collapsedSections[sectionId] = !collapsedSections[sectionId];
@@ -279,7 +292,10 @@
   // New function: Check if player can see and use upgrade UI
   function canSeeUpgradeUI(structure) {
     if (!structure || !$currentPlayer) return false;
-    
+
+    // No upgrades or new buildings while the structure is still being built.
+    if (structure.status === 'building') return false;
+
     // Check if structure is owned by player
     const isOwner = isOwnedByCurrentPlayer(structure);
     
@@ -634,6 +650,9 @@
   function canAddNewBuilding() {
     if (!tileData?.structure) return false;
 
+    // Can't add buildings until construction finishes.
+    if (tileData.structure.status === 'building') return false;
+
     // Only the owner (or a same-race spawn member) may add buildings — and so
     // only they should see the available-to-build options together with their
     // resource requirements and the structure's "Have:" storage counts. Without
@@ -874,7 +893,35 @@
           {/if}
         </div>
       </div>
-      
+
+      <!-- Construction status — shown only while the structure is still being
+           built. Replaces the completed-structure UI with a tick-based
+           countdown to completion. -->
+      {#if isBuilding}
+        <div class="construction-banner">
+          <div class="construction-hd">
+            <Hammer extraClass="construction-hammer" />
+            <span class="construction-title">Under Construction</span>
+          </div>
+          <div class="construction-bar">
+            <div class="construction-fill" style="width: {buildPct}%"></div>
+          </div>
+          <div class="construction-meta">
+            <span>{buildDoneTicks} / {buildTotalTicks} ticks · {buildPct}%</span>
+            <span class="construction-left">
+              {buildTicksLeft} {buildTicksLeft === 1 ? 'tick' : 'ticks'} left
+            </span>
+          </div>
+          <div class="construction-eta">
+            {#if buildTicksLeft > 0}
+              Completes in ~{timeUntilTick(buildTicksLeft)} · next tick {$timeUntilNextTick}
+            {:else}
+              Completing on the next tick…
+            {/if}
+          </div>
+        </div>
+      {/if}
+
       <!-- Building info section (collapsible) -->
       <div class="entities-section">
         <div 
@@ -1005,6 +1052,9 @@
         {/if}
       </div>
       
+      <!-- Buildings — hidden while under construction: no buildings exist yet
+           (they're seeded on completion) and none can be added until finished. -->
+      {#if !isBuilding}
       <!-- UPDATED SECTION: Combined Buildings section -->
       <div class="entities-section">
         <div 
@@ -1136,9 +1186,10 @@
           </div>
         {/if}
       </div>
+      {/if}
 
       <!-- Access settings — owner only, non-spawn structures -->
-      {#if isOwnedByCurrentPlayer(tileData?.structure) && tileData?.structure?.type !== 'spawn'}
+      {#if !isBuilding && isOwnedByCurrentPlayer(tileData?.structure) && tileData?.structure?.type !== 'spawn'}
         <div class="entities-section">
           <div
             class="section-header"
@@ -1178,7 +1229,7 @@
       {/if}
 
       <!-- Storage section - Clean version without debug elements -->
-      {#if showStorageTabs}
+      {#if !isBuilding && showStorageTabs}
         <div class="entities-section">
           <div 
             class="section-header"
@@ -1401,6 +1452,60 @@
     width: 1em;
     height: 1em;
     fill: currentColor;
+  }
+
+  /* ── Construction status banner ── */
+  .construction-banner {
+    background: var(--chrome-field-bg);
+    border: 0.075em solid var(--chrome-gold-border);
+    border-left: 0.2em solid var(--color-aged-gold, #b08d4a);
+    padding: 0.7em 0.8em;
+    margin-bottom: 0.7em;
+  }
+  .construction-hd {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    margin-bottom: 0.55em;
+  }
+  :global(.construction-hammer) {
+    width: 1em;
+    height: 1em;
+    color: var(--color-gold-pale, #d4b170);
+  }
+  .construction-title {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 0.7em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-gold-pale, #d4b170);
+  }
+  .construction-bar {
+    height: 0.55em;
+    background: var(--chrome-hairline);
+    overflow: hidden;
+  }
+  .construction-fill {
+    height: 100%;
+    background: var(--color-aged-gold, #b08d4a);
+    transition: width 0.3s ease;
+  }
+  .construction-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 0.4em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.72em;
+    color: var(--chrome-text-dim);
+  }
+  .construction-left { color: var(--color-gold-pale, #d4b170); }
+  .construction-eta {
+    margin-top: 0.35em;
+    font-family: var(--font-editorial, 'IM Fell English', serif);
+    font-style: italic;
+    font-size: 0.78em;
+    color: var(--chrome-text-faint);
   }
 
   /* ── Collapsible sections ── */
